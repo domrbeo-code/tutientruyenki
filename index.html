@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Tu Tiên Idle Game - Chuẩn Responsive PC & Mobile</title>
+  <title>Tu Tiên Idle Game - Bản Tông Môn Đại Chiến</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
   
   <style>
-    * { touch-action: manipulation; } /* Tối ưu cảm ứng trên mobile */
+    * { touch-action: manipulation; }
     body {
       font-family: 'Space Grotesk', sans-serif;
       background-color: #0b1120;
@@ -70,6 +70,13 @@
       { name: "Đạo Tổ", maxQi: Infinity }
     ];
 
+    const SECTS = [
+      { id: 'dao_hoa', name: 'Đạo Hóa Tông', leaderId: 'npc_1', desc: 'Thánh địa tối cao nắm giữ thiên thư cổ đại.', buff: 'Tăng 50% tốc độ tự động gom Qi' },
+      { id: 'thien_dinh', name: 'Thiên Đình Côn Lôn', leaderId: 'npc_2', desc: 'Nơi tập hợp các đại năng Chân Tiên và Thần Ma.', buff: 'Tăng 30% sát thương Trảm Yêu' },
+      { id: 'am_duong', name: 'Âm Dương Hợp Hoan Tông', leaderId: 'npc_10', desc: 'Côn đồ ma đạo chuyên cướp đoạt tài nguyên.', buff: 'Giảm 20% giá mua vật phẩm Shop' },
+      { id: 'thuc_son', name: 'Thục Sơn Kiếm Phái', leaderId: 'npc_3', desc: 'Kiếm đạo chí tôn, vạn kiếm quy tông.', buff: 'Tăng 2x Sức Mạnh mỗi Click' }
+    ];
+
     const SHOP_ITEMS = [
       { id: "tu-linh-dan", name: "Tụ Linh Đan", desc: "Tự động gom linh khí cơ bản", baseCost: 50, qpsBonus: 1 },
       { id: "linh-thach", name: "Linh Thạch", desc: "Chứa đựng linh lực thuần khiết", baseCost: 500, qpsBonus: 8 },
@@ -92,7 +99,7 @@
     ];
 
     const INITIAL_NPC_LEADERBOARD = [
-      { id: 'npc_1', name: "Hồng Quân Lao Tổ", realmIdx: 57 }, { id: 'npc_2', name: "Nữ Oa Nương Nương", realmIdx: 56 },
+      { id: 'npc_1', name: "Hồng Quân Lão Tổ", realmIdx: 57 }, { id: 'npc_2', name: "Nữ Oa Nương Nương", realmIdx: 56 },
       { id: 'npc_3', name: "Thông Thiên Giáo Chủ", realmIdx: 55 }, { id: 'npc_4', name: "Thái Thượng Lão Quân", realmIdx: 54 },
       { id: 'npc_5', name: "Nguyên Thủy Thiên Tôn", realmIdx: 53 }, { id: 'npc_6', name: "Saitama (Áo Mới)", realmIdx: 52 },
       { id: 'npc_7', name: "Son Goku (Vô Cực)", realmIdx: 51 }, { id: 'npc_8', name: "Tôn Ngộ Không", realmIdx: 50 },
@@ -134,6 +141,7 @@
       equippedSkillId: 'basic_skill',
       inventory: ['basic_skill', 'fire_skill'],
       npcData: INITIAL_NPC_LEADERBOARD,
+      joinedSectId: null,
       logs: [{ id: 'init', text: '[System]: Bảng Phong Thần sẵn sàng! Bắt đầu tu luyện.', type: 'system', time: Date.now() }]
     };
 
@@ -234,7 +242,11 @@
       useEffect(() => {
         const interval = setInterval(() => {
           const state = stateRef.current;
-          const baseQps = SHOP_ITEMS.reduce((sum, item) => sum + (state.shopCounts[item.id] || 0) * item.qpsBonus, 0);
+          let baseQps = SHOP_ITEMS.reduce((sum, item) => sum + (state.shopCounts[item.id] || 0) * item.qpsBonus, 0);
+          
+          // Buff Tông Môn Đạo Hóa Tông (+50% Qps)
+          if (state.joinedSectId === 'dao_hoa') baseQps *= 1.5;
+
           const totalQps = baseQps * (1 + (state.immortalPoints || 0) * 0.5);
           if (totalQps > 0) setGameState(prev => ({ ...prev, qi: prev.qi + totalQps }));
         }, 1000);
@@ -251,9 +263,12 @@
         const clientX = e.clientX || (e.touches && e.touches[0].clientX) || window.innerWidth / 2;
         const clientY = e.clientY || (e.touches && e.touches[0].clientY) || window.innerHeight / 2;
         
-        setClicks(prev => [...prev, { id, x: clientX, y: clientY - 20, val: gameState.clickPower }]);
+        let pwr = gameState.clickPower;
+        if (gameState.joinedSectId === 'thuc_son') pwr *= 2; // Buff Thục Sơn x2 click
+
+        setClicks(prev => [...prev, { id, x: clientX, y: clientY - 20, val: pwr }]);
         setTimeout(() => setClicks(prev => prev.filter(c => c.id !== id)), 800);
-        setGameState(prev => ({ ...prev, qi: prev.qi + prev.clickPower }));
+        setGameState(prev => ({ ...prev, qi: prev.qi + pwr }));
       };
 
       const handleBreakthrough = () => {
@@ -284,6 +299,7 @@
           inventory: prev.inventory,
           equippedSkillId: prev.equippedSkillId,
           npcData: prev.npcData,
+          joinedSectId: prev.joinedSectId,
           logs: [{ id: Date.now().toString(), text: `[Tái Sinh]: Nhận ${ptsGained} Điểm Trường Sinh (+${ptsGained * 50}% Linh Khí).`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 30)
         }));
       };
@@ -292,7 +308,11 @@
         setGameState(prev => {
           const item = SHOP_ITEMS.find(i => i.id === itemId);
           const count = prev.shopCounts[itemId] || 0;
-          const cost = Math.floor(item.baseCost * Math.pow(1.5, count));
+          let cost = Math.floor(item.baseCost * Math.pow(1.5, count));
+          
+          // Buff Âm Dương Hợp Hoan Tông giảm 20% giá shop
+          if (prev.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
+
           if (prev.qi >= cost) {
             return {
               ...prev, qi: prev.qi - cost, shopCounts: { ...prev.shopCounts, [itemId]: count + 1 },
@@ -309,7 +329,9 @@
         if (skillType === 2) setCdSkill2(12);
 
         const monster = MONSTERS[currentMonsterIdx];
-        const dmg = gameState.clickPower * dmgMult;
+        let dmg = gameState.clickPower * dmgMult;
+        if (gameState.joinedSectId === 'thien_dinh') dmg *= 1.3; // Buff Thiên Đình +30% DMG
+
         const newMonsterHp = monsterHp - dmg;
         
         if (newMonsterHp <= 0) {
@@ -338,7 +360,11 @@
       const realm = REALMS[gameState.realmIndex];
       const isMaxRealm = gameState.realmIndex === REALMS.length - 1;
       const isBreakthrough = !isMaxRealm && gameState.qi >= realm.maxQi;
-      const currentQps = SHOP_ITEMS.reduce((sum, item) => sum + (gameState.shopCounts[item.id] || 0) * item.qpsBonus, 0) * (1 + (gameState.immortalPoints || 0) * 0.5);
+      
+      let baseQpsCalc = SHOP_ITEMS.reduce((sum, item) => sum + (gameState.shopCounts[item.id] || 0) * item.qpsBonus, 0);
+      if (gameState.joinedSectId === 'dao_hoa') baseQpsCalc *= 1.5;
+      const currentQps = baseQpsCalc * (1 + (gameState.immortalPoints || 0) * 0.5);
+
       const percent = isMaxRealm ? 100 : Math.min(100, (gameState.qi / realm.maxQi) * 100);
       const equippedBook = SKILL_BOOKS.find(b => b.id === gameState.equippedSkillId) || SKILL_BOOKS[0];
 
@@ -360,12 +386,13 @@
             </div>
           ))}
 
-          {/* HEADER: Tối ưu nhỏ gọn trên Mobile */}
+          {/* HEADER */}
           <header className="relative z-10 flex flex-col items-center justify-center p-3 border-b border-white/10 bg-black/60 backdrop-blur-md sticky top-0">
             <h1 className="font-serif text-xl sm:text-3xl font-bold tracking-widest text-yellow-400 uppercase text-center">{realm.name}</h1>
             <div className="flex items-center gap-2 text-[10px] sm:text-xs text-slate-400 font-mono mt-0.5">
               <span>Tầng {gameState.realmIndex + 1}/{REALMS.length}</span>
-              {gameState.immortalPoints > 0 && <span className="text-yellow-400">| ✨ Buff x{1 + gameState.immortalPoints * 0.5}</span>}
+              {gameState.joinedSectId && <span className="text-purple-400">| Tông Môn: {SECTS.find(s=>s.id === gameState.joinedSectId)?.name}</span>}
+              {gameState.immortalPoints > 0 && <span className="text-yellow-400">| ✨ x{1 + gameState.immortalPoints * 0.5}</span>}
             </div>
             
             {/* Thanh Máu NV */}
@@ -379,7 +406,7 @@
             </div>
           </header>
 
-          {/* MAIN CONTENT: Grid 3 cột trên PC, 1 cột trên Mobile */}
+          {/* MAIN CONTENT */}
           <main className="relative z-10 flex-1 w-full max-w-7xl mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
             
             {/* CỘT 1: TU LUYỆN & CLICK */}
@@ -402,7 +429,7 @@
                 ) : (
                   <button onClick={handleCultivate} className="w-full py-5 text-lg font-bold font-serif text-cyan-400 border border-cyan-500/40 bg-cyan-500/10 active:bg-cyan-500/30 hover:bg-cyan-500/20 rounded-xl transition-all flex flex-col items-center justify-center gap-1 cursor-pointer">
                     <span>THU HOẠCH LINH KHÍ</span>
-                    <span className="text-[10px] font-mono text-cyan-300 font-normal border border-cyan-500/30 px-2.5 py-0.5 rounded-full">+{formatNumber(gameState.clickPower)} Qi / Click</span>
+                    <span className="text-[10px] font-mono text-cyan-300 font-normal border border-cyan-500/30 px-2.5 py-0.5 rounded-full">+{formatNumber(gameState.joinedSectId === 'thuc_son' ? gameState.clickPower * 2 : gameState.clickPower)} Qi / Click</span>
                   </button>
                 )}
 
@@ -419,15 +446,16 @@
               </div>
             </div>
 
-            {/* CỘT 2: TABS NỘI DUNG CHÍNH */}
+            {/* CỘT 2: TABS NỘI DUNG CHÍNH (Thêm Tab Tông Môn) */}
             <div className="col-span-1 lg:col-span-5 bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 flex flex-col h-[460px] sm:h-[500px]">
               
               {/* Tab Selector */}
-              <div className="grid grid-cols-4 gap-1 border-b border-white/10 pb-2.5 mb-2.5">
-                <button onClick={() => setActiveTab('shop')} className={`py-1.5 text-[11px] font-bold font-serif rounded-lg border ${activeTab === 'shop' ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🏛️ SHOP</button>
-                <button onClick={() => setActiveTab('monster')} className={`py-1.5 text-[11px] font-bold font-serif rounded-lg border ${activeTab === 'monster' ? 'bg-red-500/20 border-red-400 text-red-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>⚔️ TRẢM YÊU</button>
-                <button onClick={() => setActiveTab('inventory')} className={`py-1.5 text-[11px] font-bold font-serif rounded-lg border ${activeTab === 'inventory' ? 'bg-purple-500/20 border-purple-400 text-purple-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🎒 TÚI ĐỒ</button>
-                <button onClick={() => setActiveTab('leaderboard')} className={`py-1.5 text-[11px] font-bold font-serif rounded-lg border ${activeTab === 'leaderboard' ? 'bg-yellow-500/20 border-yellow-400 text-yellow-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🏆 RANK</button>
+              <div className="grid grid-cols-5 gap-1 border-b border-white/10 pb-2.5 mb-2.5">
+                <button onClick={() => setActiveTab('shop')} className={`py-1.5 text-[10px] font-bold font-serif rounded-lg border ${activeTab === 'shop' ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🏛️ SHOP</button>
+                <button onClick={() => setActiveTab('sect')} className={`py-1.5 text-[10px] font-bold font-serif rounded-lg border ${activeTab === 'sect' ? 'bg-purple-500/20 border-purple-400 text-purple-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>⛩️ TÔNG</button>
+                <button onClick={() => setActiveTab('monster')} className={`py-1.5 text-[10px] font-bold font-serif rounded-lg border ${activeTab === 'monster' ? 'bg-red-500/20 border-red-400 text-red-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>⚔️ YÊU</button>
+                <button onClick={() => setActiveTab('inventory')} className={`py-1.5 text-[10px] font-bold font-serif rounded-lg border ${activeTab === 'inventory' ? 'bg-amber-500/20 border-amber-400 text-amber-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🎒 TÚI</button>
+                <button onClick={() => setActiveTab('leaderboard')} className={`py-1.5 text-[10px] font-bold font-serif rounded-lg border ${activeTab === 'leaderboard' ? 'bg-yellow-500/20 border-yellow-400 text-yellow-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🏆 RANK</button>
               </div>
 
               {/* TAB 1: SHOP */}
@@ -435,7 +463,9 @@
                 <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1">
                   {SHOP_ITEMS.map((item) => {
                     const count = gameState.shopCounts[item.id] || 0;
-                    const cost = Math.floor(item.baseCost * Math.pow(1.5, count));
+                    let cost = Math.floor(item.baseCost * Math.pow(1.5, count));
+                    if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
+
                     const canAfford = gameState.qi >= cost;
                     return (
                       <div key={item.id} onClick={() => canAfford && buyItem(item.id)}
@@ -455,7 +485,41 @@
                 </div>
               )}
 
-              {/* TAB 2: TRẢM YÊU */}
+              {/* TAB 2: TÔNG MÔN (MỚI) */}
+              {activeTab === 'sect' && (
+                <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1">
+                  {SECTS.map(sect => {
+                    const leader = (gameState.npcData || INITIAL_NPC_LEADERBOARD).find(n => n.id === sect.leaderId);
+                    const leaderRealm = leader ? REALMS[Math.min(leader.realmIdx, REALMS.length - 1)].name : "Phàm Nhân";
+                    const isJoined = gameState.joinedSectId === sect.id;
+
+                    return (
+                      <div key={sect.id} className={`p-3 rounded-xl border flex flex-col gap-1.5 ${isJoined ? 'border-purple-400 bg-purple-500/15' : 'border-white/10 bg-black/40'}`}>
+                        <div className="flex justify-between items-center">
+                          <h4 className="font-serif text-xs sm:text-sm text-purple-300 font-bold">{sect.name}</h4>
+                          <span className="text-[9px] font-mono bg-black/60 px-2 py-0.5 rounded text-yellow-400 border border-white/10">Tông Chủ: {leader?.name || 'Ẩn Danh'} ({leaderRealm})</span>
+                        </div>
+                        <p className="text-[10px] text-slate-300">{sect.desc}</p>
+                        <div className="text-[9px] font-mono text-cyan-300 bg-cyan-500/10 p-1 rounded border border-cyan-500/20">⚡ Đặc quyền: {sect.buff}</div>
+                        
+                        {isJoined ? (
+                          <button onClick={() => setGameState(prev => ({ ...prev, joinedSectId: null, logs: [{ id: Date.now().toString(), text: `[Tông Môn]: Đã rời khỏi ${sect.name}.`, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 30) }))}
+                                  className="mt-1 py-1.5 text-[10px] font-bold font-serif rounded bg-red-500/20 text-red-300 border border-red-500/40">
+                            RỜI TÔNG MÔN
+                          </button>
+                        ) : (
+                          <button onClick={() => setGameState(prev => ({ ...prev, joinedSectId: sect.id, logs: [{ id: Date.now().toString(), text: `[Tông Môn]: Gia nhập thành công ${sect.name}!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 30) }))}
+                                  className="mt-1 py-1.5 text-[10px] font-bold font-serif rounded bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                            BÁ SƠN GIA NHẬP
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* TAB 3: TRẢM YÊU */}
               {activeTab === 'monster' && (
                 <div className="flex-1 flex flex-col justify-between p-1">
                   <div className="flex justify-center gap-1.5 mb-1">
@@ -497,7 +561,7 @@
                 </div>
               )}
 
-              {/* TAB 3: TÚI ĐỒ */}
+              {/* TAB 4: TÚI ĐỒ */}
               {activeTab === 'inventory' && (
                 <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1">
                   {SKILL_BOOKS.map(book => {
@@ -528,7 +592,7 @@
                 </div>
               )}
 
-              {/* TAB 4: BẢNG PHONG THẦN */}
+              {/* TAB 5: BẢNG PHONG THẦN */}
               {activeTab === 'leaderboard' && (
                 <div className="flex-1 overflow-y-auto space-y-1 no-scrollbar pr-1">
                   {fullLeaderboard.map((item, index) => (
