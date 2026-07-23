@@ -51,22 +51,23 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
 
+    // ĐÃ TĂNG MAXQI X3 - X10 CHO TỪNG CẢNH GIỚI
     const REALMS = [
-      { name: "Phàm Nhân", maxQi: 250 },
-      { name: "Luyện Khí Sơ Kỳ", maxQi: 800 }, { name: "Luyện Khí Trung Kỳ", maxQi: 1800 }, { name: "Luyện Khí Hậu Kỳ", maxQi: 3500 }, { name: "Luyện Khí Viên Mãn", maxQi: 6000 },
-      { name: "Trúc Cơ Sơ Kỳ", maxQi: 12000 }, { name: "Trúc Cơ Trung Kỳ", maxQi: 22000 }, { name: "Trúc Cơ Hậu Kỳ", maxQi: 40000 }, { name: "Trúc Cơ Viên Mãn", maxQi: 70000 },
-      { name: "Kim Đan Sơ Kỳ", maxQi: 130000 }, { name: "Kim Đan Trung Kỳ", maxQi: 220000 }, { name: "Kim Đan Hậu Kỳ", maxQi: 350000 }, { name: "Kim Đan Viên Mãn", maxQi: 550000 },
-      { name: "Nguyên Anh Sơ Kỳ", maxQi: 900000 }, { name: "Nguyên Anh Trung Kỳ", maxQi: 1500000 }, { name: "Nguyên Anh Hậu Kỳ", maxQi: 2500000 }, { name: "Nguyên Anh Viên Mãn", maxQi: 4000000 },
-      { name: "Hóa Thần Sơ Kỳ", maxQi: 7000000 }, { name: "Hóa Thần Trung Kỳ", maxQi: 12000000 }, { name: "Hóa Thần Hậu Kỳ", maxQi: 20000000 }, { name: "Hóa Thần Viên Mãn", maxQi: 35000000 },
-      { name: "Luyện Hư Sơ Kỳ", maxQi: 60000000 }, { name: "Luyện Hư Trung Kỳ", maxQi: 100000000 }, { name: "Luyện Hư Hậu Kỳ", maxQi: 160000000 }, { name: "Luyện Hư Viên Mãn", maxQi: 250000000 },
-      { name: "Hợp Thể Sơ Kỳ", maxQi: 400000000 }, { name: "Hợp Thể Trung Kỳ", maxQi: 650000000 }, { name: "Hợp Thể Hậu Kỳ", maxQi: 1000000000 }, { name: "Hợp Thể Viên Mãn", maxQi: 1500000000 },
-      { name: "Đại Thừa Sơ Kỳ", maxQi: 2500000000 }, { name: "Đại Thừa Trung Kỳ", maxQi: 4000000000 }, { name: "Đại Thừa Hậu Kỳ", maxQi: 6500000000 }, { name: "Đại Thừa Viên Mãn", maxQi: 10000000000 },
-      { name: "Độ Kiếp Sơ Kỳ", maxQi: 16000000000 }, { name: "Độ Kiếp Trung Kỳ", maxQi: 26000000000 }, { name: "Độ Kiếp Hậu Kỳ", maxQi: 42000000000 }, { name: "Độ Kiếp Viên Mãn", maxQi: 70000000000 },
-      { name: "Chân Tiên Sơ Kỳ", maxQi: 110000000000 }, { name: "Chân Tiên Trung Kỳ", maxQi: 180000000000 }, { name: "Chân Tiên Hậu Kỳ", maxQi: 280000000000 }, { name: "Chân Tiên Viên Mãn", maxQi: 450000000000 },
-      { name: "Kim Tiên Sơ Kỳ", maxQi: 700000000000 }, { name: "Kim Tiên Trung Kỳ", maxQi: 1100000000000 }, { name: "Kim Tiên Hậu Kỳ", maxQi: 1700000000000 }, { name: "Kim Tiên Viên Mãn", maxQi: 2700000000000 },
-      { name: "Thái Ất Sơ Kỳ", maxQi: 4200000000000 }, { name: "Thái Ất Trung Kỳ", maxQi: 6800000000000 }, { name: "Thái Ất Hậu Kỳ", maxQi: 11000000000000 }, { name: "Thái Ất Viên Mãn", maxQi: 17000000000000 },
-      { name: "Chuẩn Thánh Sơ Kỳ", maxQi: 28000000000000 }, { name: "Chuẩn Thánh Trung Kỳ", maxQi: 45000000000000 }, { name: "Chuẩn Thánh Hậu Kỳ", maxQi: 70000000000000 }, { name: "Chuẩn Thánh Viên Mãn", maxQi: 110000000000000 },
-      { name: "Thánh Nhân Sơ Kỳ", maxQi: 200000000000000 }, { name: "Thánh Nhân Trung Kỳ", maxQi: 350000000000000 }, { name: "Thánh Nhân Hậu Kỳ", maxQi: 550000000000000 }, { name: "Thánh Nhân Viên Mãn", maxQi: 900000000000000 },
+      { name: "Phàm Nhân", maxQi: 1000 },
+      { name: "Luyện Khí Sơ Kỳ", maxQi: 3500 }, { name: "Luyện Khí Trung Kỳ", maxQi: 8000 }, { name: "Luyện Khí Hậu Kỳ", maxQi: 18000 }, { name: "Luyện Khí Viên Mãn", maxQi: 35000 },
+      { name: "Trúc Cơ Sơ Kỳ", maxQi: 70000 }, { name: "Trúc Cơ Trung Kỳ", maxQi: 140000 }, { name: "Trúc Cơ Hậu Kỳ", maxQi: 280000 }, { name: "Trúc Cơ Viên Mãn", maxQi: 500000 },
+      { name: "Kim Đan Sơ Kỳ", maxQi: 1000000 }, { name: "Kim Đan Trung Kỳ", maxQi: 1800000 }, { name: "Kim Đan Hậu Kỳ", maxQi: 3000000 }, { name: "Kim Đan Viên Mãn", maxQi: 5000000 },
+      { name: "Nguyên Anh Sơ Kỳ", maxQi: 8500000 }, { name: "Nguyên Anh Trung Kỳ", maxQi: 14000000 }, { name: "Nguyên Anh Hậu Kỳ", maxQi: 23000000 }, { name: "Nguyên Anh Viên Mãn", maxQi: 38000000 },
+      { name: "Hóa Thần Sơ Kỳ", maxQi: 60000000 }, { name: "Hóa Thần Trung Kỳ", maxQi: 100000000 }, { name: "Hóa Thần Hậu Kỳ", maxQi: 170000000 }, { name: "Hóa Thần Viên Mãn", maxQi: 300000000 },
+      { name: "Luyện Hư Sơ Kỳ", maxQi: 500000000 }, { name: "Luyện Hư Trung Kỳ", maxQi: 850000000 }, { name: "Luyện Hư Hậu Kỳ", maxQi: 1400000000 }, { name: "Luyện Hư Viên Mãn", maxQi: 2300000000 },
+      { name: "Hợp Thể Sơ Kỳ", maxQi: 3800000000 }, { name: "Hợp Thể Trung Kỳ", maxQi: 6000000000 }, { name: "Hợp Thể Hậu Kỳ", maxQi: 9500000000 }, { name: "Hợp Thể Viên Mãn", maxQi: 15000000000 },
+      { name: "Đại Thừa Sơ Kỳ", maxQi: 24000000000 }, { name: "Đại Thừa Trung Kỳ", maxQi: 38000000000 }, { name: "Đại Thừa Hậu Kỳ", maxQi: 60000000000 }, { name: "Đại Thừa Viên Mãn", maxQi: 95000000000 },
+      { name: "Độ Kiếp Sơ Kỳ", maxQi: 150000000000 }, { name: "Độ Kiếp Trung Kỳ", maxQi: 240000000000 }, { name: "Độ Kiếp Hậu Kỳ", maxQi: 380000000000 }, { name: "Độ Kiếp Viên Mãn", maxQi: 600000000000 },
+      { name: "Chân Tiên Sơ Kỳ", maxQi: 950000000000 }, { name: "Chân Tiên Trung Kỳ", maxQi: 1500000000000 }, { name: "Chân Tiên Hậu Kỳ", maxQi: 2400000000000 }, { name: "Chân Tiên Viên Mãn", maxQi: 3800000000000 },
+      { name: "Kim Tiên Sơ Kỳ", maxQi: 6000000000000 }, { name: "Kim Tiên Trung Kỳ", maxQi: 9500000000000 }, { name: "Kim Tiên Hậu Kỳ", maxQi: 15000000000000 }, { name: "Kim Tiên Viên Mãn", maxQi: 24000000000000 },
+      { name: "Thái Ất Sơ Kỳ", maxQi: 38000000000000 }, { name: "Thái Ất Trung Kỳ", maxQi: 60000000000000 }, { name: "Thái Ất Hậu Kỳ", maxQi: 95000000000000 }, { name: "Thái Ất Viên Mãn", maxQi: 150000000000000 },
+      { name: "Chuẩn Thánh Sơ Kỳ", maxQi: 240000000000000 }, { name: "Chuẩn Thánh Trung Kỳ", maxQi: 380000000000000 }, { name: "Chuẩn Thánh Hậu Kỳ", maxQi: 600000000000000 }, { name: "Chuẩn Thánh Viên Mãn", maxQi: 950000000000000 },
+      { name: "Thánh Nhân Sơ Kỳ", maxQi: 1500000000000000 }, { name: "Thánh Nhân Trung Kỳ", maxQi: 2500000000000000 }, { name: "Thánh Nhân Hậu Kỳ", maxQi: 4000000000000000 }, { name: "Thánh Nhân Viên Mãn", maxQi: 6500000000000000 },
       { name: "Đạo Tổ", maxQi: Infinity }
     ];
 
@@ -84,39 +85,32 @@
       { id: "de-tu", name: "Thu Nhận Đệ Tử", desc: "Đệ tử tu luyện thay sư phụ", baseCost: 80000, qpsBonus: 1200 }
     ];
 
-    // 24 Món Trang Bị Chợ Đen Từ Phế Đến Thiên Giai
     const BLACK_MARKET_GEARS = [
-      // Phế Giai (Rác rưởi)
       { id: 'eq_1', name: 'Gậy Gỗ Mục', tier: 'Phế Giai', cost: 150, clickBonus: 2, qpsBonus: 0, color: 'text-slate-400' },
       { id: 'eq_2', name: 'Dao Gọt Trái Cây Sỉn', tier: 'Phế Giai', cost: 400, clickBonus: 5, qpsBonus: 1, color: 'text-slate-400' },
       { id: 'eq_3', name: 'Đũa Thần Gãy', tier: 'Phế Giai', cost: 950, clickBonus: 12, qpsBonus: 3, color: 'text-slate-400' },
       { id: 'eq_4', name: 'Giẻ Lau Bàn Thờ', tier: 'Phế Giai', cost: 2100, clickBonus: 25, qpsBonus: 8, color: 'text-slate-400' },
       
-      // Hoàng Giai
       { id: 'eq_5', name: 'Sắt Rỉ Sét Cấp 1', tier: 'Hoàng Giai', cost: 5000, clickBonus: 60, qpsBonus: 20, color: 'text-green-400' },
       { id: 'eq_6', name: 'Kiếm Gỗ Đào Non', tier: 'Hoàng Giai', cost: 12000, clickBonus: 140, qpsBonus: 50, color: 'text-green-400' },
       { id: 'eq_7', name: 'Phi Tinh Đao', tier: 'Hoàng Giai', cost: 28000, clickBonus: 320, qpsBonus: 120, color: 'text-green-400' },
       { id: 'eq_8', name: 'Bùa Trừ Tà Rách', tier: 'Hoàng Giai', cost: 65000, clickBonus: 750, qpsBonus: 300, color: 'text-green-400' },
 
-      // Huyền Giai
       { id: 'eq_9', name: 'Thanh Cương Kiếm', tier: 'Huyền Giai', cost: 150000, clickBonus: 1800, qpsBonus: 800, color: 'text-blue-400' },
       { id: 'eq_10', name: 'Huyết Nguyệt Trượng', tier: 'Huyền Giai', cost: 350000, clickBonus: 4200, qpsBonus: 2000, color: 'text-blue-400' },
       { id: 'eq_11', name: 'Thiết Giáp Chiến Ma', tier: 'Huyền Giai', cost: 800000, clickBonus: 10000, qpsBonus: 5000, color: 'text-blue-400' },
       { id: 'eq_12', name: 'U Minh Quạt Sắt', tier: 'Huyền Giai', cost: 1800000, clickBonus: 24000, qpsBonus: 12000, color: 'text-blue-400' },
 
-      // Địa Giai
       { id: 'eq_13', name: 'Bát Quái Lư Hương', tier: 'Địa Giai', cost: 4000000, clickBonus: 60000, qpsBonus: 30000, color: 'text-purple-400' },
       { id: 'eq_14', name: 'Thất Tinh Long Uyên', tier: 'Địa Giai', cost: 9500000, clickBonus: 150000, qpsBonus: 75000, color: 'text-purple-400' },
       { id: 'eq_15', name: 'Hỗn Nguyên Phù Đồ', tier: 'Địa Giai', cost: 22000000, clickBonus: 380000, qpsBonus: 180000, color: 'text-purple-400' },
       { id: 'eq_16', name: 'Viêm Long Ma Nhẫn', tier: 'Địa Giai', cost: 50000000, clickBonus: 950000, qpsBonus: 450000, color: 'text-purple-400' },
 
-      // Thiên Giai
       { id: 'eq_17', name: 'Hiên Viên Cổ Kiếm', tier: 'Thiên Giai', cost: 120000000, clickBonus: 2500000, qpsBonus: 1200000, color: 'text-yellow-400' },
       { id: 'eq_18', name: 'Tru Tiên Kiếm Trận', tier: 'Thiên Giai', cost: 300000000, clickBonus: 6500000, qpsBonus: 3200000, color: 'text-yellow-400' },
       { id: 'eq_19', name: 'Hạo Thiên Thần Kính', tier: 'Thiên Giai', cost: 750000000, clickBonus: 16000000, qpsBonus: 8000000, color: 'text-yellow-400' },
       { id: 'eq_20', name: 'Hỗn Độn Chung Cổ', tier: 'Thiên Giai', cost: 1800000000, clickBonus: 40000000, qpsBonus: 20000000, color: 'text-yellow-400' },
 
-      // Thần Giai (Cực Phẩm Vô Địch)
       { id: 'eq_21', name: 'Bàn Cổ Khai Thiên Phủ', tier: 'Thần Giai', cost: 4500000000, clickBonus: 100000000, qpsBonus: 50000000, color: 'text-rose-500 font-bold' },
       { id: 'eq_22', name: 'Hồng Mông Thư Tịch', tier: 'Thần Giai', cost: 11000000000, clickBonus: 260000000, qpsBonus: 130000000, color: 'text-rose-500 font-bold' },
       { id: 'eq_23', name: 'Vô Thượng Lôi Thần Thương', tier: 'Thần Giai', cost: 28000000000, clickBonus: 700000000, qpsBonus: 350000000, color: 'text-rose-500 font-bold' },
@@ -235,7 +229,6 @@
       const stateRef = useRef(gameState);
       useEffect(() => { stateRef.current = gameState; }, [gameState]);
 
-      // Tính tổng Click Power (Base + Trang bị)
       const currentClickPower = useMemo(() => {
         let pwr = gameState.baseClickPower;
         if (gameState.equippedGearId) {
@@ -245,7 +238,6 @@
         return pwr;
       }, [gameState.baseClickPower, gameState.equippedGearId]);
 
-      // NPC Vòng Lặp
       useEffect(() => {
         const npcTimer = setInterval(() => {
           setGameState(prev => {
@@ -288,7 +280,6 @@
 
       useEffect(() => { setPlayerHp(maxPlayerHp); }, [maxPlayerHp]);
 
-      // Auto Qi Tick
       useEffect(() => {
         const interval = setInterval(() => {
           const state = stateRef.current;
@@ -507,278 +498,188 @@
                 ) : (
                   <button onClick={handleCultivate} className="w-full py-5 text-lg font-bold font-serif text-cyan-400 border border-cyan-500/40 bg-cyan-500/10 active:bg-cyan-500/30 hover:bg-cyan-500/20 rounded-xl transition-all flex flex-col items-center justify-center gap-1 cursor-pointer">
                     <span>BẾ GIAO THU HOẠCH</span>
-                    <span className="text-[10px] font-mono text-cyan-300 font-normal border border-cyan-500/30 px-2.5 py-0.5 rounded-full">+{formatNumber(gameState.joinedSectId === 'thuc_son' ? currentClickPower * 2 : currentClickPower)} Qi / Click</span>
-                  </button>
-                )}
-
-                {gameState.realmIndex >= 9 && (
-                  <button onClick={handleReincarnate} className="mt-3 w-full py-2 text-[11px] font-bold font-serif border border-yellow-500/40 bg-yellow-500/10 text-yellow-300 rounded-lg">
-                    ✨ CHUYỂN THẾ TRƯỜNG SINH
+                    <span className="text-[10px] font-mono text-cyan-300 font-normal border border-cyan-500/30 px-2.5 py-0.5 rounded-full">
+                      +{formatNumber(currentClickPower)} Qi/nhấn | +{formatNumber(currentQps)} Qi/s
+                    </span>
                   </button>
                 )}
               </div>
 
-              <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 text-center">
-                <span className="text-slate-400 text-[10px] tracking-widest block">TỰ ĐỘNG GOM LINH KHÍ (QPS)</span>
-                <span className="text-lg font-mono text-cyan-400 font-bold">+{formatNumber(currentQps)} <span className="text-xs text-slate-500">Qi/s</span></span>
-              </div>
-            </div>
-
-            {/* CỘT 2: TABS */}
-            <div className="col-span-1 lg:col-span-5 bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 flex flex-col h-[460px] sm:h-[500px]">
-              
-              <div className="grid grid-cols-6 gap-1 border-b border-white/10 pb-2.5 mb-2.5">
-                <button onClick={() => setActiveTab('shop')} className={`py-1.5 text-[9px] font-bold font-serif rounded-lg border ${activeTab === 'shop' ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🏛️ SHOP</button>
-                <button onClick={() => setActiveTab('blackmarket')} className={`py-1.5 text-[9px] font-bold font-serif rounded-lg border ${activeTab === 'blackmarket' ? 'bg-rose-500/20 border-rose-400 text-rose-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🥷 CHỢ ĐEN</button>
-                <button onClick={() => setActiveTab('sect')} className={`py-1.5 text-[9px] font-bold font-serif rounded-lg border ${activeTab === 'sect' ? 'bg-purple-500/20 border-purple-400 text-purple-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>⛩️ TÔNG</button>
-                <button onClick={() => setActiveTab('monster')} className={`py-1.5 text-[9px] font-bold font-serif rounded-lg border ${activeTab === 'monster' ? 'bg-red-500/20 border-red-400 text-red-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>⚔️ YÊU</button>
-                <button onClick={() => setActiveTab('inventory')} className={`py-1.5 text-[9px] font-bold font-serif rounded-lg border ${activeTab === 'inventory' ? 'bg-amber-500/20 border-amber-400 text-amber-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🎒 TÚI</button>
-                <button onClick={() => setActiveTab('leaderboard')} className={`py-1.5 text-[9px] font-bold font-serif rounded-lg border ${activeTab === 'leaderboard' ? 'bg-yellow-500/20 border-yellow-400 text-yellow-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🏆 RANK</button>
-              </div>
-
-              {/* SHOP */}
-              {activeTab === 'shop' && (
-                <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1">
-                  {SHOP_ITEMS.map((item) => {
-                    const count = gameState.shopCounts[item.id] || 0;
-                    let cost = Math.floor(item.baseCost * Math.pow(1.6, count));
-                    if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
-
-                    const canAfford = gameState.qi >= cost;
-                    return (
-                      <div key={item.id} onClick={() => canAfford && buyItem(item.id)}
-                           className={`p-2.5 rounded-xl border transition-all flex justify-between items-center ${canAfford ? 'border-cyan-500/30 bg-cyan-500/10 active:scale-[0.98] cursor-pointer' : 'border-white/5 bg-black/40 opacity-40 cursor-not-allowed'}`}>
-                        <div>
-                          <h3 className="font-serif text-xs sm:text-sm text-cyan-300">{item.name}</h3>
-                          <p className="text-[9px] sm:text-[10px] text-slate-400 leading-tight">{item.desc}</p>
-                          <div className="text-[9px] font-mono text-cyan-400 mt-0.5">+{formatNumber(item.qpsBonus)} Qi/s</div>
-                        </div>
-                        <div className="text-right flex flex-col items-end">
-                          <span className="text-yellow-400 font-mono text-xs font-bold">x{count}</span>
-                          <span className="text-[9px] font-mono bg-black/60 px-1.5 py-0.5 rounded border border-white/10 mt-1">Giá: {formatNumber(cost)}</span>
-                        </div>
+              {/* KHU VỰC TÔNG MÔN */}
+              <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-4 shadow-xl">
+                <h3 className="font-serif text-xs text-purple-400 mb-2 font-bold tracking-wider">THẾ LỰC TÔNG MÔN</h3>
+                {gameState.joinedSectId ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="p-2.5 rounded-lg border border-purple-500/30 bg-purple-500/10 flex justify-between items-center">
+                      <div>
+                        <div className="font-bold text-xs text-purple-300">{SECTS.find(s=>s.id===gameState.joinedSectId)?.name}</div>
+                        <div className="text-[10px] text-slate-400">{SECTS.find(s=>s.id===gameState.joinedSectId)?.buff}</div>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* CHỢ ĐEN (24 MÓN TRANG BỊ) */}
-              {activeTab === 'blackmarket' && (
-                <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1">
-                  <div className="text-[10px] text-rose-400 bg-rose-500/10 p-2 rounded border border-rose-500/20 mb-2 text-center font-serif">
-                    🥷 Chợ Đen Hắc Ám: Mua trang bị để tăng Click & QPS vĩnh viễn!
+                      <button onClick={()=>setGameState(prev=>({...prev, joinedSectId: null, logs: [{id:Date.now().toString(), text:'[Tông Môn]: Đã rời tông môn!', type:'fail', time:Date.now()}, ...prev.logs]}))} className="text-[10px] bg-red-500/20 text-red-300 px-2 py-1 rounded border border-red-500/30">Phản tông</button>
+                    </div>
                   </div>
-                  {BLACK_MARKET_GEARS.map((gear) => {
-                    const isOwned = gameState.ownedGears.includes(gear.id);
-                    let cost = gear.cost;
-                    if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
-                    const canAfford = gameState.qi >= cost;
-
-                    return (
-                      <div key={gear.id} className="p-2.5 rounded-xl border border-white/10 bg-black/40 flex justify-between items-center">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className={`font-serif text-xs font-bold ${gear.color}`}>{gear.name}</h3>
-                            <span className="text-[8px] font-mono bg-white/10 px-1.5 py-0.5 rounded text-slate-300">{gear.tier}</span>
-                          </div>
-                          <div className="text-[9px] font-mono text-cyan-300 mt-1">
-                            +{formatNumber(gear.clickBonus)} Click | +{formatNumber(gear.qpsBonus)} Qi/s
-                          </div>
-                        </div>
-                        <div>
-                          {isOwned ? (
-                            <span className="text-[9px] font-bold text-green-400 bg-green-500/10 px-2.5 py-1 rounded border border-green-500/30">ĐÃ MUA</span>
-                          ) : (
-                            <button onClick={() => canAfford && buyGear(gear)} disabled={!canAfford}
-                                    className={`px-3 py-1 rounded text-[9px] font-bold font-mono border ${canAfford ? 'border-rose-500/40 bg-rose-500/20 text-rose-300 cursor-pointer active:scale-95' : 'border-white/5 bg-black/40 text-slate-500 cursor-not-allowed'}`}>
-                              Giá: {formatNumber(cost)}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* TÔNG MÔN */}
-              {activeTab === 'sect' && (
-                <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1">
-                  {SECTS.map(sect => {
-                    const leader = (gameState.npcData || INITIAL_NPC_LEADERBOARD).find(n => n.id === sect.leaderId);
-                    const isJoined = gameState.joinedSectId === sect.id;
-
-                    return (
-                      <div key={sect.id} className={`p-3 rounded-xl border flex flex-col gap-1.5 ${isJoined ? 'border-purple-400 bg-purple-500/15' : 'border-white/10 bg-black/40'}`}>
-                        <div className="flex justify-between items-center">
-                          <h4 className="font-serif text-xs sm:text-sm text-purple-300 font-bold">{sect.name}</h4>
-                          <span className="text-[9px] font-mono bg-black/60 px-2 py-0.5 rounded text-yellow-400 border border-white/10">Tông Chủ: {leader?.name || 'Ẩn Danh'}</span>
-                        </div>
-                        <p className="text-[10px] text-slate-300">{sect.desc}</p>
-                        <div className="text-[9px] font-mono text-cyan-300 bg-cyan-500/10 p-1 rounded border border-cyan-500/20">⚡ Đặc quyền: {sect.buff}</div>
-                        
-                        {isJoined ? (
-                          <button onClick={() => setGameState(prev => ({ ...prev, joinedSectId: null, logs: [{ id: Date.now().toString(), text: `[Tông Môn]: Đã rời khỏi ${sect.name}.`, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 30) }))}
-                                  className="mt-1 py-1.5 text-[10px] font-bold font-serif rounded bg-red-500/20 text-red-300 border border-red-500/40">
-                            RỜI TÔNG MÔN
-                          </button>
-                        ) : (
-                          <button onClick={() => setGameState(prev => ({ ...prev, joinedSectId: sect.id, logs: [{ id: Date.now().toString(), text: `[Tông Môn]: Gia nhập thành công ${sect.name}!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 30) }))}
-                                  className="mt-1 py-1.5 text-[10px] font-bold font-serif rounded bg-purple-500/20 text-purple-300 border border-purple-500/40">
-                            BÁ SƠN GIA NHẬP
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* TRẢM YÊU */}
-              {activeTab === 'monster' && (
-                <div className="flex-1 flex flex-col justify-between p-1">
-                  <div className="flex justify-center gap-1.5 mb-1">
-                    {MONSTERS.map((m, idx) => (
-                      <button key={m.id} onClick={() => { setCurrentMonsterIdx(idx); setMonsterHp(m.hp); }}
-                              className={`px-2.5 py-1 rounded text-xs border ${currentMonsterIdx === idx ? 'border-red-400 bg-red-500/20 text-red-300' : 'border-white/10 bg-black/30 text-slate-400'}`}>
-                        {m.icon}
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    {SECTS.map(s => (
+                      <button key={s.id} onClick={()=>setGameState(prev=>({...prev, joinedSectId: s.id, logs: [{id:Date.now().toString(), text:`[Gia Nhập]: Bái sư vào ${s.name}!`, type:'breakthrough', time:Date.now()}, ...prev.logs]}))} className="p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-purple-500/20 hover:border-purple-500/40 text-left transition-all">
+                        <div className="font-bold text-xs text-slate-200">{s.name}</div>
+                        <div className="text-[9px] text-slate-400 line-clamp-1">{s.desc}</div>
                       </button>
                     ))}
                   </div>
-
-                  <div className="text-center my-auto">
-                    <div className="text-4xl mb-1">{MONSTERS[currentMonsterIdx].icon}</div>
-                    <h3 className="text-sm font-serif font-bold text-red-400">{MONSTERS[currentMonsterIdx].name}</h3>
-                    <p className="text-[10px] text-slate-400">Đánh trả: <span className="text-red-400 font-bold">-{MONSTERS[currentMonsterIdx].atk} HP</span> | Thưởng: <span className="text-yellow-400 font-bold">+{formatNumber(MONSTERS[currentMonsterIdx].rewardQi)} Qi</span></p>
-
-                    <div className="w-full bg-black/60 h-3.5 rounded-full border border-red-500/30 overflow-hidden relative my-2">
-                      <div className="bg-gradient-to-r from-red-600 to-orange-500 h-full transition-all duration-150" style={{ width: `${Math.max(0, (monsterHp / MONSTERS[currentMonsterIdx].hp) * 100)}%` }} />
-                      <div className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-bold text-white">HP: {formatNumber(monsterHp)} / {formatNumber(MONSTERS[currentMonsterIdx].hp)}</div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-1.5">
-                    <button onClick={() => attackMonster(1, 0)} disabled={isDead}
-                            className={`py-2 text-[11px] font-bold rounded-lg border border-red-500/40 bg-red-500/20 text-red-300 active:scale-95 ${isDead ? 'opacity-40' : ''}`}>
-                      ⚔️ Thường<br/><span className="text-[8px] font-normal">x1 Sức Mạnh</span>
-                    </button>
-                    <button onClick={() => attackMonster(equippedBook.multiplier, 1)} disabled={isDead || cdSkill1 > 0}
-                            className={`py-2 text-[11px] font-bold rounded-lg border border-orange-500/40 bg-orange-500/20 text-orange-300 active:scale-95 ${isDead || cdSkill1 > 0 ? 'opacity-40' : ''}`}>
-                      {equippedBook.icon} {equippedBook.skillName}<br/>
-                      <span className="text-[8px] font-normal">{cdSkill1 > 0 ? `${cdSkill1}s` : `x${equippedBook.multiplier} DMG`}</span>
-                    </button>
-                    <button onClick={() => attackMonster(20, 2)} disabled={isDead || cdSkill2 > 0}
-                            className={`py-2 text-[11px] font-bold rounded-lg border border-purple-500/40 bg-purple-500/20 text-purple-300 active:scale-95 ${isDead || cdSkill2 > 0 ? 'opacity-40' : ''}`}>
-                      ⚡ Thiên Lôi<br/>
-                      <span className="text-[8px] font-normal">{cdSkill2 > 0 ? `${cdSkill2}s` : `x20 DMG`}</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* TÚI ĐỒ & TRANG BỊ */}
-              {activeTab === 'inventory' && (
-                <div className="flex-1 overflow-y-auto space-y-3 no-scrollbar pr-1">
-                  <div>
-                    <h4 className="text-[10px] font-serif text-slate-400 mb-1.5 uppercase tracking-wider">🗡️ Pháp Bảo Đã Sở Hữu</h4>
-                    {gameState.ownedGears.length === 0 ? (
-                      <div className="text-[10px] text-slate-500 italic p-2 bg-black/30 rounded border border-white/5">Chưa có pháp bảo nào. Ghé Chợ Đen để mua ngay!</div>
-                    ) : (
-                      <div className="space-y-1.5">
-                        {gameState.ownedGears.map(gearId => {
-                          const gear = BLACK_MARKET_GEARS.find(g => g.id === gearId);
-                          if (!gear) return null;
-                          const isEquipped = gameState.equippedGearId === gear.id;
-
-                          return (
-                            <div key={gear.id} className={`p-2 rounded-xl border flex justify-between items-center ${isEquipped ? 'border-amber-400 bg-amber-500/10' : 'border-white/10 bg-black/40'}`}>
-                              <div>
-                                <h5 className={`font-serif text-xs font-bold ${gear.color}`}>{gear.name}</h5>
-                                <div className="text-[9px] font-mono text-cyan-300">+{formatNumber(gear.clickBonus)} Click | +{formatNumber(gear.qpsBonus)} Qi/s</div>
-                              </div>
-                              <button onClick={() => equipGear(gear.id)}
-                                      className={`px-2.5 py-1 rounded text-[9px] font-bold font-serif border ${isEquipped ? 'bg-amber-500/20 border-amber-400 text-amber-300' : 'bg-white/10 border-white/20 text-slate-300'}`}>
-                                {isEquipped ? 'ĐANG DÙNG' : 'TRANG BỊ'}
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <h4 className="text-[10px] font-serif text-slate-400 mb-1.5 uppercase tracking-wider">📜 Bí Kíp Công Pháp</h4>
-                    <div className="space-y-1.5">
-                      {SKILL_BOOKS.map(book => {
-                        const isOwned = gameState.inventory.includes(book.id);
-                        const isEquipped = gameState.equippedSkillId === book.id;
-                        return (
-                          <div key={book.id} className="p-2.5 rounded-xl border border-white/10 bg-black/40 flex justify-between items-center">
-                            <div className="flex items-center gap-2.5">
-                              <span className="text-xl">{book.icon}</span>
-                              <div>
-                                <h4 className="font-serif text-xs text-purple-300">{book.name}</h4>
-                                <p className="text-[9px] text-slate-400">{book.desc}</p>
-                              </div>
-                            </div>
-                            {isEquipped ? (
-                              <span className="text-[9px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded border border-green-500/30">ĐANG DÙNG</span>
-                            ) : isOwned ? (
-                              <button onClick={() => setGameState(prev => ({ ...prev, equippedSkillId: book.id }))}
-                                      className="text-[9px] font-bold text-purple-300 bg-purple-500/20 px-2.5 py-1 rounded border border-purple-400/40">
-                                DÙNG
-                              </button>
-                            ) : (
-                              <span className="text-[9px] text-slate-500 italic">Khóa</span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* RANK */}
-              {activeTab === 'leaderboard' && (
-                <div className="flex-1 overflow-y-auto space-y-1 no-scrollbar pr-1">
-                  {fullLeaderboard.map((item, index) => (
-                    <div key={index} className={`p-1.5 rounded-lg border flex justify-between items-center text-[11px] ${item.isPlayer ? 'border-yellow-400 bg-yellow-500/20 font-bold' : 'border-white/5 bg-black/30'}`}>
-                      <div className="flex items-center gap-2">
-                        <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[9px] ${index === 0 ? 'bg-yellow-400 text-black font-bold' : index === 1 ? 'bg-slate-300 text-black font-bold' : index === 2 ? 'bg-amber-600 text-white font-bold' : 'bg-white/10 text-slate-400'}`}>
-                          {index + 1}
-                        </span>
-                        <span className={item.isPlayer ? 'text-yellow-300' : 'text-slate-200'}>{item.name}</span>
-                      </div>
-                      <span className={`font-serif ${item.isPlayer ? 'text-yellow-400' : 'text-cyan-400'}`}>{item.title}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
+                )}
+              </div>
             </div>
 
-            {/* CỘT 3: NHẬT KÝ */}
-            <div className="col-span-1 lg:col-span-3 bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 flex flex-col h-[200px] lg:h-[500px]">
-              <h3 className="text-[11px] font-serif text-slate-400 tracking-widest mb-2 border-b border-white/10 pb-1.5 flex items-center gap-1">📜 NHẬT KÝ HARDCORE</h3>
-              <div className="flex-1 overflow-y-auto space-y-1.5 no-scrollbar pr-1">
-                {gameState.logs.map(log => (
-                  <div key={log.id} className={`p-1.5 rounded text-[10px] leading-tight border ${log.type === 'breakthrough' ? 'bg-green-500/10 border-green-500/30 text-green-300' : log.type === 'fail' ? 'bg-red-500/10 border-red-500/30 text-red-300' : log.type === 'shop' ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300' : 'bg-white/5 border-white/5 text-slate-400'}`}>
-                    {log.text}
-                  </div>
+            {/* CỘT 2: TAB CHÍNH (SHOP, CHỢ ĐEN, TRẢM YÊU, BẢNG XẾP HẠNG) */}
+            <div className="col-span-1 lg:col-span-8 flex flex-col gap-3">
+              <div className="flex gap-1 bg-black/40 p-1 rounded-xl border border-white/10 overflow-x-auto no-scrollbar">
+                {[
+                  { id: 'shop', name: 'Đan Phác' },
+                  { id: 'blackmarket', name: '🖤 Chợ Đen' },
+                  { id: 'combat', name: '⚔️ Trảm Yêu' },
+                  { id: 'leaderboard', name: '📜 Thiên Thư' }
+                ].map(tab => (
+                  <button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`flex-1 py-2 px-3 rounded-lg text-xs font-serif font-bold whitespace-nowrap transition-all ${activeTab === tab.id ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-400 hover:text-white'}`}>
+                    {tab.name}
+                  </button>
                 ))}
+              </div>
+
+              <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-4 shadow-xl min-h-[350px] max-h-[500px] overflow-y-auto no-scrollbar">
+                
+                {/* TAB SHOP */}
+                {activeTab === 'shop' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {SHOP_ITEMS.map(item => {
+                      const count = gameState.shopCounts[item.id] || 0;
+                      let cost = Math.floor(item.baseCost * Math.pow(1.6, count));
+                      if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
+                      return (
+                        <div key={item.id} className="p-3 rounded-xl border border-white/10 bg-white/5 flex flex-col justify-between gap-2">
+                          <div>
+                            <div className="flex justify-between items-start">
+                              <span className="font-bold text-xs text-slate-200">{item.name}</span>
+                              <span className="text-[10px] font-mono text-cyan-400">Đã có: {count}</span>
+                            </div>
+                            <p className="text-[10px] text-slate-400 mt-0.5">{item.desc}</p>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                            <span className="text-xs font-mono text-yellow-400">{formatNumber(cost)} Qi</span>
+                            <button onClick={()=>buyItem(item.id)} className="px-3 py-1 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded-lg text-xs font-bold transition-all">Mua</button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* TAB CHỢ ĐEN */}
+                {activeTab === 'blackmarket' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {BLACK_MARKET_GEARS.map(gear => {
+                      const isOwned = gameState.ownedGears.includes(gear.id);
+                      const isEquipped = gameState.equippedGearId === gear.id;
+                      let cost = gear.cost;
+                      if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
+
+                      return (
+                        <div key={gear.id} className={`p-3 rounded-xl border ${isEquipped ? 'border-yellow-500/60 bg-yellow-500/10' : 'border-white/10 bg-white/5'} flex flex-col justify-between gap-2`}>
+                          <div>
+                            <div className="flex justify-between items-start">
+                              <span className={`font-bold text-xs ${gear.color}`}>{gear.name}</span>
+                              <span className="text-[9px] px-2 py-0.5 rounded bg-black/50 border border-white/10 text-slate-300">{gear.tier}</span>
+                            </div>
+                            <div className="text-[10px] text-slate-400 mt-1">
+                              {gear.clickBonus > 0 && <span>+{formatNumber(gear.clickBonus)} Click</span>}
+                              {gear.qpsBonus > 0 && <span className="ml-2">+{formatNumber(gear.qpsBonus)} Qps</span>}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                            <span className="text-xs font-mono text-yellow-400">{isOwned ? 'Đã sở hữu' : `${formatNumber(cost)} Qi`}</span>
+                            {isOwned ? (
+                              <button onClick={()=>equipGear(gear.id)} className={`px-3 py-1 rounded-lg text-xs font-bold border transition-all ${isEquipped ? 'bg-red-500/20 text-red-300 border-red-500/40' : 'bg-green-500/20 text-green-300 border-green-500/40'}`}>
+                                {isEquipped ? 'Tháo' : 'Trang Bị'}
+                              </button>
+                            ) : (
+                              <button onClick={()=>buyGear(gear)} className="px-3 py-1 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded-lg text-xs font-bold transition-all">Mua</button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* TAB TRẢM YÊU */}
+                {activeTab === 'combat' && (
+                  <div className="flex flex-col gap-4 items-center justify-center py-2">
+                    <div className="flex gap-2 overflow-x-auto w-full pb-2 no-scrollbar">
+                      {MONSTERS.map((m, idx) => (
+                        <button key={m.id} onClick={()=>{setCurrentMonsterIdx(idx); setMonsterHp(m.hp);}} className={`p-2 rounded-xl border flex flex-col items-center gap-1 min-w-[80px] ${currentMonsterIdx === idx ? 'border-cyan-400 bg-cyan-500/20' : 'border-white/10 bg-white/5'}`}>
+                          <span className="text-xl">{m.icon}</span>
+                          <span className="text-[10px] text-slate-300 font-bold">{m.name}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="w-full max-w-md p-4 rounded-xl border border-white/10 bg-white/5 flex flex-col items-center gap-3">
+                      <div className="text-3xl">{MONSTERS[currentMonsterIdx].icon}</div>
+                      <div className="font-serif font-bold text-sm text-yellow-400">{MONSTERS[currentMonsterIdx].name}</div>
+                      <div className="w-full bg-black/80 h-3 rounded-full border border-red-500/30 overflow-hidden relative">
+                        <div className="bg-gradient-to-r from-red-600 to-rose-400 h-full transition-all duration-200" style={{ width: `${Math.max(0, (monsterHp / MONSTERS[currentMonsterIdx].hp) * 100)}%` }} />
+                        <div className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-bold text-white">HP: {monsterHp}/{MONSTERS[currentMonsterIdx].hp}</div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 w-full mt-2">
+                        <button disabled={isDead} onClick={()=>attackMonster(1, 0)} className="py-2.5 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 rounded-xl text-xs font-bold text-cyan-300 cursor-pointer">Chém Thường</button>
+                        <button disabled={isDead || cdSkill1 > 0} onClick={()=>attackMonster(equippedBook.multiplier, 1)} className="py-2.5 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 rounded-xl text-xs font-bold text-yellow-300 cursor-pointer">
+                          {cdSkill1 > 0 ? `CD (${cdSkill1}s)` : equippedBook.skillName}
+                        </button>
+                        <button disabled={isDead || cdSkill2 > 0} onClick={()=>attackMonster(25, 2)} className="py-2.5 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 rounded-xl text-xs font-bold text-rose-300 cursor-pointer">
+                          {cdSkill2 > 0 ? `CD (${cdSkill2}s)` : 'Tuyệt Kỹ'}
+                        </button>
+                      </div>
+                      {isDead && <div className="text-xs text-red-400 animate-pulse font-mono">Đang trọng thương, hồi phục sau vài giây...</div>}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB BẢNG XẾP HẠNG */}
+                {activeTab === 'leaderboard' && (
+                  <div className="flex flex-col gap-1.5">
+                    {fullLeaderboard.map((item, idx) => (
+                      <div key={idx} className={`p-2.5 rounded-lg border flex justify-between items-center ${item.isPlayer ? 'border-yellow-500/50 bg-yellow-500/10 text-yellow-300' : 'border-white/10 bg-white/5 text-slate-300'}`}>
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono text-xs font-bold w-5">#{idx + 1}</span>
+                          <span className="text-xs font-bold">{item.name}</span>
+                        </div>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 border border-white/10">{item.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
               </div>
             </div>
 
           </main>
+
+          {/* NHẬT KÝ HỆ THỐNG (LOGS) */}
+          <footer className="relative z-10 w-full max-w-7xl mx-auto px-3 mt-2">
+            <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 h-24 overflow-y-auto no-scrollbar font-mono text-[10px] flex flex-col gap-1">
+              {gameState.logs.map(log => (
+                <div key={log.id} className={`${log.type === 'breakthrough' ? 'text-yellow-400' : log.type === 'fail' ? 'text-red-400' : log.type === 'shop' ? 'text-green-400' : 'text-slate-400'}`}>
+                  {log.text}
+                </div>
+              ))}
+            </div>
+          </footer>
         </div>
       );
     }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
