@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Tu Tiên Idle Game - Bản Tông Môn Đại Chiến</title>
+  <title>Tu Tiên Idle Game - Bản Hardcore</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -51,22 +51,23 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
 
+    // ĐÃ TĂNG HARDCORE: Lượng Qi yêu cầu để đột phá cao gấp nhiều lần bản cũ
     const REALMS = [
-      { name: "Phàm Nhân", maxQi: 100 },
-      { name: "Luyện Khí Sơ Kỳ", maxQi: 300 }, { name: "Luyện Khí Trung Kỳ", maxQi: 600 }, { name: "Luyện Khí Hậu Kỳ", maxQi: 1000 }, { name: "Luyện Khí Viên Mãn", maxQi: 1500 },
-      { name: "Trúc Cơ Sơ Kỳ", maxQi: 3000 }, { name: "Trúc Cơ Trung Kỳ", maxQi: 5000 }, { name: "Trúc Cơ Hậu Kỳ", maxQi: 8000 }, { name: "Trúc Cơ Viên Mãn", maxQi: 12000 },
-      { name: "Kim Đan Sơ Kỳ", maxQi: 25000 }, { name: "Kim Đan Trung Kỳ", maxQi: 40000 }, { name: "Kim Đan Hậu Kỳ", maxQi: 60000 }, { name: "Kim Đan Viên Mãn", maxQi: 90000 },
-      { name: "Nguyên Anh Sơ Kỳ", maxQi: 150000 }, { name: "Nguyên Anh Trung Kỳ", maxQi: 250000 }, { name: "Nguyên Anh Hậu Kỳ", maxQi: 400000 }, { name: "Nguyên Anh Viên Mãn", maxQi: 600000 },
-      { name: "Hóa Thần Sơ Kỳ", maxQi: 1000000 }, { name: "Hóa Thần Trung Kỳ", maxQi: 1600000 }, { name: "Hóa Thần Hậu Kỳ", maxQi: 2500000 }, { name: "Hóa Thần Viên Mãn", maxQi: 4000000 },
-      { name: "Luyện Hư Sơ Kỳ", maxQi: 7000000 }, { name: "Luyện Hư Trung Kỳ", maxQi: 11000000 }, { name: "Luyện Hư Hậu Kỳ", maxQi: 16000000 }, { name: "Luyện Hư Viên Mãn", maxQi: 25000000 },
-      { name: "Hợp Thể Sơ Kỳ", maxQi: 40000000 }, { name: "Hợp Thể Trung Kỳ", maxQi: 65000000 }, { name: "Hợp Thể Hậu Kỳ", maxQi: 100000000 }, { name: "Hợp Thể Viên Mãn", maxQi: 150000000 },
-      { name: "Đại Thừa Sơ Kỳ", maxQi: 250000000 }, { name: "Đại Thừa Trung Kỳ", maxQi: 400000000 }, { name: "Đại Thừa Hậu Kỳ", maxQi: 600000000 }, { name: "Đại Thừa Viên Mãn", maxQi: 900000000 },
-      { name: "Độ Kiếp Sơ Kỳ", maxQi: 1500000000 }, { name: "Độ Kiếp Trung Kỳ", maxQi: 2500000000 }, { name: "Độ Kiếp Hậu Kỳ", maxQi: 4000000000 }, { name: "Độ Kiếp Viên Mãn", maxQi: 6000000000 },
-      { name: "Chân Tiên Sơ Kỳ", maxQi: 10000000000 }, { name: "Chân Tiên Trung Kỳ", maxQi: 16000000000 }, { name: "Chân Tiên Hậu Kỳ", maxQi: 25000000000 }, { name: "Chân Tiên Viên Mãn", maxQi: 40000000000 },
-      { name: "Kim Tiên Sơ Kỳ", maxQi: 70000000000 }, { name: "Kim Tiên Trung Kỳ", maxQi: 110000000000 }, { name: "Kim Tiên Hậu Kỳ", maxQi: 160000000000 }, { name: "Kim Tiên Viên Mãn", maxQi: 250000000000 },
-      { name: "Thái Ất Sơ Kỳ", maxQi: 400000000000 }, { name: "Thái Ất Trung Kỳ", maxQi: 650000000000 }, { name: "Thái Ất Hậu Kỳ", maxQi: 1000000000000 }, { name: "Thái Ất Viên Mãn", maxQi: 1500000000000 },
-      { name: "Chuẩn Thánh Sơ Kỳ", maxQi: 2500000000000 }, { name: "Chuẩn Thánh Trung Kỳ", maxQi: 4000000000000 }, { name: "Chuẩn Thánh Hậu Kỳ", maxQi: 6500000000000 }, { name: "Chuẩn Thánh Viên Mãn", maxQi: 10000000000000 },
-      { name: "Thánh Nhân Sơ Kỳ", maxQi: 20000000000000 }, { name: "Thánh Nhân Trung Kỳ", maxQi: 35000000000000 }, { name: "Thánh Nhân Hậu Kỳ", maxQi: 50000000000000 }, { name: "Thánh Nhân Viên Mãn", maxQi: 80000000000000 },
+      { name: "Phàm Nhân", maxQi: 250 },
+      { name: "Luyện Khí Sơ Kỳ", maxQi: 800 }, { name: "Luyện Khí Trung Kỳ", maxQi: 1800 }, { name: "Luyện Khí Hậu Kỳ", maxQi: 3500 }, { name: "Luyện Khí Viên Mãn", maxQi: 6000 },
+      { name: "Trúc Cơ Sơ Kỳ", maxQi: 12000 }, { name: "Trúc Cơ Trung Kỳ", maxQi: 22000 }, { name: "Trúc Cơ Hậu Kỳ", maxQi: 40000 }, { name: "Trúc Cơ Viên Mãn", maxQi: 70000 },
+      { name: "Kim Đan Sơ Kỳ", maxQi: 130000 }, { name: "Kim Đan Trung Kỳ", maxQi: 220000 }, { name: "Kim Đan Hậu Kỳ", maxQi: 350000 }, { name: "Kim Đan Viên Mãn", maxQi: 550000 },
+      { name: "Nguyên Anh Sơ Kỳ", maxQi: 900000 }, { name: "Nguyên Anh Trung Kỳ", maxQi: 1500000 }, { name: "Nguyên Anh Hậu Kỳ", maxQi: 2500000 }, { name: "Nguyên Anh Viên Mãn", maxQi: 4000000 },
+      { name: "Hóa Thần Sơ Kỳ", maxQi: 7000000 }, { name: "Hóa Thần Trung Kỳ", maxQi: 12000000 }, { name: "Hóa Thần Hậu Kỳ", maxQi: 20000000 }, { name: "Hóa Thần Viên Mãn", maxQi: 35000000 },
+      { name: "Luyện Hư Sơ Kỳ", maxQi: 60000000 }, { name: "Luyện Hư Trung Kỳ", maxQi: 100000000 }, { name: "Luyện Hư Hậu Kỳ", maxQi: 160000000 }, { name: "Luyện Hư Viên Mãn", maxQi: 250000000 },
+      { name: "Hợp Thể Sơ Kỳ", maxQi: 400000000 }, { name: "Hợp Thể Trung Kỳ", maxQi: 650000000 }, { name: "Hợp Thể Hậu Kỳ", maxQi: 1000000000 }, { name: "Hợp Thể Viên Mãn", maxQi: 1500000000 },
+      { name: "Đại Thừa Sơ Kỳ", maxQi: 2500000000 }, { name: "Đại Thừa Trung Kỳ", maxQi: 4000000000 }, { name: "Đại Thừa Hậu Kỳ", maxQi: 6500000000 }, { name: "Đại Thừa Viên Mãn", maxQi: 10000000000 },
+      { name: "Độ Kiếp Sơ Kỳ", maxQi: 16000000000 }, { name: "Độ Kiếp Trung Kỳ", maxQi: 26000000000 }, { name: "Độ Kiếp Hậu Kỳ", maxQi: 42000000000 }, { name: "Độ Kiếp Viên Mãn", maxQi: 70000000000 },
+      { name: "Chân Tiên Sơ Kỳ", maxQi: 110000000000 }, { name: "Chân Tiên Trung Kỳ", maxQi: 180000000000 }, { name: "Chân Tiên Hậu Kỳ", maxQi: 280000000000 }, { name: "Chân Tiên Viên Mãn", maxQi: 450000000000 },
+      { name: "Kim Tiên Sơ Kỳ", maxQi: 700000000000 }, { name: "Kim Tiên Trung Kỳ", maxQi: 1100000000000 }, { name: "Kim Tiên Hậu Kỳ", maxQi: 1700000000000 }, { name: "Kim Tiên Viên Mãn", maxQi: 2700000000000 },
+      { name: "Thái Ất Sơ Kỳ", maxQi: 4200000000000 }, { name: "Thái Ất Trung Kỳ", maxQi: 6800000000000 }, { name: "Thái Ất Hậu Kỳ", maxQi: 11000000000000 }, { name: "Thái Ất Viên Mãn", maxQi: 17000000000000 },
+      { name: "Chuẩn Thánh Sơ Kỳ", maxQi: 28000000000000 }, { name: "Chuẩn Thánh Trung Kỳ", maxQi: 45000000000000 }, { name: "Chuẩn Thánh Hậu Kỳ", maxQi: 70000000000000 }, { name: "Chuẩn Thánh Viên Mãn", maxQi: 110000000000000 },
+      { name: "Thánh Nhân Sơ Kỳ", maxQi: 200000000000000 }, { name: "Thánh Nhân Trung Kỳ", maxQi: 350000000000000 }, { name: "Thánh Nhân Hậu Kỳ", maxQi: 550000000000000 }, { name: "Thánh Nhân Viên Mãn", maxQi: 900000000000000 },
       { name: "Đạo Tổ", maxQi: Infinity }
     ];
 
@@ -77,19 +78,20 @@
       { id: 'thuc_son', name: 'Thục Sơn Kiếm Phái', leaderId: 'npc_3', desc: 'Kiếm đạo chí tôn, vạn kiếm quy tông.', buff: 'Tăng 2x Sức Mạnh mỗi Click' }
     ];
 
+    // ĐÃ GIẢM QPS: Giảm mạnh chỉ số sinh Qi của các item shop để ép cày
     const SHOP_ITEMS = [
-      { id: "tu-linh-dan", name: "Tụ Linh Đan", desc: "Tự động gom linh khí cơ bản", baseCost: 50, qpsBonus: 1 },
-      { id: "linh-thach", name: "Linh Thạch", desc: "Chứa đựng linh lực thuần khiết", baseCost: 500, qpsBonus: 8 },
-      { id: "than-khi", name: "Cổ Đại Thần Khí", desc: "Bảo vật tự hấp thu thiên địa linh khí", baseCost: 5000, qpsBonus: 50 },
-      { id: "de-tu", name: "Thu Nhận Đệ Tử", desc: "Đệ tử tu luyện thay sư phụ", baseCost: 50000, qpsBonus: 300 }
+      { id: "tu-linh-dan", name: "Tụ Linh Đan", desc: "Tự động gom linh khí cơ bản", baseCost: 75, qpsBonus: 0.5 },
+      { id: "linh-thach", name: "Linh Thạch", desc: "Chứa đựng linh lực thuần khiết", baseCost: 800, qpsBonus: 3.5 },
+      { id: "than-khi", name: "Cổ Đại Thần Khí", desc: "Bảo vật tự hấp thu thiên địa linh khí", baseCost: 8000, qpsBonus: 22 },
+      { id: "de-tu", name: "Thu Nhận Đệ Tử", desc: "Đệ tử tu luyện thay sư phụ", baseCost: 80000, qpsBonus: 120 }
     ];
 
     const MONSTERS = [
-      { id: 'rabbit', name: 'Yêu Thỏ Tinh', hp: 100, atk: 10, rewardQi: 150, icon: '🐇' },
-      { id: 'wolf', name: 'Xích Nhãn Lang', hp: 500, atk: 25, rewardQi: 800, icon: '🐺' },
-      { id: 'snake', name: 'Mãng Xà Cổ', hp: 2500, atk: 60, rewardQi: 4500, icon: '🐍' },
-      { id: 'tiger', name: 'Bạch Hổ Vương', hp: 12000, atk: 150, rewardQi: 22000, icon: '🐅' },
-      { id: 'dragon', name: 'Thượng Cổ Lôi Long', hp: 80000, atk: 400, rewardQi: 150000, icon: '🐉' }
+      { id: 'rabbit', name: 'Yêu Thỏ Tinh', hp: 150, atk: 12, rewardQi: 200, icon: '🐇' },
+      { id: 'wolf', name: 'Xích Nhãn Lang', hp: 700, atk: 30, rewardQi: 1000, icon: '🐺' },
+      { id: 'snake', name: 'Mãng Xà Cổ', hp: 3500, atk: 75, rewardQi: 5500, icon: '🐍' },
+      { id: 'tiger', name: 'Bạch Hổ Vương', hp: 16000, atk: 180, rewardQi: 28000, icon: '🐅' },
+      { id: 'dragon', name: 'Thượng Cổ Lôi Long', hp: 100000, atk: 450, rewardQi: 180000, icon: '🐉' }
     ];
 
     const SKILL_BOOKS = [
@@ -135,14 +137,14 @@
     const INITIAL_STATE = {
       qi: 0,
       realmIndex: 0,
-      clickPower: 10,
+      clickPower: 5, // Giảm nhẹ click power đầu game cho đúng chất hardcore
       shopCounts: {},
       immortalPoints: 0,
       equippedSkillId: 'basic_skill',
       inventory: ['basic_skill', 'fire_skill'],
       npcData: INITIAL_NPC_LEADERBOARD,
       joinedSectId: null,
-      logs: [{ id: 'init', text: '[System]: Bảng Phong Thần sẵn sàng! Bắt đầu tu luyện.', type: 'system', time: Date.now() }]
+      logs: [{ id: 'init', text: '[System]: Bản Hardcore kích hoạt! Thiên kiếp khắc nghiệt, vạn sự cẩn trọng.', type: 'system', time: Date.now() }]
     };
 
     function formatNumber(num) {
@@ -172,7 +174,7 @@
     function App() {
       const [gameState, setGameState] = useState(() => {
         try {
-          const saved = localStorage.getItem('xianxia-save');
+          const saved = localStorage.getItem('xianxia-save-hardcore');
           if (saved) return { ...INITIAL_STATE, ...JSON.parse(saved) };
         } catch(e) {}
         return INITIAL_STATE;
@@ -186,7 +188,7 @@
       const [currentMonsterIdx, setCurrentMonsterIdx] = useState(0);
       const [monsterHp, setMonsterHp] = useState(MONSTERS[0].hp);
       
-      const maxPlayerHp = useMemo(() => 100 + gameState.realmIndex * 50, [gameState.realmIndex]);
+      const maxPlayerHp = useMemo(() => 100 + gameState.realmIndex * 40, [gameState.realmIndex]);
       const [playerHp, setPlayerHp] = useState(maxPlayerHp);
       const [isDead, setIsDead] = useState(false);
 
@@ -203,7 +205,7 @@
             if (eligibleNpcs.length === 0) return prev;
 
             const randomNpc = eligibleNpcs[Math.floor(Math.random() * eligibleNpcs.length)];
-            let successRate = randomNpc.realmIdx > 50 ? 0.2 : randomNpc.realmIdx > 30 ? 0.4 : 0.7;
+            let successRate = randomNpc.realmIdx > 50 ? 0.15 : randomNpc.realmIdx > 30 ? 0.3 : 0.6;
             const isSuccess = Math.random() < successRate;
             let newLogs = [...prev.logs];
 
@@ -213,7 +215,7 @@
                   newLogs = [{ id: Date.now().toString(), text: `[Đột Phá]: ${npc.name} tiến cấp ${REALMS[npc.realmIdx + 1].name}!`, type: 'breakthrough', time: Date.now() }, ...newLogs].slice(0, 30);
                   return { ...npc, realmIdx: npc.realmIdx + 1 };
                 } else {
-                  const drop = Math.random() < 0.3 && npc.realmIdx > 0 ? 1 : 0;
+                  const drop = Math.random() < 0.4 && npc.realmIdx > 0 ? 1 : 0;
                   newLogs = [{ id: Date.now().toString(), text: drop ? `[Tẩu Hỏa]: ${npc.name} đột phá thất bại, bị rớt tầng!` : `[Bình Cảnh]: ${npc.name} thất bại khi đột phá!`, type: 'fail', time: Date.now() }, ...newLogs].slice(0, 30);
                   return { ...npc, realmIdx: Math.max(0, npc.realmIdx - drop) };
                 }
@@ -244,7 +246,6 @@
           const state = stateRef.current;
           let baseQps = SHOP_ITEMS.reduce((sum, item) => sum + (state.shopCounts[item.id] || 0) * item.qpsBonus, 0);
           
-          // Buff Tông Môn Đạo Hóa Tông (+50% Qps)
           if (state.joinedSectId === 'dao_hoa') baseQps *= 1.5;
 
           const totalQps = baseQps * (1 + (state.immortalPoints || 0) * 0.5);
@@ -252,7 +253,7 @@
         }, 1000);
 
         const saveInterval = setInterval(() => {
-          localStorage.setItem('xianxia-save', JSON.stringify(stateRef.current));
+          localStorage.setItem('xianxia-save-hardcore', JSON.stringify(stateRef.current));
         }, 5000);
 
         return () => { clearInterval(interval); clearInterval(saveInterval); };
@@ -264,7 +265,7 @@
         const clientY = e.clientY || (e.touches && e.touches[0].clientY) || window.innerHeight / 2;
         
         let pwr = gameState.clickPower;
-        if (gameState.joinedSectId === 'thuc_son') pwr *= 2; // Buff Thục Sơn x2 click
+        if (gameState.joinedSectId === 'thuc_son') pwr *= 2;
 
         setClicks(prev => [...prev, { id, x: clientX, y: clientY - 20, val: pwr }]);
         setTimeout(() => setClicks(prev => prev.filter(c => c.id !== id)), 800);
@@ -272,20 +273,21 @@
       };
 
       const handleBreakthrough = () => {
-        if (Math.random() < 0.7) {
+        // Tỷ lệ độ kiếp khó hơn (55% thành công thay vì 70%)
+        if (Math.random() < 0.55) {
           setGameState(prev => {
             const nextRealm = prev.realmIndex + 1;
             return {
-              ...prev, qi: 0, realmIndex: nextRealm, clickPower: Math.floor(prev.clickPower * 1.5),
-              logs: [{ id: Date.now().toString(), text: `[Thành Công]: Tiến cấp ${REALMS[nextRealm].name}!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 30)
+              ...prev, qi: 0, realmIndex: nextRealm, clickPower: Math.floor(prev.clickPower * 1.4),
+              logs: [{ id: Date.now().toString(), text: `[Thành Công]: Vượt thiên kiếp, tiến cấp ${REALMS[nextRealm].name}!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 30)
             };
           });
           setIsFlashing(true);
           setTimeout(() => setIsFlashing(false), 800);
         } else {
           setGameState(prev => ({
-            ...prev, qi: prev.qi * 0.7,
-            logs: [{ id: Date.now().toString(), text: `[Thất Bại]: Thiên kiếp đánh rớt 30% Linh Khí!`, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 30)
+            ...prev, qi: prev.qi * 0.4, // Phạt nặng hơn: mất 60% linh khí nếu tạch
+            logs: [{ id: Date.now().toString(), text: `[Thiên Kiếp Tạch]: Đột phá thất bại, bị thiên lôi đánh tổn hại mất 60% Linh Khí!`, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 30)
           }));
         }
       };
@@ -300,7 +302,7 @@
           equippedSkillId: prev.equippedSkillId,
           npcData: prev.npcData,
           joinedSectId: prev.joinedSectId,
-          logs: [{ id: Date.now().toString(), text: `[Tái Sinh]: Nhận ${ptsGained} Điểm Trường Sinh (+${ptsGained * 50}% Linh Khí).`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 30)
+          logs: [{ id: Date.now().toString(), text: `[Tái Sinh]: Chuyển thế thành công, nhận ${ptsGained} Điểm Trường Sinh.`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 30)
         }));
       };
 
@@ -308,9 +310,8 @@
         setGameState(prev => {
           const item = SHOP_ITEMS.find(i => i.id === itemId);
           const count = prev.shopCounts[itemId] || 0;
-          let cost = Math.floor(item.baseCost * Math.pow(1.5, count));
+          let cost = Math.floor(item.baseCost * Math.pow(1.6, count)); // Giá leo thang nhanh hơn (1.6 thay vì 1.5)
           
-          // Buff Âm Dương Hợp Hoan Tông giảm 20% giá shop
           if (prev.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
 
           if (prev.qi >= cost) {
@@ -330,14 +331,14 @@
 
         const monster = MONSTERS[currentMonsterIdx];
         let dmg = gameState.clickPower * dmgMult;
-        if (gameState.joinedSectId === 'thien_dinh') dmg *= 1.3; // Buff Thiên Đình +30% DMG
+        if (gameState.joinedSectId === 'thien_dinh') dmg *= 1.3;
 
         const newMonsterHp = monsterHp - dmg;
         
         if (newMonsterHp <= 0) {
           setGameState(prev => ({
             ...prev, qi: prev.qi + monster.rewardQi,
-            logs: [{ id: Date.now().toString(), text: `[Diệt Quái]: Hạ ${monster.name}, nhận +${formatNumber(monster.rewardQi)} Qi!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 30)
+            logs: [{ id: Date.now().toString(), text: `[Trảm Yêu]: Hạ ${monster.name}, cướp đoạt +${formatNumber(monster.rewardQi)} Qi!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 30)
           }));
           setMonsterHp(monster.hp);
           setPlayerHp(maxPlayerHp);
@@ -348,9 +349,9 @@
             setPlayerHp(0);
             setIsDead(true);
             setGameState(prev => ({
-              ...prev, logs: [{ id: Date.now().toString(), text: `[Thất Thủ]: Trọng thương trước ${monster.name}!`, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 30)
+              ...prev, logs: [{ id: Date.now().toString(), text: `[Trọng Thương]: Bị ${monster.name} đánh tơi bời phải quy ẩn hồi sức!`, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 30)
             }));
-            setTimeout(() => { setPlayerHp(maxPlayerHp); setMonsterHp(monster.hp); setIsDead(false); }, 3000);
+            setTimeout(() => { setPlayerHp(maxPlayerHp); setMonsterHp(monster.hp); setIsDead(false); }, 4000);
           } else {
             setPlayerHp(newPlayerHp);
           }
@@ -390,12 +391,10 @@
           <header className="relative z-10 flex flex-col items-center justify-center p-3 border-b border-white/10 bg-black/60 backdrop-blur-md sticky top-0">
             <h1 className="font-serif text-xl sm:text-3xl font-bold tracking-widest text-yellow-400 uppercase text-center">{realm.name}</h1>
             <div className="flex items-center gap-2 text-[10px] sm:text-xs text-slate-400 font-mono mt-0.5">
-              <span>Tầng {gameState.realmIndex + 1}/{REALMS.length}</span>
-              {gameState.joinedSectId && <span className="text-purple-400">| Tông Môn: {SECTS.find(s=>s.id === gameState.joinedSectId)?.name}</span>}
-              {gameState.immortalPoints > 0 && <span className="text-yellow-400">| ✨ x{1 + gameState.immortalPoints * 0.5}</span>}
+              <span>Tầng {gameState.realmIndex + 1}/{REALMS.length} (Hardcore)</span>
+              {gameState.joinedSectId && <span className="text-purple-400">| Tông: {SECTS.find(s=>s.id === gameState.joinedSectId)?.name}</span>}
             </div>
             
-            {/* Thanh Máu NV */}
             <div className="w-full max-w-xs sm:max-w-md bg-black/80 h-3.5 rounded-full border border-green-500/30 overflow-hidden relative my-1.5">
               <div className="bg-gradient-to-r from-emerald-600 to-green-400 h-full transition-all duration-200" style={{ width: `${Math.max(0, (playerHp / maxPlayerHp) * 100)}%` }} />
               <div className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-bold text-white">❤️ HP: {playerHp}/{maxPlayerHp}</div>
@@ -409,11 +408,11 @@
           {/* MAIN CONTENT */}
           <main className="relative z-10 flex-1 w-full max-w-7xl mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
             
-            {/* CỘT 1: TU LUYỆN & CLICK */}
+            {/* CỘT 1 */}
             <div className="col-span-1 lg:col-span-4 flex flex-col gap-3">
               <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-4 shadow-xl">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-serif text-slate-300">TIẾN ĐỘ TẦNG</span>
+                  <span className="text-xs font-serif text-slate-300">TIẾN ĐỘ ĐỘT PHÁ</span>
                   <span className="text-xs font-mono font-bold text-cyan-400">{percent.toFixed(1)}%</span>
                 </div>
                 <div className="w-full h-2.5 rounded-full bg-black/60 overflow-hidden border border-white/10 mb-4">
@@ -424,32 +423,31 @@
                   <div className="p-3 text-center border border-yellow-500/50 rounded-xl bg-yellow-500/10 text-yellow-400 font-serif text-sm">Đạo Tổ Vô Địch</div>
                 ) : isBreakthrough ? (
                   <button onClick={handleBreakthrough} className="w-full py-4 text-sm sm:text-base font-bold font-serif rounded-xl breakthrough-pulse bg-black/80 cursor-pointer">
-                    ⚡ TÂM MA ĐỘ KIẾP ⚡
+                    ⚡ ĐỘ KIẾP (55% Thành công) ⚡
                   </button>
                 ) : (
                   <button onClick={handleCultivate} className="w-full py-5 text-lg font-bold font-serif text-cyan-400 border border-cyan-500/40 bg-cyan-500/10 active:bg-cyan-500/30 hover:bg-cyan-500/20 rounded-xl transition-all flex flex-col items-center justify-center gap-1 cursor-pointer">
-                    <span>THU HOẠCH LINH KHÍ</span>
+                    <span>BẾ GIAO THU HOẠCH</span>
                     <span className="text-[10px] font-mono text-cyan-300 font-normal border border-cyan-500/30 px-2.5 py-0.5 rounded-full">+{formatNumber(gameState.joinedSectId === 'thuc_son' ? gameState.clickPower * 2 : gameState.clickPower)} Qi / Click</span>
                   </button>
                 )}
 
                 {gameState.realmIndex >= 9 && (
                   <button onClick={handleReincarnate} className="mt-3 w-full py-2 text-[11px] font-bold font-serif border border-yellow-500/40 bg-yellow-500/10 text-yellow-300 rounded-lg">
-                    ✨ TẨY TỦY TRƯỜNG SINH (Chuyển Sinh)
+                    ✨ CHUYỂN THẾ TRƯỜNG SINH
                   </button>
                 )}
               </div>
 
               <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 text-center">
-                <span className="text-slate-400 text-[10px] tracking-widest block">TỰ ĐỘNG GOM LINH KHÍ</span>
+                <span className="text-slate-400 text-[10px] tracking-widest block">TỰ ĐỘNG GOM LINH KHÍ (ĐÃ GIẢM)</span>
                 <span className="text-lg font-mono text-cyan-400 font-bold">+{formatNumber(currentQps)} <span className="text-xs text-slate-500">Qi/s</span></span>
               </div>
             </div>
 
-            {/* CỘT 2: TABS NỘI DUNG CHÍNH (Thêm Tab Tông Môn) */}
+            {/* CỘT 2: TABS */}
             <div className="col-span-1 lg:col-span-5 bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 flex flex-col h-[460px] sm:h-[500px]">
               
-              {/* Tab Selector */}
               <div className="grid grid-cols-5 gap-1 border-b border-white/10 pb-2.5 mb-2.5">
                 <button onClick={() => setActiveTab('shop')} className={`py-1.5 text-[10px] font-bold font-serif rounded-lg border ${activeTab === 'shop' ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🏛️ SHOP</button>
                 <button onClick={() => setActiveTab('sect')} className={`py-1.5 text-[10px] font-bold font-serif rounded-lg border ${activeTab === 'sect' ? 'bg-purple-500/20 border-purple-400 text-purple-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>⛩️ TÔNG</button>
@@ -458,12 +456,12 @@
                 <button onClick={() => setActiveTab('leaderboard')} className={`py-1.5 text-[10px] font-bold font-serif rounded-lg border ${activeTab === 'leaderboard' ? 'bg-yellow-500/20 border-yellow-400 text-yellow-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🏆 RANK</button>
               </div>
 
-              {/* TAB 1: SHOP */}
+              {/* SHOP */}
               {activeTab === 'shop' && (
                 <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1">
                   {SHOP_ITEMS.map((item) => {
                     const count = gameState.shopCounts[item.id] || 0;
-                    let cost = Math.floor(item.baseCost * Math.pow(1.5, count));
+                    let cost = Math.floor(item.baseCost * Math.pow(1.6, count));
                     if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
 
                     const canAfford = gameState.qi >= cost;
@@ -485,7 +483,7 @@
                 </div>
               )}
 
-              {/* TAB 2: TÔNG MÔN (MỚI) */}
+              {/* TÔNG MÔN */}
               {activeTab === 'sect' && (
                 <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1">
                   {SECTS.map(sect => {
@@ -497,7 +495,7 @@
                       <div key={sect.id} className={`p-3 rounded-xl border flex flex-col gap-1.5 ${isJoined ? 'border-purple-400 bg-purple-500/15' : 'border-white/10 bg-black/40'}`}>
                         <div className="flex justify-between items-center">
                           <h4 className="font-serif text-xs sm:text-sm text-purple-300 font-bold">{sect.name}</h4>
-                          <span className="text-[9px] font-mono bg-black/60 px-2 py-0.5 rounded text-yellow-400 border border-white/10">Tông Chủ: {leader?.name || 'Ẩn Danh'} ({leaderRealm})</span>
+                          <span className="text-[9px] font-mono bg-black/60 px-2 py-0.5 rounded text-yellow-400 border border-white/10">Tông Chủ: {leader?.name || 'Ẩn Danh'}</span>
                         </div>
                         <p className="text-[10px] text-slate-300">{sect.desc}</p>
                         <div className="text-[9px] font-mono text-cyan-300 bg-cyan-500/10 p-1 rounded border border-cyan-500/20">⚡ Đặc quyền: {sect.buff}</div>
@@ -519,7 +517,7 @@
                 </div>
               )}
 
-              {/* TAB 3: TRẢM YÊU */}
+              {/* TRẢM YÊU */}
               {activeTab === 'monster' && (
                 <div className="flex-1 flex flex-col justify-between p-1">
                   <div className="flex justify-center gap-1.5 mb-1">
@@ -561,7 +559,7 @@
                 </div>
               )}
 
-              {/* TAB 4: TÚI ĐỒ */}
+              {/* TÚI ĐỒ */}
               {activeTab === 'inventory' && (
                 <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1">
                   {SKILL_BOOKS.map(book => {
@@ -592,7 +590,7 @@
                 </div>
               )}
 
-              {/* TAB 5: BẢNG PHONG THẦN */}
+              {/* RANK */}
               {activeTab === 'leaderboard' && (
                 <div className="flex-1 overflow-y-auto space-y-1 no-scrollbar pr-1">
                   {fullLeaderboard.map((item, index) => (
@@ -611,9 +609,9 @@
 
             </div>
 
-            {/* CỘT 3: NHẬT KÝ TU LUYỆN */}
+            {/* CỘT 3: NHẬT KÝ */}
             <div className="col-span-1 lg:col-span-3 bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 flex flex-col h-[200px] lg:h-[500px]">
-              <h3 className="text-[11px] font-serif text-slate-400 tracking-widest mb-2 border-b border-white/10 pb-1.5 flex items-center gap-1">📜 NHẬT KÝ TU LUYỆN</h3>
+              <h3 className="text-[11px] font-serif text-slate-400 tracking-widest mb-2 border-b border-white/10 pb-1.5 flex items-center gap-1">📜 NHẬT KÝ HARDCORE</h3>
               <div className="flex-1 overflow-y-auto space-y-1.5 no-scrollbar pr-1">
                 {gameState.logs.map(log => (
                   <div key={log.id} className={`p-1.5 rounded text-[10px] leading-tight border ${log.type === 'breakthrough' ? 'bg-green-500/10 border-green-500/30 text-green-300' : log.type === 'fail' ? 'bg-red-500/10 border-red-500/30 text-red-300' : log.type === 'shop' ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300' : 'bg-white/5 border-white/5 text-slate-400'}`}>
