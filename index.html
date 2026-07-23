@@ -11,10 +11,6 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <!-- Babel để dịch JSX trực tiếp trên trình duyệt -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  
-  <!-- Firebase SDKs (Compat version cho dễ tích hợp trực tiếp) -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <style>
     /* Ẩn thanh cuộn nhưng vẫn scroll được */
@@ -26,22 +22,51 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    // --- CẤU HÌNH FIREBASE ---
-    // (Ông có thể thay thế bằng config từ project Firebase của riêng mình)
-    const firebaseConfig = {
-      apiKey: "AIzaSyDummyKeyForDemoPurposeOnly12345",
-      authDomain: "tu-tien-idle.firebaseapp.com",
-      projectId: "tu-tien-idle",
-      storageBucket: "tu-tien-idle.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:abcdef"
-    };
+    // --- CẤU HÌNH JSONBIN ONLINE ---
+    const BIN_ID = "6a622390f5f4af5e29b6690d";
+    const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
 
-    // Khởi tạo Firebase (Kiểm tra nếu chưa init thì chạy)
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
+    // Hàm lấy bảng xếp hạng từ cloud
+    async function fetchLeaderboard() {
+      try {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+          headers: { 'X-Master-Key': API_KEY }
+        });
+        const data = await res.json();
+        return data.record?.leaderboard || [];
+      } catch (e) {
+        return [];
+      }
     }
-    const db = firebase.firestore();
+
+    // Hàm cập nhật điểm số lên cloud
+    async function updateLeaderboard(name, totalQi, realm) {
+      try {
+        let list = await fetchLeaderboard();
+        const index = list.findIndex(item => item.name === name);
+        if (index >= 0) {
+          if (list[index].totalQi < totalQi) {
+            list[index].totalQi = totalQi;
+            list[index].realm = realm;
+          }
+        } else {
+          list.push({ name, totalQi, realm });
+        }
+        list.sort((a, b) => b.totalQi - a.totalQi);
+        list = list.slice(0, 10); // Lấy top 10 cao thủ
+
+        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': API_KEY
+          },
+          body: JSON.stringify({ leaderboard: list })
+        });
+      } catch (e) {
+        console.log("Lỗi cập nhật bảng xếp hạng");
+      }
+    }
 
     // --- DỮ LIỆU TRÒ CHƠI ---
     const REALMS = [
@@ -86,7 +111,6 @@
     };
 
     function App() {
-      // Khởi tạo tên đạo hữu ngẫu nhiên nếu chưa có
       const [playerName] = React.useState(() => {
         const saved = localStorage.getItem('tu_tien_player_name');
         if (saved) return saved;
@@ -114,7 +138,6 @@
       const [cdSkill2, setCdSkill2] = React.useState(0);
       const [cloudLeaderboard, setCloudLeaderboard] = React.useState([]);
 
-      // Tính toán chỉ số dựa trên trang bị & tông môn
       const clickPower = React.useMemo(() => {
         let base = 1;
         gameState.ownedGears.forEach(gearId => {
@@ -150,45 +173,29 @@
         return () => clearInterval(interval);
       }, [qps]);
 
-      // Đồng bộ điểm số lên Firebase Firestore định kỳ (mỗi 10 giây)
+      // Đồng bộ điểm số lên JSONBin Cloud định kỳ (mỗi 10 giây)
       React.useEffect(() => {
         const syncToCloud = async () => {
-          try {
-            await db.collection('leaderboard').doc(playerName).set({
-              name: playerName,
-              totalQi: gameState.totalQi,
-              realm: REALMS[gameState.realmIdx].name,
-              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-          } catch (e) {
-            console.log("Lỗi đồng bộ cloud (có thể do cấu hình mạng/API key demo):", e);
-          }
+          await updateLeaderboard(playerName, gameState.totalQi, REALMS[gameState.realmIdx].name);
         };
 
         const timer = setInterval(syncToCloud, 10000);
         return () => clearInterval(timer);
       }, [gameState.totalQi, gameState.realmIdx, playerName]);
 
-      // Lấy bảng xếp hạng từ Firestore realtime
+      // Lấy bảng xếp hạng từ JSONBin khi mở tab hoặc định kỳ
       React.useEffect(() => {
-        const unsubscribe = db.collection('leaderboard')
-          .orderBy('totalQi', 'desc')
-          .limit(10)
-          .onSnapshot(snapshot => {
-            const list = [];
-            snapshot.forEach(doc => {
-              list.push(doc.data());
-            });
-            setCloudLeaderboard(list);
-          }, error => {
-            // Fallback hiển thị player hiện tại nếu chưa kết nối được Firestore thật
-            setCloudLeaderboard([{ name: playerName, totalQi: gameState.totalQi, realm: REALMS[gameState.realmIdx].name }]);
-          });
+        const loadLb = async () => {
+          const data = await fetchLeaderboard();
+          if (data && data.length > 0) {
+            setCloudLeaderboard(data);
+          }
+        };
+        loadLb();
+        const timer = setInterval(loadLb, 15000); // Làm mới mỗi 15 giây
+        return () => clearInterval(timer);
+      }, []);
 
-        return () => unsubscribe();
-      }, [gameState.totalQi, gameState.realmIdx, playerName]);
-
-      // Hành động Click tu luyện thủ công
       const handleTouchQi = () => {
         setGameState(prev => ({
           ...prev,
@@ -197,22 +204,25 @@
         }));
       };
 
-      // Đột phá cảnh giới
       const handleBreakthrough = () => {
-        const currentRealm = REALMS[gameState.realmIdx];
         const nextRealm = REALMS[gameState.realmIdx + 1];
         if (!nextRealm) return;
 
         if (gameState.qi >= nextRealm.req) {
-          setGameState(prev => ({
-            ...prev,
-            qi: prev.qi - nextRealm.req,
-            realmIdx: prev.realmIdx + 1,
-            logs: [
-              { id: Date.now().toString(), text: `[Đột Phá]: Chúc mừng đạo hữu đã bước vào ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() },
-              ...prev.logs
-            ]
-          }));
+          setGameState(prev => {
+            const newRealmIdx = prev.realmIdx + 1;
+            // Cập nhật luôn lên cloud khi đột phá thành công
+            updateLeaderboard(playerName, prev.totalQi, REALMS[newRealmIdx].name);
+            return {
+              ...prev,
+              qi: prev.qi - nextRealm.req,
+              realmIdx: newRealmIdx,
+              logs: [
+                { id: Date.now().toString(), text: `[Đột Phá]: Chúc mừng đạo hữu đã bước vào ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() },
+                ...prev.logs
+              ]
+            };
+          });
         } else {
           setGameState(prev => ({
             ...prev,
@@ -224,7 +234,6 @@
         }
       };
 
-      // Mua vật phẩm Shop
       const buyItem = (itemId) => {
         const item = SHOP_ITEMS.find(i => i.id === itemId);
         if (!item) return;
@@ -246,7 +255,6 @@
         }
       };
 
-      // Mua trang bị Chợ Đen
       const buyGear = (gear) => {
         let cost = gear.cost;
         if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
@@ -265,7 +273,6 @@
         }
       };
 
-      // Trang bị / Tháo bảo vật
       const equipGear = (gearId) => {
         setGameState(prev => ({
           ...prev,
@@ -273,7 +280,6 @@
         }));
       };
 
-      // Tấn công yêu thú
       const attackMonster = (multiplier = 1, skillType = 0) => {
         if (isDead) return;
         let dmg = clickPower * multiplier;
@@ -309,7 +315,6 @@
       const progressPercent = nextRealmObj ? Math.min(100, (gameState.qi / nextRealmObj.req) * 100) : 100;
       const equippedBook = BLACK_MARKET_GEARS.find(g => g.id === gameState.equippedGearId) || { multiplier: 3, skillName: 'Kiếm Khí' };
 
-      // Kết hợp leaderboard local và cloud
       const fullLeaderboard = cloudLeaderboard.length > 0 ? cloudLeaderboard.map(item => ({
         ...item,
         isPlayer: item.name === playerName,
@@ -318,7 +323,6 @@
 
       return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-900 p-3 select-none">
-          {/* HEADER THÔNG TIN ĐẠO HỮU */}
           <header className="relative z-10 w-full max-w-7xl mx-auto bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-4 mb-3 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
               <div className="text-[10px] text-cyan-400 font-mono tracking-widest uppercase">Đạo Hiệu: {playerName}</div>
@@ -339,10 +343,7 @@
             </div>
           </header>
 
-          {/* NỘI DUNG CHÍNH (2 CỘT) */}
           <main className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1">
-            
-            {/* CỘT 1: KHU VỰC TƯƠNG TÁC & ĐỘT PHÁ */}
             <div className="col-span-1 lg:col-span-4 flex flex-col gap-3">
               <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-5 shadow-xl flex flex-col items-center justify-center gap-4 min-h-[250px]">
                 <button 
@@ -353,7 +354,6 @@
                   <span className="text-[10px] font-mono text-cyan-400/80">+{clickPower} Qi/click</span>
                 </button>
 
-                {/* Thanh tiến trình đột phá */}
                 <div className="w-full flex flex-col gap-1.5 mt-2">
                   <div className="flex justify-between text-[10px] font-mono text-slate-300">
                     <span>Tiến Cảnh Giới</span>
@@ -370,7 +370,6 @@
                 </div>
               </div>
 
-              {/* TÔNG MÔN */}
               <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-4 shadow-xl">
                 <h3 className="font-serif text-xs text-purple-400 mb-2 font-bold tracking-wider">THẾ LỰC TÔNG MÔN</h3>
                 {gameState.joinedSectId ? (
@@ -396,7 +395,6 @@
               </div>
             </div>
 
-            {/* CỘT 2: TAB CHÍNH (SHOP, CHỢ ĐEN, TRẢM YÊU, BẢNG XẾP HẠNG) */}
             <div className="col-span-1 lg:col-span-8 flex flex-col gap-3">
               <div className="flex gap-1 bg-black/40 p-1 rounded-xl border border-white/10 overflow-x-auto no-scrollbar">
                 {[
@@ -412,8 +410,6 @@
               </div>
 
               <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-4 shadow-xl min-h-[350px] max-h-[500px] overflow-y-auto no-scrollbar">
-                
-                {/* TAB SHOP */}
                 {activeTab === 'shop' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {SHOP_ITEMS.map(item => {
@@ -439,7 +435,6 @@
                   </div>
                 )}
 
-                {/* TAB CHỢ ĐEN */}
                 {activeTab === 'blackmarket' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {BLACK_MARKET_GEARS.map(gear => {
@@ -476,7 +471,6 @@
                   </div>
                 )}
 
-                {/* TAB TRẢM YÊU */}
                 {activeTab === 'combat' && (
                   <div className="flex flex-col gap-4 items-center justify-center py-2">
                     <div className="flex gap-2 overflow-x-auto w-full pb-2 no-scrollbar">
@@ -510,10 +504,9 @@
                   </div>
                 )}
 
-                {/* TAB BẢNG XẾP HẠNG (THIÊN THƯ CLOUD) */}
                 {activeTab === 'leaderboard' && (
                   <div className="flex flex-col gap-1.5">
-                    <div className="text-[10px] text-cyan-400 font-mono mb-1">✨ Đồng bộ trực tuyến qua Firebase Cloud Firestore</div>
+                    <div className="text-[10px] text-cyan-400 font-mono mb-1">✨ Đồng bộ trực tuyến qua JSONBin Cloud</div>
                     {fullLeaderboard.map((item, idx) => (
                       <div key={idx} className={`p-2.5 rounded-lg border flex justify-between items-center ${item.isPlayer ? 'border-yellow-500/50 bg-yellow-500/10 text-yellow-300' : 'border-white/10 bg-white/5 text-slate-300'}`}>
                         <div className="flex items-center gap-3">
@@ -528,13 +521,10 @@
                     ))}
                   </div>
                 )}
-
               </div>
             </div>
-
           </main>
 
-          {/* NHẬT KÝ HỆ THỐNG (LOGS) */}
           <footer className="relative z-10 w-full max-w-7xl mx-auto px-3 mt-2">
             <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 h-24 overflow-y-auto no-scrollbar font-mono text-[10px] flex flex-col gap-1">
               {gameState.logs.map(log => (
