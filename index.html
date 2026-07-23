@@ -51,7 +51,6 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
 
-    // ĐÃ TĂNG HARDCORE: Lượng Qi yêu cầu để đột phá cao gấp nhiều lần bản cũ
     const REALMS = [
       { name: "Phàm Nhân", maxQi: 250 },
       { name: "Luyện Khí Sơ Kỳ", maxQi: 800 }, { name: "Luyện Khí Trung Kỳ", maxQi: 1800 }, { name: "Luyện Khí Hậu Kỳ", maxQi: 3500 }, { name: "Luyện Khí Viên Mãn", maxQi: 6000 },
@@ -78,12 +77,12 @@
       { id: 'thuc_son', name: 'Thục Sơn Kiếm Phái', leaderId: 'npc_3', desc: 'Kiếm đạo chí tôn, vạn kiếm quy tông.', buff: 'Tăng 2x Sức Mạnh mỗi Click' }
     ];
 
-    // ĐÃ GIẢM QPS: Giảm mạnh chỉ số sinh Qi của các item shop để ép cày
+    // ĐÃ FIX LẠI CHỈ SỐ SHOP CHO ĐÚNG BẢN HARDCORE (ĐÃ BUFF LẠI CHO HỢP LÝ)
     const SHOP_ITEMS = [
-      { id: "tu-linh-dan", name: "Tụ Linh Đan", desc: "Tự động gom linh khí cơ bản", baseCost: 75, qpsBonus: 0.5 },
-      { id: "linh-thach", name: "Linh Thạch", desc: "Chứa đựng linh lực thuần khiết", baseCost: 800, qpsBonus: 3.5 },
-      { id: "than-khi", name: "Cổ Đại Thần Khí", desc: "Bảo vật tự hấp thu thiên địa linh khí", baseCost: 8000, qpsBonus: 22 },
-      { id: "de-tu", name: "Thu Nhận Đệ Tử", desc: "Đệ tử tu luyện thay sư phụ", baseCost: 80000, qpsBonus: 120 }
+      { id: "tu-linh-dan", name: "Tụ Linh Đan", desc: "Tự động gom linh khí cơ bản", baseCost: 75, qpsBonus: 5 },
+      { id: "linh-thach", name: "Linh Thạch", desc: "Chứa đựng linh lực thuần khiết", baseCost: 800, qpsBonus: 35 },
+      { id: "than-khi", name: "Cổ Đại Thần Khí", desc: "Bảo vật tự hấp thu thiên địa linh khí", baseCost: 8000, qpsBonus: 220 },
+      { id: "de-tu", name: "Thu Nhận Đệ Tử", desc: "Đệ tử tu luyện thay sư phụ", baseCost: 80000, qpsBonus: 1200 }
     ];
 
     const MONSTERS = [
@@ -137,14 +136,14 @@
     const INITIAL_STATE = {
       qi: 0,
       realmIndex: 0,
-      clickPower: 5, // Giảm nhẹ click power đầu game cho đúng chất hardcore
+      clickPower: 5,
       shopCounts: {},
       immortalPoints: 0,
       equippedSkillId: 'basic_skill',
       inventory: ['basic_skill', 'fire_skill'],
       npcData: INITIAL_NPC_LEADERBOARD,
       joinedSectId: null,
-      logs: [{ id: 'init', text: '[System]: Bản Hardcore kích hoạt! Thiên kiếp khắc nghiệt, vạn sự cẩn trọng.', type: 'system', time: Date.now() }]
+      logs: [{ id: 'init', text: '[System]: Đã fix chỉ số Tụ Linh Đan! Cày cuốc tiếp đi bro.', type: 'system', time: Date.now() }]
     };
 
     function formatNumber(num) {
@@ -196,7 +195,6 @@
       const stateRef = useRef(gameState);
       useEffect(() => { stateRef.current = gameState; }, [gameState]);
 
-      // NPC Vòng Lặp
       useEffect(() => {
         const npcTimer = setInterval(() => {
           setGameState(prev => {
@@ -229,7 +227,6 @@
         return () => clearInterval(npcTimer);
       }, []);
 
-      // Skill Cooldown
       useEffect(() => {
         const timer = setInterval(() => {
           setCdSkill1(prev => Math.max(0, prev - 1));
@@ -240,7 +237,6 @@
 
       useEffect(() => { setPlayerHp(maxPlayerHp); }, [maxPlayerHp]);
 
-      // Auto Qi Tick
       useEffect(() => {
         const interval = setInterval(() => {
           const state = stateRef.current;
@@ -273,7 +269,6 @@
       };
 
       const handleBreakthrough = () => {
-        // Tỷ lệ độ kiếp khó hơn (55% thành công thay vì 70%)
         if (Math.random() < 0.55) {
           setGameState(prev => {
             const nextRealm = prev.realmIndex + 1;
@@ -286,7 +281,7 @@
           setTimeout(() => setIsFlashing(false), 800);
         } else {
           setGameState(prev => ({
-            ...prev, qi: prev.qi * 0.4, // Phạt nặng hơn: mất 60% linh khí nếu tạch
+            ...prev, qi: prev.qi * 0.4,
             logs: [{ id: Date.now().toString(), text: `[Thiên Kiếp Tạch]: Đột phá thất bại, bị thiên lôi đánh tổn hại mất 60% Linh Khí!`, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 30)
           }));
         }
@@ -310,7 +305,7 @@
         setGameState(prev => {
           const item = SHOP_ITEMS.find(i => i.id === itemId);
           const count = prev.shopCounts[itemId] || 0;
-          let cost = Math.floor(item.baseCost * Math.pow(1.6, count)); // Giá leo thang nhanh hơn (1.6 thay vì 1.5)
+          let cost = Math.floor(item.baseCost * Math.pow(1.6, count));
           
           if (prev.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
 
@@ -440,7 +435,7 @@
               </div>
 
               <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 text-center">
-                <span className="text-slate-400 text-[10px] tracking-widest block">TỰ ĐỘNG GOM LINH KHÍ (ĐÃ GIẢM)</span>
+                <span className="text-slate-400 text-[10px] tracking-widest block">TỰ ĐỘNG GOM LINH KHÍ (ĐÃ FIX)</span>
                 <span className="text-lg font-mono text-cyan-400 font-bold">+{formatNumber(currentQps)} <span className="text-xs text-slate-500">Qi/s</span></span>
               </div>
             </div>
@@ -488,7 +483,6 @@
                 <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1">
                   {SECTS.map(sect => {
                     const leader = (gameState.npcData || INITIAL_NPC_LEADERBOARD).find(n => n.id === sect.leaderId);
-                    const leaderRealm = leader ? REALMS[Math.min(leader.realmIdx, REALMS.length - 1)].name : "Phàm Nhân";
                     const isJoined = gameState.joinedSectId === sect.id;
 
                     return (
