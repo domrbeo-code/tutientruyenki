@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Tu Tiên Idle Game - Bản Hardcore</title>
+  <title>Tu Tiên Idle Game - Bản Hardcore + Chợ Đen</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -77,12 +77,50 @@
       { id: 'thuc_son', name: 'Thục Sơn Kiếm Phái', leaderId: 'npc_3', desc: 'Kiếm đạo chí tôn, vạn kiếm quy tông.', buff: 'Tăng 2x Sức Mạnh mỗi Click' }
     ];
 
-    // ĐÃ FIX LẠI CHỈ SỐ SHOP CHO ĐÚNG BẢN HARDCORE (ĐÃ BUFF LẠI CHO HỢP LÝ)
     const SHOP_ITEMS = [
       { id: "tu-linh-dan", name: "Tụ Linh Đan", desc: "Tự động gom linh khí cơ bản", baseCost: 75, qpsBonus: 5 },
       { id: "linh-thach", name: "Linh Thạch", desc: "Chứa đựng linh lực thuần khiết", baseCost: 800, qpsBonus: 35 },
       { id: "than-khi", name: "Cổ Đại Thần Khí", desc: "Bảo vật tự hấp thu thiên địa linh khí", baseCost: 8000, qpsBonus: 220 },
       { id: "de-tu", name: "Thu Nhận Đệ Tử", desc: "Đệ tử tu luyện thay sư phụ", baseCost: 80000, qpsBonus: 1200 }
+    ];
+
+    // 24 Món Trang Bị Chợ Đen Từ Phế Đến Thiên Giai
+    const BLACK_MARKET_GEARS = [
+      // Phế Giai (Rác rưởi)
+      { id: 'eq_1', name: 'Gậy Gỗ Mục', tier: 'Phế Giai', cost: 150, clickBonus: 2, qpsBonus: 0, color: 'text-slate-400' },
+      { id: 'eq_2', name: 'Dao Gọt Trái Cây Sỉn', tier: 'Phế Giai', cost: 400, clickBonus: 5, qpsBonus: 1, color: 'text-slate-400' },
+      { id: 'eq_3', name: 'Đũa Thần Gãy', tier: 'Phế Giai', cost: 950, clickBonus: 12, qpsBonus: 3, color: 'text-slate-400' },
+      { id: 'eq_4', name: 'Giẻ Lau Bàn Thờ', tier: 'Phế Giai', cost: 2100, clickBonus: 25, qpsBonus: 8, color: 'text-slate-400' },
+      
+      // Hoàng Giai
+      { id: 'eq_5', name: 'Sắt Rỉ Sét Cấp 1', tier: 'Hoàng Giai', cost: 5000, clickBonus: 60, qpsBonus: 20, color: 'text-green-400' },
+      { id: 'eq_6', name: 'Kiếm Gỗ Đào Non', tier: 'Hoàng Giai', cost: 12000, clickBonus: 140, qpsBonus: 50, color: 'text-green-400' },
+      { id: 'eq_7', name: 'Phi Tinh Đao', tier: 'Hoàng Giai', cost: 28000, clickBonus: 320, qpsBonus: 120, color: 'text-green-400' },
+      { id: 'eq_8', name: 'Bùa Trừ Tà Rách', tier: 'Hoàng Giai', cost: 65000, clickBonus: 750, qpsBonus: 300, color: 'text-green-400' },
+
+      // Huyền Giai
+      { id: 'eq_9', name: 'Thanh Cương Kiếm', tier: 'Huyền Giai', cost: 150000, clickBonus: 1800, qpsBonus: 800, color: 'text-blue-400' },
+      { id: 'eq_10', name: 'Huyết Nguyệt Trượng', tier: 'Huyền Giai', cost: 350000, clickBonus: 4200, qpsBonus: 2000, color: 'text-blue-400' },
+      { id: 'eq_11', name: 'Thiết Giáp Chiến Ma', tier: 'Huyền Giai', cost: 800000, clickBonus: 10000, qpsBonus: 5000, color: 'text-blue-400' },
+      { id: 'eq_12', name: 'U Minh Quạt Sắt', tier: 'Huyền Giai', cost: 1800000, clickBonus: 24000, qpsBonus: 12000, color: 'text-blue-400' },
+
+      // Địa Giai
+      { id: 'eq_13', name: 'Bát Quái Lư Hương', tier: 'Địa Giai', cost: 4000000, clickBonus: 60000, qpsBonus: 30000, color: 'text-purple-400' },
+      { id: 'eq_14', name: 'Thất Tinh Long Uyên', tier: 'Địa Giai', cost: 9500000, clickBonus: 150000, qpsBonus: 75000, color: 'text-purple-400' },
+      { id: 'eq_15', name: 'Hỗn Nguyên Phù Đồ', tier: 'Địa Giai', cost: 22000000, clickBonus: 380000, qpsBonus: 180000, color: 'text-purple-400' },
+      { id: 'eq_16', name: 'Viêm Long Ma Nhẫn', tier: 'Địa Giai', cost: 50000000, clickBonus: 950000, qpsBonus: 450000, color: 'text-purple-400' },
+
+      // Thiên Giai
+      { id: 'eq_17', name: 'Hiên Viên Cổ Kiếm', tier: 'Thiên Giai', cost: 120000000, clickBonus: 2500000, qpsBonus: 1200000, color: 'text-yellow-400' },
+      { id: 'eq_18', name: 'Tru Tiên Kiếm Trận', tier: 'Thiên Giai', cost: 300000000, clickBonus: 6500000, qpsBonus: 3200000, color: 'text-yellow-400' },
+      { id: 'eq_19', name: 'Hạo Thiên Thần Kính', tier: 'Thiên Giai', cost: 750000000, clickBonus: 16000000, qpsBonus: 8000000, color: 'text-yellow-400' },
+      { id: 'eq_20', name: 'Hỗn Độn Chung Cổ', tier: 'Thiên Giai', cost: 1800000000, clickBonus: 40000000, qpsBonus: 20000000, color: 'text-yellow-400' },
+
+      // Thần Giai (Cực Phẩm Vô Địch)
+      { id: 'eq_21', name: 'Bàn Cổ Khai Thiên Phủ', tier: 'Thần Giai', cost: 4500000000, clickBonus: 100000000, qpsBonus: 50000000, color: 'text-rose-500 font-bold' },
+      { id: 'eq_22', name: 'Hồng Mông Thư Tịch', tier: 'Thần Giai', cost: 11000000000, clickBonus: 260000000, qpsBonus: 130000000, color: 'text-rose-500 font-bold' },
+      { id: 'eq_23', name: 'Vô Thượng Lôi Thần Thương', tier: 'Thần Giai', cost: 28000000000, clickBonus: 700000000, qpsBonus: 350000000, color: 'text-rose-500 font-bold' },
+      { id: 'eq_24', name: 'Vĩnh Hằng Đạo Quả', tier: 'Thần Giai', cost: 70000000000, clickBonus: 1800000000, qpsBonus: 900000000, color: 'text-rose-500 font-bold' }
     ];
 
     const MONSTERS = [
@@ -136,14 +174,16 @@
     const INITIAL_STATE = {
       qi: 0,
       realmIndex: 0,
-      clickPower: 5,
+      baseClickPower: 5,
       shopCounts: {},
+      ownedGears: [],
+      equippedGearId: null,
       immortalPoints: 0,
       equippedSkillId: 'basic_skill',
       inventory: ['basic_skill', 'fire_skill'],
       npcData: INITIAL_NPC_LEADERBOARD,
       joinedSectId: null,
-      logs: [{ id: 'init', text: '[System]: Đã fix chỉ số Tụ Linh Đan! Cày cuốc tiếp đi bro.', type: 'system', time: Date.now() }]
+      logs: [{ id: 'init', text: '[System]: Chợ Đen hắc ám đã khai mở, mua bán bảo vật cẩn thận kẻo bị lừa!', type: 'system', time: Date.now() }]
     };
 
     function formatNumber(num) {
@@ -173,7 +213,7 @@
     function App() {
       const [gameState, setGameState] = useState(() => {
         try {
-          const saved = localStorage.getItem('xianxia-save-hardcore');
+          const saved = localStorage.getItem('xianxia-save-blackmarket');
           if (saved) return { ...INITIAL_STATE, ...JSON.parse(saved) };
         } catch(e) {}
         return INITIAL_STATE;
@@ -195,6 +235,17 @@
       const stateRef = useRef(gameState);
       useEffect(() => { stateRef.current = gameState; }, [gameState]);
 
+      // Tính tổng Click Power (Base + Trang bị)
+      const currentClickPower = useMemo(() => {
+        let pwr = gameState.baseClickPower;
+        if (gameState.equippedGearId) {
+          const gear = BLACK_MARKET_GEARS.find(g => g.id === gameState.equippedGearId);
+          if (gear) pwr += gear.clickBonus;
+        }
+        return pwr;
+      }, [gameState.baseClickPower, gameState.equippedGearId]);
+
+      // NPC Vòng Lặp
       useEffect(() => {
         const npcTimer = setInterval(() => {
           setGameState(prev => {
@@ -237,11 +288,17 @@
 
       useEffect(() => { setPlayerHp(maxPlayerHp); }, [maxPlayerHp]);
 
+      // Auto Qi Tick
       useEffect(() => {
         const interval = setInterval(() => {
           const state = stateRef.current;
           let baseQps = SHOP_ITEMS.reduce((sum, item) => sum + (state.shopCounts[item.id] || 0) * item.qpsBonus, 0);
           
+          if (state.equippedGearId) {
+            const gear = BLACK_MARKET_GEARS.find(g => g.id === state.equippedGearId);
+            if (gear) baseQps += gear.qpsBonus;
+          }
+
           if (state.joinedSectId === 'dao_hoa') baseQps *= 1.5;
 
           const totalQps = baseQps * (1 + (state.immortalPoints || 0) * 0.5);
@@ -249,7 +306,7 @@
         }, 1000);
 
         const saveInterval = setInterval(() => {
-          localStorage.setItem('xianxia-save-hardcore', JSON.stringify(stateRef.current));
+          localStorage.setItem('xianxia-save-blackmarket', JSON.stringify(stateRef.current));
         }, 5000);
 
         return () => { clearInterval(interval); clearInterval(saveInterval); };
@@ -260,7 +317,7 @@
         const clientX = e.clientX || (e.touches && e.touches[0].clientX) || window.innerWidth / 2;
         const clientY = e.clientY || (e.touches && e.touches[0].clientY) || window.innerHeight / 2;
         
-        let pwr = gameState.clickPower;
+        let pwr = currentClickPower;
         if (gameState.joinedSectId === 'thuc_son') pwr *= 2;
 
         setClicks(prev => [...prev, { id, x: clientX, y: clientY - 20, val: pwr }]);
@@ -273,7 +330,7 @@
           setGameState(prev => {
             const nextRealm = prev.realmIndex + 1;
             return {
-              ...prev, qi: 0, realmIndex: nextRealm, clickPower: Math.floor(prev.clickPower * 1.4),
+              ...prev, qi: 0, realmIndex: nextRealm, baseClickPower: Math.floor(prev.baseClickPower * 1.4),
               logs: [{ id: Date.now().toString(), text: `[Thành Công]: Vượt thiên kiếp, tiến cấp ${REALMS[nextRealm].name}!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 30)
             };
           });
@@ -293,6 +350,8 @@
         setGameState(prev => ({
           ...INITIAL_STATE,
           immortalPoints: (prev.immortalPoints || 0) + ptsGained,
+          ownedGears: prev.ownedGears,
+          equippedGearId: prev.equippedGearId,
           inventory: prev.inventory,
           equippedSkillId: prev.equippedSkillId,
           npcData: prev.npcData,
@@ -306,7 +365,6 @@
           const item = SHOP_ITEMS.find(i => i.id === itemId);
           const count = prev.shopCounts[itemId] || 0;
           let cost = Math.floor(item.baseCost * Math.pow(1.6, count));
-          
           if (prev.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
 
           if (prev.qi >= cost) {
@@ -319,13 +377,35 @@
         });
       };
 
+      const buyGear = (gear) => {
+        setGameState(prev => {
+          let cost = gear.cost;
+          if (prev.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
+
+          if (prev.qi >= cost && !prev.ownedGears.includes(gear.id)) {
+            return {
+              ...prev, qi: prev.qi - cost, ownedGears: [...prev.ownedGears, gear.id],
+              logs: [{ id: Date.now().toString(), text: `[Chợ Đen]: Mua thành công bảo vật ${gear.name} (${gear.tier})!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 30)
+            };
+          }
+          return prev;
+        });
+      };
+
+      const equipGear = (gearId) => {
+        setGameState(prev => ({
+          ...prev, equippedGearId: prev.equippedGearId === gearId ? null : gearId,
+          logs: [{ id: Date.now().toString(), text: `[Trang Bị]: ${prev.equippedGearId === gearId ? 'Đã tháo trang bị.' : 'Đã trang bị pháp bảo mới!'}`, type: 'system', time: Date.now() }, ...prev.logs].slice(0, 30)
+        }));
+      };
+
       const attackMonster = (dmgMult = 1, skillType = 0) => {
         if (isDead) return;
         if (skillType === 1) setCdSkill1(5);
         if (skillType === 2) setCdSkill2(12);
 
         const monster = MONSTERS[currentMonsterIdx];
-        let dmg = gameState.clickPower * dmgMult;
+        let dmg = currentClickPower * dmgMult;
         if (gameState.joinedSectId === 'thien_dinh') dmg *= 1.3;
 
         const newMonsterHp = monsterHp - dmg;
@@ -358,6 +438,10 @@
       const isBreakthrough = !isMaxRealm && gameState.qi >= realm.maxQi;
       
       let baseQpsCalc = SHOP_ITEMS.reduce((sum, item) => sum + (gameState.shopCounts[item.id] || 0) * item.qpsBonus, 0);
+      if (gameState.equippedGearId) {
+        const gear = BLACK_MARKET_GEARS.find(g => g.id === gameState.equippedGearId);
+        if (gear) baseQpsCalc += gear.qpsBonus;
+      }
       if (gameState.joinedSectId === 'dao_hoa') baseQpsCalc *= 1.5;
       const currentQps = baseQpsCalc * (1 + (gameState.immortalPoints || 0) * 0.5);
 
@@ -423,7 +507,7 @@
                 ) : (
                   <button onClick={handleCultivate} className="w-full py-5 text-lg font-bold font-serif text-cyan-400 border border-cyan-500/40 bg-cyan-500/10 active:bg-cyan-500/30 hover:bg-cyan-500/20 rounded-xl transition-all flex flex-col items-center justify-center gap-1 cursor-pointer">
                     <span>BẾ GIAO THU HOẠCH</span>
-                    <span className="text-[10px] font-mono text-cyan-300 font-normal border border-cyan-500/30 px-2.5 py-0.5 rounded-full">+{formatNumber(gameState.joinedSectId === 'thuc_son' ? gameState.clickPower * 2 : gameState.clickPower)} Qi / Click</span>
+                    <span className="text-[10px] font-mono text-cyan-300 font-normal border border-cyan-500/30 px-2.5 py-0.5 rounded-full">+{formatNumber(gameState.joinedSectId === 'thuc_son' ? currentClickPower * 2 : currentClickPower)} Qi / Click</span>
                   </button>
                 )}
 
@@ -435,7 +519,7 @@
               </div>
 
               <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 text-center">
-                <span className="text-slate-400 text-[10px] tracking-widest block">TỰ ĐỘNG GOM LINH KHÍ (ĐÃ FIX)</span>
+                <span className="text-slate-400 text-[10px] tracking-widest block">TỰ ĐỘNG GOM LINH KHÍ (QPS)</span>
                 <span className="text-lg font-mono text-cyan-400 font-bold">+{formatNumber(currentQps)} <span className="text-xs text-slate-500">Qi/s</span></span>
               </div>
             </div>
@@ -443,12 +527,13 @@
             {/* CỘT 2: TABS */}
             <div className="col-span-1 lg:col-span-5 bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 flex flex-col h-[460px] sm:h-[500px]">
               
-              <div className="grid grid-cols-5 gap-1 border-b border-white/10 pb-2.5 mb-2.5">
-                <button onClick={() => setActiveTab('shop')} className={`py-1.5 text-[10px] font-bold font-serif rounded-lg border ${activeTab === 'shop' ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🏛️ SHOP</button>
-                <button onClick={() => setActiveTab('sect')} className={`py-1.5 text-[10px] font-bold font-serif rounded-lg border ${activeTab === 'sect' ? 'bg-purple-500/20 border-purple-400 text-purple-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>⛩️ TÔNG</button>
-                <button onClick={() => setActiveTab('monster')} className={`py-1.5 text-[10px] font-bold font-serif rounded-lg border ${activeTab === 'monster' ? 'bg-red-500/20 border-red-400 text-red-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>⚔️ YÊU</button>
-                <button onClick={() => setActiveTab('inventory')} className={`py-1.5 text-[10px] font-bold font-serif rounded-lg border ${activeTab === 'inventory' ? 'bg-amber-500/20 border-amber-400 text-amber-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🎒 TÚI</button>
-                <button onClick={() => setActiveTab('leaderboard')} className={`py-1.5 text-[10px] font-bold font-serif rounded-lg border ${activeTab === 'leaderboard' ? 'bg-yellow-500/20 border-yellow-400 text-yellow-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🏆 RANK</button>
+              <div className="grid grid-cols-6 gap-1 border-b border-white/10 pb-2.5 mb-2.5">
+                <button onClick={() => setActiveTab('shop')} className={`py-1.5 text-[9px] font-bold font-serif rounded-lg border ${activeTab === 'shop' ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🏛️ SHOP</button>
+                <button onClick={() => setActiveTab('blackmarket')} className={`py-1.5 text-[9px] font-bold font-serif rounded-lg border ${activeTab === 'blackmarket' ? 'bg-rose-500/20 border-rose-400 text-rose-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🥷 CHỢ ĐEN</button>
+                <button onClick={() => setActiveTab('sect')} className={`py-1.5 text-[9px] font-bold font-serif rounded-lg border ${activeTab === 'sect' ? 'bg-purple-500/20 border-purple-400 text-purple-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>⛩️ TÔNG</button>
+                <button onClick={() => setActiveTab('monster')} className={`py-1.5 text-[9px] font-bold font-serif rounded-lg border ${activeTab === 'monster' ? 'bg-red-500/20 border-red-400 text-red-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>⚔️ YÊU</button>
+                <button onClick={() => setActiveTab('inventory')} className={`py-1.5 text-[9px] font-bold font-serif rounded-lg border ${activeTab === 'inventory' ? 'bg-amber-500/20 border-amber-400 text-amber-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🎒 TÚI</button>
+                <button onClick={() => setActiveTab('leaderboard')} className={`py-1.5 text-[9px] font-bold font-serif rounded-lg border ${activeTab === 'leaderboard' ? 'bg-yellow-500/20 border-yellow-400 text-yellow-300' : 'bg-black/30 border-white/5 text-slate-400'}`}>🏆 RANK</button>
               </div>
 
               {/* SHOP */}
@@ -471,6 +556,45 @@
                         <div className="text-right flex flex-col items-end">
                           <span className="text-yellow-400 font-mono text-xs font-bold">x{count}</span>
                           <span className="text-[9px] font-mono bg-black/60 px-1.5 py-0.5 rounded border border-white/10 mt-1">Giá: {formatNumber(cost)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* CHỢ ĐEN (24 MÓN TRANG BỊ) */}
+              {activeTab === 'blackmarket' && (
+                <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1">
+                  <div className="text-[10px] text-rose-400 bg-rose-500/10 p-2 rounded border border-rose-500/20 mb-2 text-center font-serif">
+                    🥷 Chợ Đen Hắc Ám: Mua trang bị để tăng Click & QPS vĩnh viễn!
+                  </div>
+                  {BLACK_MARKET_GEARS.map((gear) => {
+                    const isOwned = gameState.ownedGears.includes(gear.id);
+                    let cost = gear.cost;
+                    if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
+                    const canAfford = gameState.qi >= cost;
+
+                    return (
+                      <div key={gear.id} className="p-2.5 rounded-xl border border-white/10 bg-black/40 flex justify-between items-center">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className={`font-serif text-xs font-bold ${gear.color}`}>{gear.name}</h3>
+                            <span className="text-[8px] font-mono bg-white/10 px-1.5 py-0.5 rounded text-slate-300">{gear.tier}</span>
+                          </div>
+                          <div className="text-[9px] font-mono text-cyan-300 mt-1">
+                            +{formatNumber(gear.clickBonus)} Click | +{formatNumber(gear.qpsBonus)} Qi/s
+                          </div>
+                        </div>
+                        <div>
+                          {isOwned ? (
+                            <span className="text-[9px] font-bold text-green-400 bg-green-500/10 px-2.5 py-1 rounded border border-green-500/30">ĐÃ MUA</span>
+                          ) : (
+                            <button onClick={() => canAfford && buyGear(gear)} disabled={!canAfford}
+                                    className={`px-3 py-1 rounded text-[9px] font-bold font-mono border ${canAfford ? 'border-rose-500/40 bg-rose-500/20 text-rose-300 cursor-pointer active:scale-95' : 'border-white/5 bg-black/40 text-slate-500 cursor-not-allowed'}`}>
+                              Giá: {formatNumber(cost)}
+                            </button>
+                          )}
                         </div>
                       </div>
                     );
@@ -553,34 +677,67 @@
                 </div>
               )}
 
-              {/* TÚI ĐỒ */}
+              {/* TÚI ĐỒ & TRANG BỊ */}
               {activeTab === 'inventory' && (
-                <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1">
-                  {SKILL_BOOKS.map(book => {
-                    const isOwned = gameState.inventory.includes(book.id);
-                    const isEquipped = gameState.equippedSkillId === book.id;
-                    return (
-                      <div key={book.id} className="p-2.5 rounded-xl border border-white/10 bg-black/40 flex justify-between items-center">
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-xl">{book.icon}</span>
-                          <div>
-                            <h4 className="font-serif text-xs text-purple-300">{book.name}</h4>
-                            <p className="text-[9px] text-slate-400">{book.desc}</p>
-                          </div>
-                        </div>
-                        {isEquipped ? (
-                          <span className="text-[9px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded border border-green-500/30">ĐANG DÙNG</span>
-                        ) : isOwned ? (
-                          <button onClick={() => setGameState(prev => ({ ...prev, equippedSkillId: book.id }))}
-                                  className="text-[9px] font-bold text-purple-300 bg-purple-500/20 px-2.5 py-1 rounded border border-purple-400/40">
-                            TRANG BỊ
-                          </button>
-                        ) : (
-                          <span className="text-[9px] text-slate-500 italic">Khóa</span>
-                        )}
+                <div className="flex-1 overflow-y-auto space-y-3 no-scrollbar pr-1">
+                  <div>
+                    <h4 className="text-[10px] font-serif text-slate-400 mb-1.5 uppercase tracking-wider">🗡️ Pháp Bảo Đã Sở Hữu</h4>
+                    {gameState.ownedGears.length === 0 ? (
+                      <div className="text-[10px] text-slate-500 italic p-2 bg-black/30 rounded border border-white/5">Chưa có pháp bảo nào. Ghé Chợ Đen để mua ngay!</div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {gameState.ownedGears.map(gearId => {
+                          const gear = BLACK_MARKET_GEARS.find(g => g.id === gearId);
+                          if (!gear) return null;
+                          const isEquipped = gameState.equippedGearId === gear.id;
+
+                          return (
+                            <div key={gear.id} className={`p-2 rounded-xl border flex justify-between items-center ${isEquipped ? 'border-amber-400 bg-amber-500/10' : 'border-white/10 bg-black/40'}`}>
+                              <div>
+                                <h5 className={`font-serif text-xs font-bold ${gear.color}`}>{gear.name}</h5>
+                                <div className="text-[9px] font-mono text-cyan-300">+{formatNumber(gear.clickBonus)} Click | +{formatNumber(gear.qpsBonus)} Qi/s</div>
+                              </div>
+                              <button onClick={() => equipGear(gear.id)}
+                                      className={`px-2.5 py-1 rounded text-[9px] font-bold font-serif border ${isEquipped ? 'bg-amber-500/20 border-amber-400 text-amber-300' : 'bg-white/10 border-white/20 text-slate-300'}`}>
+                                {isEquipped ? 'ĐANG DÙNG' : 'TRANG BỊ'}
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
+                    )}
+                  </div>
+
+                  <div>
+                    <h4 className="text-[10px] font-serif text-slate-400 mb-1.5 uppercase tracking-wider">📜 Bí Kíp Công Pháp</h4>
+                    <div className="space-y-1.5">
+                      {SKILL_BOOKS.map(book => {
+                        const isOwned = gameState.inventory.includes(book.id);
+                        const isEquipped = gameState.equippedSkillId === book.id;
+                        return (
+                          <div key={book.id} className="p-2.5 rounded-xl border border-white/10 bg-black/40 flex justify-between items-center">
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-xl">{book.icon}</span>
+                              <div>
+                                <h4 className="font-serif text-xs text-purple-300">{book.name}</h4>
+                                <p className="text-[9px] text-slate-400">{book.desc}</p>
+                              </div>
+                            </div>
+                            {isEquipped ? (
+                              <span className="text-[9px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded border border-green-500/30">ĐANG DÙNG</span>
+                            ) : isOwned ? (
+                              <button onClick={() => setGameState(prev => ({ ...prev, equippedSkillId: book.id }))}
+                                      className="text-[9px] font-bold text-purple-300 bg-purple-500/20 px-2.5 py-1 rounded border border-purple-400/40">
+                                DÙNG
+                              </button>
+                            ) : (
+                              <span className="text-[9px] text-slate-500 italic">Khóa</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               )}
 
