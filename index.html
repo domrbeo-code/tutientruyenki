@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Real-time Sync & Gear Drops)</title>
+  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Real-time Sync & Black Market)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -30,7 +30,7 @@
   <script type="text/babel">
     const BIN_ID = "6a622390f5f4af5e29b6690d";
     const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
-    const SAVE_KEY = "tu_tien_game_save_v16";
+    const SAVE_KEY = "tu_tien_game_save_v17";
 
     async function fetchCloudData() {
       try {
@@ -89,11 +89,16 @@
           }
         }
 
+        let listings = current.marketListings || [];
+        if (myEntry.newMarketListings !== undefined) {
+          listings = myEntry.newMarketListings;
+        }
+
         const payload = {
           leaderboard: list,
           customSects: sects,
           activeTribulations: tribs,
-          marketListings: current.marketListings || []
+          marketListings: listings
         };
 
         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
@@ -152,7 +157,6 @@
       { id: 'linh_tuyen', name: 'Linh Tuyền Nhãn', baseCost: 1800, qps: 150, desc: 'Mạch nước ngầm tinh thuần đậm đặc linh khí.' }
     ];
 
-    // 10 Món Trang Bị Nhận Từ Trảm Yêu
     const ALL_GEARS = [
       { id: 'gear_1', name: 'Thiết Kiếm Phàm Phí', tier: 'Phàm Phí', color: 'text-slate-400', clickBonus: 5, qpsBonus: 0, dropRate: 0.35, desc: 'Kiếm sắt đúc thô sơ của phàm nhân.' },
       { id: 'gear_2', name: 'Gỗ Đào Bùa Chú', tier: 'Phàm Phí', color: 'text-slate-400', clickBonus: 3, qpsBonus: 2, dropRate: 0.30, desc: 'Khúc gỗ đào khắc linh văn đơn giản.' },
@@ -206,7 +210,7 @@
 
       const [gameState, setGameState] = React.useState(() => {
         try {
-          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v15');
+          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v16');
           if (savedState) {
             const parsed = JSON.parse(savedState);
             if (!parsed.inventory) parsed.inventory = [];
@@ -219,9 +223,9 @@
           realmIdx: 0,
           joinedSectId: 'thanh_van',
           shopCounts: {},
-          inventory: [], // Danh sách các item/trang bị thu thập được
+          inventory: [],
           equippedGearId: null,
-          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống trang bị & Trảm yêu rơi đồ đã sẵn sàng!', type: 'breakthrough', time: Date.now() }]
+          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống Chợ Đen ký gửi liên server đã khởi chạy!', type: 'breakthrough', time: Date.now() }]
         };
       });
 
@@ -230,7 +234,8 @@
       }, [gameState]);
 
       const [activeTab, setActiveTab] = React.useState('shop');
-      const [isBlackMarketModalOpen, setIsBlackMarketModalOpen] = React.useState(false); // UI Chợ Đen lớn riêng biệt
+      const [isBlackMarketModalOpen, setIsBlackMarketModalOpen] = React.useState(false);
+      const [listingPriceInput, setListingPriceInput] = React.useState({});
 
       const [currentMonsterIdx, setCurrentMonsterIdx] = React.useState(0);
       const [monsterHp, setMonsterHp] = React.useState(MONSTERS[0].hp);
@@ -239,6 +244,7 @@
       const [cloudLeaderboard, setCloudLeaderboard] = React.useState([]);
       const [cloudCustomSects, setCloudCustomSects] = React.useState([]);
       const [activeTribulations, setActiveTribulations] = React.useState({});
+      const [marketListings, setMarketListings] = React.useState([]);
       const [myTribulation, setMyTribulation] = React.useState(null);
 
       const [actedPlayers, setActedPlayers] = React.useState(new Set());
@@ -282,7 +288,6 @@
         return total;
       }, [gameState.shopCounts, gameState.inventory, gameState.joinedSectId]);
 
-      // Vòng lặp thu thập linh khí
       React.useEffect(() => {
         const interval = setInterval(() => {
           setGameState(prev => {
@@ -310,7 +315,6 @@
         return () => clearInterval(interval);
       }, [qps]);
 
-      // Đồng bộ cloud 2 giây
       React.useEffect(() => {
         let isMounted = true;
         const doSync = async () => {
@@ -325,6 +329,7 @@
           if (result && isMounted) {
             if (result.leaderboard) setCloudLeaderboard(result.leaderboard);
             if (result.customSects) setCloudCustomSects(result.customSects);
+            if (result.marketListings) setMarketListings(result.marketListings);
             if (result.activeTribulations) {
               const now = Date.now();
               const cleanTribs = {};
@@ -350,6 +355,160 @@
           clearInterval(syncInterval);
         };
       }, [gameState.totalQi, gameState.realmIdx, playerName, myTribulation]);
+
+      // --- LOGIC KÝ GỬI, MUA BÁN & GỠ BÁN CHỢ ĐEN ---
+      const handleListMarketItem = async (uniqueId) => {
+        const itemToSell = gameState.inventory.find(i => i.uniqueId === uniqueId);
+        if (!itemToSell) return;
+
+        const rawPrice = listingPriceInput[uniqueId] || 100;
+        const price = parseInt(rawPrice, 10);
+        if (isNaN(price) || price <= 0) {
+          alert("Xin vui lòng nhập giá linh khí hợp lệ lớn hơn 0!");
+          return;
+        }
+
+        const gearData = ALL_GEARS.find(g => g.id === itemToSell.gearId);
+        if (!gearData) return;
+
+        // Nếu đang trang bị thì tự động tháo trước khi bán
+        const updatedInventory = gameState.inventory.filter(i => i.uniqueId !== uniqueId);
+
+        const newListing = {
+          listingId: 'list_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+          sellerName: playerName,
+          gearId: itemToSell.gearId,
+          gearUniqueId: itemToSell.uniqueId,
+          price: price,
+          time: Date.now()
+        };
+
+        try {
+          const currentData = await fetchCloudData();
+          const updatedListings = [...(currentData.marketListings || []), newListing];
+
+          const res = await updateCloudData({
+            name: playerName,
+            totalQi: gameState.totalQi,
+            realm: REALMS[gameState.realmIdx].name,
+            newMarketListings: updatedListings
+          });
+
+          if (res && res.marketListings) {
+            setMarketListings(res.marketListings);
+          }
+
+          setGameState(prev => ({
+            ...prev,
+            inventory: updatedInventory,
+            logs: [
+              ...prev.logs,
+              { id: Date.now().toString(), text: `[Hắc Thị]: Ký gửi thành công ${gearData.name} với giá ${formatNumber(price)} Qi!`, type: 'shop', time: Date.now() }
+            ]
+          }));
+        } catch (e) {
+          alert("Lỗi kết nối cloud khi ký gửi bảo vật!");
+        }
+      };
+
+      const handleCancelMarketListing = async (listing) => {
+        if (listing.sellerName !== playerName) return;
+
+        try {
+          const currentData = await fetchCloudData();
+          const updatedListings = (currentData.marketListings || []).filter(l => l.listingId !== listing.listingId);
+
+          const res = await updateCloudData({
+            name: playerName,
+            totalQi: gameState.totalQi,
+            realm: REALMS[gameState.realmIdx].name,
+            newMarketListings: updatedListings
+          });
+
+          if (res && res.marketListings) {
+            setMarketListings(res.marketListings);
+          }
+
+          // Trả lại món đồ vào túi của chủ nhân
+          const returnedItem = {
+            uniqueId: listing.gearUniqueId || ('item_' + Date.now()),
+            gearId: listing.gearId,
+            isEquipped: false
+          };
+
+          const gearData = ALL_GEARS.find(g => g.id === listing.gearId);
+
+          setGameState(prev => ({
+            ...prev,
+            inventory: [...prev.inventory, returnedItem],
+            logs: [
+              ...prev.logs,
+              { id: Date.now().toString(), text: `[Hắc Thị]: Gỡ bán thành công ${gearData?.name || 'Bảo Vật'} về túi đồ!`, type: 'shop', time: Date.now() }
+            ]
+          }));
+        } catch (e) {
+          alert("Lỗi khi gỡ bán bảo vật!");
+        }
+      };
+
+      const handleBuyMarketItem = async (listing) => {
+        if (listing.sellerName === playerName) {
+          alert("Đạo hữu không thể tự mua vật phẩm do chính mình ký gửi!");
+          return;
+        }
+
+        if (gameState.qi < listing.price) {
+          alert("Linh khí bất túc, không đủ linh thạch để mua bảo vật này!");
+          return;
+        }
+
+        const gearData = ALL_GEARS.find(g => g.id === listing.gearId);
+
+        try {
+          const currentData = await fetchCloudData();
+          const targetListing = (currentData.marketListings || []).find(l => l.listingId === listing.listingId);
+          if (!targetListing) {
+            alert("Vật phẩm này đã được người khác mua mất hoặc đã bị gỡ!");
+            return;
+          }
+
+          const updatedListings = (currentData.marketListings || []).filter(l => l.listingId !== listing.listingId);
+
+          // Cập nhật cloud với danh sách mới
+          const res = await updateCloudData({
+            name: playerName,
+            totalQi: gameState.totalQi - listing.price, // tạm trừ qi người mua trên cloud nếu muốn, hoặc cập nhật qua state
+            realm: REALMS[gameState.realmIdx].name,
+            newMarketListings: updatedListings
+          });
+
+          if (res && res.marketListings) {
+            setMarketListings(res.marketListings);
+          }
+
+          const purchasedItem = {
+            uniqueId: 'item_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+            gearId: listing.gearId,
+            isEquipped: false
+          };
+
+          setGameState(prev => ({
+            ...prev,
+            qi: prev.qi - listing.price,
+            inventory: [...prev.inventory, purchasedItem],
+            logs: [
+              ...prev.logs,
+              { id: Date.now().toString(), text: `[Hắc Thị]: Mua thành công ${gearData?.name || 'Bảo Vật'} từ đại năng ${listing.sellerName} với giá ${formatNumber(listing.price)} Qi!`, type: 'shop', time: Date.now() }
+            ]
+          }));
+
+          alert(`Giao dịch thành công! Đã thu phục "${gearData?.name}" vào túi đồ.`);
+        } catch (e) {
+          alert("Giao dịch thất bại, xin vui lòng thử lại!");
+        }
+      };
+
+      // ----------------------------------------------------
 
       React.useEffect(() => {
         if (!myTribulation) return;
@@ -528,7 +687,6 @@
         }
       };
 
-      // Xử lý tấn công quái và nhận trang bị rơi ra ngẫu nhiên
       const attackMonster = (multiplier = 1) => {
         if (isDead) return;
         let dmg = combatPower * multiplier;
@@ -537,14 +695,13 @@
         const nextHp = monsterHp - dmg;
 
         if (nextHp <= 0) {
-          // Tính toán rớt trang bị ngẫu nhiên dựa vào dropRate
           let droppedItemsLogs = [];
           let newInventoryItems = [...gameState.inventory];
 
           ALL_GEARS.forEach(gear => {
             const roll = Math.random();
             if (roll <= gear.dropRate) {
-              const uniqueId = 'item_' + Date.now() + '_' + Math.random().toString(36.substring(2, 7));
+              const uniqueId = 'item_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
               newInventoryItems.push({
                 uniqueId: uniqueId,
                 gearId: gear.id,
@@ -1072,16 +1229,16 @@
             </div>
           </main>
 
-          {/* GIAO DIỆN CHỢ ĐEN (MODAL RIÊNG BIỆT) */}
+          {/* GIAO DIỆN CHỢ ĐEN (MODAL GIAO DỊCH LIÊN SERVER) */}
           {isBlackMarketModalOpen && (
             <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-              <div className="bg-[#120b22] border-2 border-amber-500/50 rounded-2xl w-full max-w-4xl p-6 flex flex-col gap-5 shadow-[0_0_50px_rgba(245,158,11,0.2)] max-h-[85vh]">
+              <div className="bg-[#120b22] border-2 border-amber-500/50 rounded-2xl w-full max-w-5xl p-6 flex flex-col gap-5 shadow-[0_0_50px_rgba(245,158,11,0.2)] max-h-[85vh]">
                 <div className="flex justify-between items-center border-b border-purple-500/30 pb-4">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🖤</span>
                     <div>
-                      <h2 className="font-serif font-bold text-lg text-amber-200">Hắc Thị Chợ Đen — Giao Dịch Bảo Vật</h2>
-                      <p className="text-xs text-slate-400">Nơi các đại năng quyên góp và trao đổi pháp bảo phi pháp qua Thiên Thư Cloud.</p>
+                      <h2 className="font-serif font-bold text-lg text-amber-200">Hắc Thị Chợ Đen — Ký Gửi & Giao Dịch Bảo Vật</h2>
+                      <p className="text-xs text-slate-400">Treo bán pháp bảo vĩnh viễn trên Cloud JSONBin cho tới khi có đại năng khác mua hoặc chủ nhân gỡ xuống.</p>
                     </div>
                   </div>
                   <button onClick={() => setIsBlackMarketModalOpen(false)}
@@ -1090,43 +1247,75 @@
                   </button>
                 </div>
                 
-                <div className="flex-1 flex flex-col gap-4 overflow-y-auto no-scrollbar">
-                  <div className="p-4 bg-purple-950/30 border border-purple-500/30 rounded-xl flex flex-col gap-2">
-                    <span className="text-xs font-serif font-bold text-amber-300">💡 Hướng Dẫn Giao Dịch Chợ Đen</span>
-                    <p className="text-xs text-slate-300">
-                      Hệ thống trang bị rơi ra từ việc Trảm Yêu đã được lưu trữ trong Túi Đồ của đạo hữu. Ta đã chuẩn bị sẵn khung giao diện riêng biệt này để đạo hữu có thể tiếp tục xây dựng tính năng treo bán hoặc mua lại bảo vật của người chơi khác trong bước tiếp theo!
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col gap-3">
-                      <span className="text-xs font-serif font-bold text-amber-200">📦 Bảo Vật Đang Có Trong Túi Đồ Của Bạn</span>
-                      <div className="flex flex-col gap-2 max-h-48 overflow-y-auto no-scrollbar">
-                        {gameState.inventory.length === 0 ? (
-                          <span className="text-xs text-slate-500 font-mono">Không có bảo vật nào trong túi.</span>
-                        ) : (
-                          gameState.inventory.map(item => {
-                            const gear = ALL_GEARS.find(g => g.id === item.gearId);
-                            if (!gear) return null;
-                            return (
-                              <div key={item.uniqueId} className="flex justify-between items-center p-2 bg-purple-950/20 border border-purple-500/20 rounded-lg text-xs">
-                                <span className={gear.color}>{gear.name} ({gear.tier})</span>
-                                <button onClick={() => alert("Chức năng ký gửi chợ đen sắp ra mắt! Đạo hữu hãy sẵn sàng.")}
-                                  className="px-2.5 py-1 bg-amber-600/30 hover:bg-amber-600/50 border border-amber-400/40 text-amber-200 rounded cursor-pointer font-serif">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-y-auto no-scrollbar">
+                  {/* CỘT TRÁI: TÚI ĐỒ ĐỂ KÝ GỬI */}
+                  <div className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col gap-3">
+                    <span className="text-xs font-serif font-bold text-amber-200">📦 Túi Đồ Của Bạn (Chọn bảo vật để ký gửi)</span>
+                    <div className="flex flex-col gap-2.5 max-h-[320px] overflow-y-auto no-scrollbar">
+                      {gameState.inventory.length === 0 ? (
+                        <span className="text-xs text-slate-500 font-mono py-10 text-center">Không có bảo vật nào trong túi. Hãy đi Trảm Yêu!</span>
+                      ) : (
+                        gameState.inventory.map(item => {
+                          const gear = ALL_GEARS.find(g => g.id === item.gearId);
+                          if (!gear) return null;
+                          return (
+                            <div key={item.uniqueId} className="flex flex-col gap-2 p-3 bg-purple-950/20 border border-purple-500/20 rounded-xl">
+                              <div className="flex justify-between items-center">
+                                <span className={`font-serif font-bold text-xs ${gear.color}`}>{gear.name} ({gear.tier})</span>
+                                <span className="text-[10px] font-mono text-cyan-300">+{gear.clickBonus} Qi/nhấn</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <input type="number" placeholder="Nhập giá Qi..."
+                                  value={listingPriceInput[item.uniqueId] || ''}
+                                  onChange={(e) => setListingPriceInput(prev => ({ ...prev, [item.uniqueId]: e.target.value }))}
+                                  className="bg-black/80 border border-amber-400/40 rounded-lg px-2.5 py-1 text-xs text-amber-100 font-mono focus:outline-none flex-1" />
+                                <button onClick={() => handleListMarketItem(item.uniqueId)}
+                                  className="px-3 py-1 bg-amber-600/40 hover:bg-amber-600/60 border border-amber-400/50 text-amber-200 rounded-lg cursor-pointer text-xs font-serif font-bold">
                                   Ký Gửi Bán
                                 </button>
                               </div>
-                            );
-                          })
-                        )}
-                      </div>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
+                  </div>
 
-                    <div className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col gap-3">
-                      <span className="text-xs font-serif font-bold text-amber-200">🛒 Vật Phẩm Rao Bán Từ Đại Năng Khác</span>
-                      <div className="flex flex-col items-center justify-center h-32 text-xs text-slate-500 font-mono">
-                        <span>Chưa có vật phẩm nào được treo bán trên Hắc Thị.</span>
-                      </div>
+                  {/* CỘT PHẢI: DANH SÁCH RAO BÁN TRÊN TOÀN SERVER */}
+                  <div className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col gap-3">
+                    <span className="text-xs font-serif font-bold text-amber-200">🛒 Vật Phẩm Đang Rao Bán Trên Hắc Thị</span>
+                    <div className="flex flex-col gap-2.5 max-h-[320px] overflow-y-auto no-scrollbar">
+                      {marketListings.length === 0 ? (
+                        <span className="text-xs text-slate-500 font-mono py-10 text-center">Hắc Thị hiện chưa có bảo vật nào được ký gửi.</span>
+                      ) : (
+                        marketListings.map(listing => {
+                          const gear = ALL_GEARS.find(g => g.id === listing.gearId);
+                          if (!gear) return null;
+                          const isMyListing = listing.sellerName === playerName;
+                          return (
+                            <div key={listing.listingId} className="flex flex-col gap-2 p-3 bg-purple-950/30 border border-purple-500/30 rounded-xl">
+                              <div className="flex justify-between items-center">
+                                <span className={`font-serif font-bold text-xs ${gear.color}`}>{gear.name}</span>
+                                <span className="text-[10px] font-mono text-amber-400 font-bold">{formatNumber(listing.price)} Qi</span>
+                              </div>
+                              <div className="flex justify-between items-center text-[10px] font-mono text-slate-400">
+                                <span>Chủ nhân: <span className="text-cyan-300">{listing.sellerName}</span></span>
+                                {isMyListing ? (
+                                  <button onClick={() => handleCancelMarketListing(listing)}
+                                    className="px-2.5 py-1 bg-red-600/30 hover:bg-red-600/50 border border-red-400/40 text-red-200 rounded cursor-pointer font-serif font-bold">
+                                    Gỡ Bán
+                                  </button>
+                                ) : (
+                                  <button onClick={() => handleBuyMarketItem(listing)}
+                                    className="px-2.5 py-1 bg-emerald-600/40 hover:bg-emerald-600/60 border border-emerald-400/50 text-emerald-200 rounded cursor-pointer font-serif font-bold">
+                                    Mua Lại
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                 </div>
