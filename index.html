@@ -166,7 +166,7 @@
       return Math.floor(num).toString();
     };
 
-    function App() {
+   function App() {
       const [playerName, setPlayerName] = React.useState(() => {
         const saved = localStorage.getItem('tu_tien_player_name');
         if (saved) return saved;
@@ -204,9 +204,44 @@
           shopCounts: {},
           ownedGears: [],
           equippedGearId: null,
+          tribulation: {
+            targetUser: "",
+            phase: "ended",
+            startTime: 0,
+            duration: 30000,
+            hp: 100,
+            maxHp: 100,
+            actions: []
+          },
           logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống chống mất tu vi & đồng bộ đa chiều đã kích hoạt!', type: 'breakthrough', time: Date.now() }]
         };
       });
+
+      const syncTribulationPhase = (cloudData, localClientTime) => {
+        if (!cloudData.tribulation || cloudData.tribulation.phase === "ended") {
+          return {
+            syncedPhase: "ended",
+            tribulationData: cloudData.tribulation || { phase: "ended", startTime: 0, duration: 30000, hp: 100, maxHp: 100, actions: [] }
+          };
+        }
+
+        const currentTribulation = { ...cloudData.tribulation };
+        const elapsedTime = localClientTime - currentTribulation.startTime;
+
+        if (elapsedTime >= currentTribulation.duration) {
+          if (currentTribulation.phase === "preparing") {
+            currentTribulation.phase = "fighting";
+            currentTribulation.startTime = localClientTime;
+          } else if (currentTribulation.phase === "fighting") {
+            currentTribulation.phase = "ended";
+          }
+        }
+
+        return {
+          syncedPhase: currentTribulation.phase,
+          tribulationData: currentTribulation
+        };
+      };
 
       React.useEffect(() => {
         try {
@@ -532,6 +567,9 @@
               </div>
             </div>
           </header>
+        </div>
+      );
+    }
 
           {Object.keys(activeTribulations).length > 0 && (
             <div className="flex flex-col gap-2">
