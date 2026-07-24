@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Permanent Cloud Leaderboard)</title>
+  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Strict Breakthrough Lock)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -30,7 +30,7 @@
   <script type="text/babel">
     const BIN_ID = "6a622390f5f4af5e29b6690d";
     const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
-    const SAVE_KEY = "tu_tien_game_save_v13";
+    const SAVE_KEY = "tu_tien_game_save_v14";
 
     async function fetchCloudData() {
       try {
@@ -54,11 +54,9 @@
         const current = await fetchCloudData();
         let list = current.leaderboard || [];
 
-        // Tìm xem người chơi đã tồn tại trên mây chưa
         const idx = list.findIndex(item => item.name === myEntry.name);
         
         if (idx >= 0) {
-          // Cập nhật thông số mới nhất của người chơi kể cả khi họ offline sau đó
           list[idx] = {
             ...list[idx],
             totalQi: myEntry.totalQi,
@@ -66,7 +64,6 @@
             lastOnline: Date.now()
           };
         } else {
-          // Thêm mới hoàn toàn nếu lần đầu xuất hiện
           list.push({
             name: myEntry.name,
             totalQi: myEntry.totalQi,
@@ -75,7 +72,6 @@
           });
         }
 
-        // Sắp xếp và giữ lại top 20 cao thủ bám trụ vĩnh viễn trên mây
         list.sort((a, b) => b.totalQi - a.totalQi);
         list = list.slice(0, 20);
 
@@ -201,7 +197,7 @@
 
       const [gameState, setGameState] = React.useState(() => {
         try {
-          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v12');
+          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v13');
           if (savedState) return JSON.parse(savedState);
         } catch (e) {}
         return {
@@ -212,7 +208,7 @@
           shopCounts: {},
           ownedGears: [],
           equippedGearId: null,
-          logs: [{ id: '1', text: '[Đại Đạo]: Thiên Thư Bảng đồng bộ vĩnh viễn đã sẵn sàng!', type: 'breakthrough', time: Date.now() }]
+          logs: [{ id: '1', text: '[Đại Đạo]: Cơ chế bắt buộc độ phá khi đầy linh khí đã kích hoạt!', type: 'breakthrough', time: Date.now() }]
         };
       });
 
@@ -263,18 +259,39 @@
         return total;
       }, [gameState.shopCounts, gameState.joinedSectId]);
 
+      // Vòng lặp thu thập linh khí có gắn cơ chế khóa trần (Bắt buộc đột phá)
       React.useEffect(() => {
         const interval = setInterval(() => {
           setGameState(prev => {
+            const nextRealmObj = REALMS[prev.realmIdx + 1];
+            // Nếu đã đạt tối đa cảnh giới cuối cùng, cho phép tích lũy thoải mái
+            if (!nextRealmObj) {
+              const added = qps;
+              if (added <= 0) return prev;
+              return { ...prev, qi: prev.qi + added, totalQi: prev.totalQi + added };
+            }
+
+            // Nếu linh khí đã đạt hoặc vượt ngưỡng yêu cầu độ phá -> Khóa cứng, ko cho tăng nữa
+            if (prev.qi >= nextRealmObj.req) {
+              return prev; 
+            }
+
+            // Nếu chưa đạt ngưỡng, tiếp tục cộng bình thường nhưng không được vượt quá mức yêu cầu
             const added = qps;
             if (added <= 0) return prev;
-            return { ...prev, qi: prev.qi + added, totalQi: prev.totalQi + added };
+            const newQi = Math.min(nextRealmObj.req, prev.qi + added);
+            const actualAdded = newQi - prev.qi;
+
+            return {
+              ...prev,
+              qi: newQi,
+              totalQi: prev.totalQi + actualAdded
+            };
           });
         }, 1000);
         return () => clearInterval(interval);
       }, [qps]);
 
-      // Tự động đồng bộ lên mây mỗi 4 giây để giữ tên trên bảng xếp hạng vĩnh viễn
       React.useEffect(() => {
         let isMounted = true;
         const doSync = async () => {
@@ -562,6 +579,7 @@
       const currentJoinedSect = allSects.find(s => s.id === gameState.joinedSectId) || DEFAULT_SECTS[0];
       const nextRealmObj = REALMS[gameState.realmIdx + 1];
       const progressPercent = nextRealmObj ? Math.min(100, (gameState.qi / nextRealmObj.req) * 100) : 100;
+      const isMaxedOut = nextRealmObj && gameState.qi >= nextRealmObj.req;
 
       const fullLeaderboard = React.useMemo(() => {
         let list = [...cloudLeaderboard];
@@ -703,11 +721,17 @@
               <div className="bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-2xl flex flex-col items-center justify-center gap-5 relative">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
                 <button
-                  onClick={() => setGameState(prev => ({ ...prev, qi: prev.qi + clickPower, totalQi: prev.totalQi + clickPower }))}
-                  className="relative w-44 h-44 rounded-full bg-gradient-to-br from-purple-900/40 via-indigo-950/60 to-slate-900 border-2 border-purple-500/50 hover:border-cyan-400 hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(168,85,247,0.2)] flex flex-col items-center justify-center gap-1.5 cursor-pointer group">
+                  onClick={() => {
+                    if (isMaxedOut) return; // Chặn bấm khi đã đạt khung giới hạn cảnh giới
+                    const nextReq = nextRealmObj ? nextRealmObj.req : gameState.qi + clickPower;
+                    const newQi = Math.min(nextReq, gameState.qi + clickPower);
+                    const added = newQi - gameState.qi;
+                    setGameState(prev => ({ ...prev, qi: newQi, totalQi: prev.totalQi + added }));
+                  }}
+                  className={`relative w-44 h-44 rounded-full bg-gradient-to-br from-purple-900/40 via-indigo-950/60 to-slate-900 border-2 transition-all flex flex-col items-center justify-center gap-1.5 group ${isMaxedOut ? 'border-amber-500/80 cursor-not-allowed opacity-90 shadow-[0_0_30px_rgba(245,158,11,0.3)] animate-pulse' : 'border-purple-500/50 hover:border-cyan-400 hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(168,85,247,0.2)] cursor-pointer'}`}>
                   <span className="text-4xl group-hover:scale-110 transition-transform">🌌</span>
-                  <span className="font-serif font-bold text-sm tracking-wider text-amber-200">HẤP THU LINH KHÍ</span>
-                  <span className="text-[11px] font-mono text-cyan-300">+{clickPower} Qi / Nhấn</span>
+                  <span className="font-serif font-bold text-xs tracking-wider text-amber-200">{isMaxedOut ? 'ĐÃ ĐẠT NGƯỠNG' : 'HẤP THU LINH KHÍ'}</span>
+                  <span className="text-[10px] font-mono text-cyan-300">{isMaxedOut ? 'Cần Đột Phá Ngay!' : `+${clickPower} Qi / Nhấn`}</span>
                 </button>
                 <div className="w-full flex flex-col gap-2 mt-2">
                   <div className="flex justify-between text-xs font-mono text-slate-300">
@@ -724,7 +748,7 @@
                     </div>
                   ) : (
                     <button onClick={handleBreakthrough}
-                      className="mt-2 w-full py-3 bg-gradient-to-r from-purple-700/40 to-indigo-700/40 hover:from-purple-600/60 hover:to-indigo-600/60 border border-purple-400/40 rounded-xl text-xs font-serif font-bold text-amber-200 tracking-widest transition-all shadow-lg cursor-pointer">
+                      className={`mt-2 w-full py-3 border rounded-xl text-xs font-serif font-bold tracking-widest transition-all shadow-lg cursor-pointer ${isMaxedOut ? 'bg-gradient-to-r from-amber-600 to-red-600 hover:from-amber-500 hover:to-red-500 border-amber-300 text-white animate-bounce' : 'bg-gradient-to-r from-purple-700/40 to-indigo-700/40 hover:from-purple-600/60 hover:to-indigo-600/60 border-purple-400/40 text-amber-200'}`}>
                       ⚡ XUNG KÍCH ĐỘT PHÁ {nextRealmObj?.isMajor ? '(Mốc Lớn)' : ''}
                     </button>
                   )}
