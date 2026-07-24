@@ -51,19 +51,25 @@
       try {
         const current = await fetchCloudData();
         
+        // Lấy danh sách cũ trên mây làm gốc để không bao giờ bị mất tích
         let mergedLeaderboard = current.leaderboard || [];
+        
         if (partialData.leaderboard) {
           partialData.leaderboard.forEach(newItem => {
             const existingIdx = mergedLeaderboard.findIndex(item => item.name === newItem.name);
             if (existingIdx >= 0) {
+              // Chỉ cập nhật khi tổng Qi mới cao hơn hoặc bằng tiến độ cũ
               if (newItem.totalQi >= mergedLeaderboard[existingIdx].totalQi) {
                 mergedLeaderboard[existingIdx] = newItem;
               }
             } else {
+              // Thêm mới nếu là đạo hữu lần đầu lên bảng
               mergedLeaderboard.push(newItem);
             }
           });
         }
+        
+        // Sắp xếp lại theo tổng Qi giảm dần và giữ top 15 cao nhất vĩnh viễn
         mergedLeaderboard.sort((a, b) => b.totalQi - a.totalQi);
         mergedLeaderboard = mergedLeaderboard.slice(0, 15);
 
@@ -76,6 +82,7 @@
           });
         }
 
+        // Riêng độ kiếp thì vẫn giữ cơ chế dọn dẹp khi hết giờ hoặc xong trận
         const mergedTribs = { ...(current.activeTribulations || {}), ...(partialData.activeTribulations || {}) };
 
         const merged = {
