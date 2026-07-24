@@ -29,40 +29,29 @@
     const BIN_ID = "6a622390f5f4af5e29b6690d";
     const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
 
-    async function fetchLeaderboard() {
+    async function fetchCloudData() {
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
           headers: { 'X-Master-Key': API_KEY }
         });
         const data = await res.json();
-        return data.record?.leaderboard || [];
+        return data.record || { leaderboard: [], customSects: [] };
       } catch (e) {
-        return [];
+        return { leaderboard: [], customSects: [] };
       }
     }
 
-    async function updateLeaderboard(name, totalQi, realm) {
+    async function updateCloudData(newData) {
       try {
-        let list = await fetchLeaderboard();
-        const index = list.findIndex(item => item.name === name);
-        if (index >= 0) {
-          if (list[index].totalQi < totalQi) {
-            list[index].totalQi = totalQi;
-            list[index].realm = realm;
-          }
-        } else {
-          list.push({ name, totalQi, realm });
-        }
-        list.sort((a, b) => b.totalQi - a.totalQi);
-        list = list.slice(0, 10);
-
+        const current = await fetchCloudData();
+        const merged = { ...current, ...newData };
         await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'X-Master-Key': API_KEY
           },
-          body: JSON.stringify({ leaderboard: list })
+          body: JSON.stringify(merged)
         });
       } catch (e) {
         console.log("Lỗi đồng bộ mây");
@@ -70,87 +59,71 @@
     }
 
     const REALMS = [
-      // Phàm Nhân
       { name: "Phàm Nhân (Sơ Kỳ)", req: 0 },
       { name: "Phàm Nhân (Trung Kỳ)", req: 50 },
       { name: "Phàm Nhân (Hậu Kỳ)", req: 120 },
       { name: "Phàm Nhân (Viên Mãn)", req: 250 },
-      // Luyện Khí Kỳ
       { name: "Luyện Khí Kỳ (Sơ Kỳ)", req: 500 },
       { name: "Luyện Khí Kỳ (Trung Kỳ)", req: 900 },
       { name: "Luyện Khí Kỳ (Hậu Kỳ)", req: 1500 },
       { name: "Luyện Khí Kỳ (Viên Mãn)", req: 2500 },
-      // Trúc Cơ Kỳ
       { name: "Trúc Cơ Kỳ (Sơ Kỳ)", req: 4000 },
       { name: "Trúc Cơ Kỳ (Trung Kỳ)", req: 6500 },
       { name: "Trúc Cơ Kỳ (Hậu Kỳ)", req: 10000 },
       { name: "Trúc Cơ Kỳ (Viên Mãn)", req: 16000 },
-      // Kim Đan Kỳ
       { name: "Kim Đan Kỳ (Sơ Kỳ)", req: 25000 },
       { name: "Kim Đan Kỳ (Trung Kỳ)", req: 40000 },
       { name: "Kim Đan Kỳ (Hậu Kỳ)", req: 65000 },
       { name: "Kim Đan Kỳ (Viên Mãn)", req: 100000 },
-      // Nguyên Anh Kỳ
       { name: "Nguyên Anh Kỳ (Sơ Kỳ)", req: 160000 },
       { name: "Nguyên Anh Kỳ (Trung Kỳ)", req: 250000 },
       { name: "Nguyên Anh Kỳ (Hậu Kỳ)", req: 400000 },
       { name: "Nguyên Anh Kỳ (Viên Mãn)", req: 650000 },
-      // Hóa Thần Kỳ
       { name: "Hóa Thần Kỳ (Sơ Kỳ)", req: 1000000 },
       { name: "Hóa Thần Kỳ (Trung Kỳ)", req: 1800000 },
       { name: "Hóa Thần Kỳ (Hậu Kỳ)", req: 3000000 },
       { name: "Hóa Thần Kỳ (Viên Mãn)", req: 5000000 },
-      // Luyện Hư Kỳ
       { name: "Luyện Hư Kỳ (Sơ Kỳ)", req: 8000000 },
       { name: "Luyện Hư Kỳ (Trung Kỳ)", req: 13000000 },
       { name: "Luyện Hư Kỳ (Hậu Kỳ)", req: 21000000 },
       { name: "Luyện Hư Kỳ (Viên Mãn)", req: 35000000 },
-      // Hợp Thể Kỳ
       { name: "Hợp Thể Kỳ (Sơ Kỳ)", req: 55000000 },
       { name: "Hợp Thể Kỳ (Trung Kỳ)", req: 85000000 },
       { name: "Hợp Thể Kỳ (Hậu Kỳ)", req: 130000000 },
       { name: "Hợp Thể Kỳ (Viên Mãn)", req: 200000000 },
-      // Đại Thừa Kỳ
       { name: "Đại Thừa Kỳ (Sơ Kỳ)", req: 300000000 },
       { name: "Đại Thừa Kỳ (Trung Kỳ)", req: 450000000 },
       { name: "Đại Thừa Kỳ (Hậu Kỳ)", req: 700000000 },
       { name: "Đại Thừa Kỳ (Viên Mãn)", req: 1000000000 },
-      // Độ Kiếp Kỳ
       { name: "Độ Kiếp Kỳ (Sơ Kỳ)", req: 1500000000 },
       { name: "Độ Kiếp Kỳ (Trung Kỳ)", req: 2200000000 },
       { name: "Độ Kiếp Kỳ (Hậu Kỳ)", req: 3200000000 },
       { name: "Độ Kiếp Kỳ (Viên Mãn)", req: 4500000000 },
-      // Chân Tiên
       { name: "Chân Tiên (Sơ Kỳ)", req: 6000000000 },
       { name: "Chân Tiên (Trung Kỳ)", req: 8000000000 },
       { name: "Chân Tiên (Hậu Kỳ)", req: 11000000000 },
       { name: "Chân Tiên (Viên Mãn)", req: 15000000000 },
-      // Kim Tiên
       { name: "Kim Tiên (Sơ Kỳ)", req: 20000000000 },
       { name: "Kim Tiên (Trung Kỳ)", req: 28000000000 },
       { name: "Kim Tiên (Hậu Kỳ)", req: 38000000000 },
       { name: "Kim Tiên (Viên Mãn)", req: 50000000000 },
-      // Thái Ất Ngọc Tiên
       { name: "Thái Ất (Sơ Kỳ)", req: 70000000000 },
       { name: "Thái Ất (Trung Kỳ)", req: 95000000000 },
       { name: "Thái Ất (Hậu Kỳ)", req: 130000000000 },
       { name: "Thái Ất (Viên Mãn)", req: 180000000000 },
-      // Đại罗 Tiên Tôn (Đại La)
       { name: "Đại La Tôn Giả (Sơ Kỳ)", req: 250000000000 },
       { name: "Đại La Tôn Giả (Trung Kỳ)", req: 350000000000 },
       { name: "Đại La Tôn Giả (Hậu Kỳ)", req: 500000000000 },
       { name: "Đại La Tôn Giả (Viên Mãn)", req: 700000000000 },
-      // Tiên Vương / Tiên Đế
       { name: "Tiên Vương (Sơ Kỳ)", req: 1000000000000 },
       { name: "Tiên Đế (Viên Mãn)", req: 1500000000000 },
-      // Đạo Tổ
       { name: "Đạo Tổ Cảnh", req: 3000000000000 }
     ];
 
-    const SECTS = [
-      { id: 'thanh_van', name: 'Thanh Vân Môn', buff: 'Tăng +20% Tốc độ Thu Thập', desc: 'Kiếm đạo chính phái, linh khí uy nghiêm.' },
-      { id: 'am_duong', name: 'Âm Dương Cốc', buff: 'Giảm 20% Giá mua Đan Dược & Bảo Vật', desc: 'Hành sự cổ quái, pháp tắc huyền bí.' },
-      { id: 'huyet_dao', name: 'Huyết Đao Môn', buff: 'Tăng +50% Sát thương Trảm Yêu', desc: 'Chuyên tu sát phạt, chiến lực kinh người.' }
+    const DEFAULT_SECTS = [
+      { id: 'thanh_van', name: 'Thanh Vân Môn', buff: 'Tăng +20% Tốc độ Thu Thập', desc: 'Kiếm đạo chính phái, linh khí uy nghiêm.', founder: 'Hệ Thống' },
+      { id: 'am_duong', name: 'Âm Dương Cốc', buff: 'Giảm 20% Giá mua Đan Dược & Bảo Vật', desc: 'Hành sự cổ quái, pháp tắc huyền bí.', founder: 'Hệ Thống' },
+      { id: 'huyet_dao', name: 'Huyết Đao Môn', buff: 'Tăng +50% Sát thương Trảm Yêu', desc: 'Chuyên tu sát phạt, chiến lực kinh người.', founder: 'Hệ Thống' }
     ];
 
     const SHOP_ITEMS = [
@@ -192,11 +165,11 @@
         qi: 0,
         totalQi: 0,
         realmIdx: 0,
-        joinedSectId: null,
+        joinedSectId: 'thanh_van',
         shopCounts: {},
         ownedGears: [],
         equippedGearId: null,
-        logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống cảnh giới từ Phàm Nhân đến Đạo Tổ đã được thiết lập!', type: 'breakthrough', time: Date.now() }]
+        logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống tự lập tông môn đã được kích hoạt!', type: 'breakthrough', time: Date.now() }]
       });
 
       const [activeTab, setActiveTab] = React.useState('shop');
@@ -204,6 +177,9 @@
       const [monsterHp, setMonsterHp] = React.useState(MONSTERS[0].hp);
       const [isDead, setIsDead] = React.useState(false);
       const [cloudLeaderboard, setCloudLeaderboard] = React.useState([]);
+      const [cloudCustomSects, setCloudCustomSects] = React.useState([]);
+      const [newSectName, setNewSectName] = React.useState('');
+      const [newSectDesc, setNewSectDesc] = React.useState('');
 
       const clickPower = React.useMemo(() => {
         let base = 1;
@@ -241,19 +217,33 @@
 
       React.useEffect(() => {
         const syncToCloud = async () => {
-          await updateLeaderboard(playerName, gameState.totalQi, REALMS[gameState.realmIdx].name);
+          const data = await fetchCloudData();
+          let list = data.leaderboard || [];
+          const index = list.findIndex(item => item.name === playerName);
+          if (index >= 0) {
+            if (list[index].totalQi < gameState.totalQi) {
+              list[index].totalQi = gameState.totalQi;
+              list[index].realm = REALMS[gameState.realmIdx].name;
+            }
+          } else {
+            list.push({ name: playerName, totalQi: gameState.totalQi, realm: REALMS[gameState.realmIdx].name });
+          }
+          list.sort((a, b) => b.totalQi - a.totalQi);
+          list = list.slice(0, 10);
+          await updateCloudData({ leaderboard: list });
         };
         const timer = setInterval(syncToCloud, 10000);
         return () => clearInterval(timer);
       }, [gameState.totalQi, gameState.realmIdx, playerName]);
 
       React.useEffect(() => {
-        const loadLb = async () => {
-          const data = await fetchLeaderboard();
-          if (data && data.length > 0) setCloudLeaderboard(data);
+        const loadCloud = async () => {
+          const data = await fetchCloudData();
+          if (data.leaderboard) setCloudLeaderboard(data.leaderboard);
+          if (data.customSects) setCloudCustomSects(data.customSects);
         };
-        loadLb();
-        const timer = setInterval(loadLb, 15000);
+        loadCloud();
+        const timer = setInterval(loadCloud, 10000);
         return () => clearInterval(timer);
       }, []);
 
@@ -272,7 +262,6 @@
         if (gameState.qi >= nextRealm.req) {
           setGameState(prev => {
             const newRealmIdx = prev.realmIdx + 1;
-            updateLeaderboard(playerName, prev.totalQi, REALMS[newRealmIdx].name);
             return {
               ...prev,
               qi: prev.qi - nextRealm.req,
@@ -367,6 +356,42 @@
         }
       };
 
+      const handleCreateSect = async (e) => {
+        e.preventDefault();
+        if (!newSectName.trim()) return;
+        if (gameState.realmIdx < 8) {
+          alert("Cần đạt cảnh giới Trúc Cơ Kỳ (Sơ Kỳ) trở lên mới có thể khai sơn lập phái!");
+          return;
+        }
+
+        const newSect = {
+          id: 'custom_' + Date.now(),
+          name: newSectName.trim(),
+          buff: 'Tăng +30% Tốc độ Thu Thập & Chiến Lực',
+          desc: newSectDesc.trim() || 'Tông môn tự lập của đại năng.',
+          founder: playerName
+        };
+
+        const currentData = await fetchCloudData();
+        const updatedSects = [...(currentData.customSects || []), newSect];
+        await updateCloudData({ customSects: updatedSects });
+
+        setCloudCustomSects(updatedSects);
+        setGameState(prev => ({
+          ...prev,
+          joinedSectId: newSect.id,
+          logs: [
+            { id: Date.now().toString(), text: `[Khai Sơn]: Đạo hữu đã thành công khai lập tông môn "${newSect.name}"!`, type: 'breakthrough', time: Date.now() },
+            ...prev.logs
+          ]
+        }));
+        setNewSectName('');
+        setNewSectDesc('');
+      };
+
+      const allSects = [...DEFAULT_SECTS, ...cloudCustomSects];
+      const currentJoinedSect = allSects.find(s => s.id === gameState.joinedSectId) || DEFAULT_SECTS[0];
+
       const nextRealmObj = REALMS[gameState.realmIdx + 1];
       const progressPercent = nextRealmObj ? Math.min(100, (gameState.qi / nextRealmObj.req) * 100) : 100;
       const equippedBook = BLACK_MARKET_GEARS.find(g => g.id === gameState.equippedGearId) || { multiplier: 3, name: 'Kiếm Khí' };
@@ -379,7 +404,7 @@
 
       return (
         <div className="flex flex-col min-h-screen p-4 max-w-7xl mx-auto gap-4">
-          <header className="sect-glow bg-[#100c1c]/80 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl relative overflow-hidden">
+          <header className="sect-glow bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl relative overflow-hidden">
             <div className="absolute -top-12 -left-12 w-32 h-32 bg-purple-600/10 rounded-full blur-2xl pointer-events-none"></div>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-800 flex items-center justify-center border border-purple-400/40 text-xl shadow-inner">🧘‍♂️</div>
@@ -406,7 +431,7 @@
 
           <main className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
             <div className="col-span-1 lg:col-span-4 flex flex-col gap-4">
-              <div className="bg-[#100c1c]/80 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-2xl flex flex-col items-center justify-center gap-5 relative">
+              <div className="bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-2xl flex flex-col items-center justify-center gap-5 relative">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
                 
                 <button 
@@ -433,37 +458,25 @@
                 </div>
               </div>
 
-              <div className="bg-[#100c1c]/80 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 shadow-2xl">
-                <h3 className="font-serif text-xs text-amber-300 mb-3 font-bold tracking-widest flex items-center gap-2">
-                  <span>🏛️</span> TÔNG MÔN THẾ LỰC
+              <div className="bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 shadow-2xl flex flex-col gap-2">
+                <h3 className="font-serif text-xs text-amber-300 font-bold tracking-widest flex items-center gap-2">
+                  <span>🏛️</span> TÔNG MÔN HIỆN TẠI
                 </h3>
-                {gameState.joinedSectId ? (
-                  <div className="p-3 rounded-xl border border-purple-500/40 bg-purple-950/30 flex justify-between items-center">
-                    <div>
-                      <div className="font-bold text-xs text-amber-200 font-serif">{SECTS.find(s=>s.id===gameState.joinedSectId)?.name}</div>
-                      <div className="text-[10px] text-cyan-300 mt-0.5">{SECTS.find(s=>s.id===gameState.joinedSectId)?.buff}</div>
-                    </div>
-                    <button onClick={()=>setGameState(prev=>({...prev, joinedSectId: null, logs: [{id:Date.now().toString(), text:'[Tông Môn]: Đã phản tông, tự lập môn hộ!', type:'fail', time:Date.now()}, ...prev.logs]}))} className="text-[10px] bg-red-500/20 hover:bg-red-500/30 text-red-300 px-2.5 py-1.5 rounded-lg border border-red-500/40 transition-all cursor-pointer font-mono">Phản Tông</button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 gap-2">
-                    {SECTS.map(s => (
-                      <button key={s.id} onClick={()=>setGameState(prev=>({...prev, joinedSectId: s.id, logs: [{id:Date.now().toString(), text:`[Bái Sư]: Thành công gia nhập ${s.name}!`, type:'breakthrough', time:Date.now()}, ...prev.logs]}))} className="p-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-purple-900/30 hover:border-purple-500/40 text-left transition-all cursor-pointer group">
-                        <div className="font-bold text-xs text-amber-100 group-hover:text-amber-300">{s.name}</div>
-                        <div className="text-[10px] text-cyan-400/80">{s.buff}</div>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <div className="p-3 rounded-xl border border-purple-500/40 bg-purple-950/30 flex flex-col gap-1">
+                  <div className="font-bold text-xs text-amber-200 font-serif">{currentJoinedSect.name}</div>
+                  <div className="text-[10px] text-cyan-300">{currentJoinedSect.buff}</div>
+                  <div className="text-[9px] text-slate-400 font-mono">Sáng lập: {currentJoinedSect.founder || 'Hệ Thống'}</div>
+                </div>
               </div>
             </div>
 
             <div className="col-span-1 lg:col-span-8 flex flex-col gap-4">
-              <div className="flex gap-1.5 bg-[#100c1c]/80 p-1.5 rounded-2xl border border-purple-500/30 overflow-x-auto no-scrollbar shadow-xl">
+              <div className="flex gap-1.5 bg-[#100c1c]/85 p-1.5 rounded-2xl border border-purple-500/30 overflow-x-auto no-scrollbar shadow-xl">
                 {[
                   { id: 'shop', name: '💊 Đan Phòng & Trận Pháp' },
                   { id: 'blackmarket', name: '🖤 Chợ Đen Pháp Bảo' },
                   { id: 'combat', name: '⚔️ Trảm Yêu Thử Luyện' },
+                  { id: 'sect', name: '⛩️ Vạn Đạo Tông Môn' },
                   { id: 'leaderboard', name: '📜 Thiên Thư Bảng' }
                 ].map(tab => (
                   <button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-serif font-bold whitespace-nowrap transition-all cursor-pointer ${activeTab === tab.id ? 'bg-gradient-to-r from-purple-700/60 to-indigo-700/60 text-amber-200 border border-purple-400/50 shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
@@ -472,7 +485,7 @@
                 ))}
               </div>
 
-              <div className="bg-[#100c1c]/80 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 shadow-2xl min-h-[380px] max-h-[500px] overflow-y-auto no-scrollbar">
+              <div className="bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 shadow-2xl min-h-[380px] max-h-[500px] overflow-y-auto no-scrollbar">
                 {activeTab === 'shop' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {SHOP_ITEMS.map(item => {
@@ -562,6 +575,63 @@
                   </div>
                 )}
 
+                {activeTab === 'sect' && (
+                  <div className="flex flex-col gap-5">
+                    {gameState.realmIdx >= 8 && (
+                      <form onSubmit={handleCreateSect} className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 flex flex-col gap-3">
+                        <div className="font-serif font-bold text-xs text-amber-300 flex items-center gap-1.5">
+                          <span>✨</span> Khai Sơn Lập Phái (Yêu cầu: Trúc Cơ Kỳ Sơ Kỳ+)
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <input 
+                            type="text" 
+                            placeholder="Tên Tông Môn (VD: Nghịch Thiên Tông)" 
+                            value={newSectName}
+                            onChange={(e)=>setNewSectName(e.target.value)}
+                            className="bg-black/60 border border-purple-500/30 rounded-xl px-3 py-2 text-xs text-amber-100 focus:outline-none focus:border-amber-400 font-mono"
+                          />
+                          <input 
+                            type="text" 
+                            placeholder="Mô tả / Slogan tông môn" 
+                            value={newSectDesc}
+                            onChange={(e)=>setNewSectDesc(e.target.value)}
+                            className="bg-black/60 border border-purple-500/30 rounded-xl px-3 py-2 text-xs text-amber-100 focus:outline-none focus:border-amber-400 font-mono"
+                          />
+                        </div>
+                        <button type="submit" className="py-2.5 bg-gradient-to-r from-amber-600/40 to-purple-600/40 hover:from-amber-600/60 hover:to-purple-600/60 border border-amber-400/40 rounded-xl text-xs font-serif font-bold text-amber-200 transition-all cursor-pointer shadow-md">
+                          🏛️ Xác Nhận Khai Sơn
+                        </button>
+                      </form>
+                    )}
+
+                    <div className="flex flex-col gap-2.5">
+                      <div className="text-[11px] text-cyan-300 font-mono flex items-center gap-1.5">
+                        <span>🌐</span> Danh sách Tông Môn trên đại lục (Mọi cảnh giới đều có thể bái nhập tự do)
+                      </div>
+                      {allSects.map(s => {
+                        const isJoined = gameState.joinedSectId === s.id;
+                        return (
+                          <div key={s.id} className={`p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all ${isJoined ? 'border-amber-400/80 bg-amber-500/10 shadow-[0_0_15px_rgba(251,191,36,0.15)]' : 'border-purple-500/20 bg-purple-950/20'}`}>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-serif font-bold text-xs text-amber-200">{s.name}</span>
+                                <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-black/60 border border-white/10 text-slate-300">Sáng lập: {s.founder || 'Hệ Thống'}</span>
+                              </div>
+                              <p className="text-[11px] text-cyan-300 mt-1">{s.buff}</p>
+                              <p className="text-[10px] text-slate-400 mt-0.5">{s.desc}</p>
+                            </div>
+                            <button 
+                              onClick={()=>setGameState(prev=>({...prev, joinedSectId: s.id, logs: [{id:Date.now().toString(), text:`[Bái Sư]: Thành công gia nhập ${s.name}!`, type:'breakthrough', time:Date.now()}, ...prev.logs]}))}
+                              className={`px-4 py-2 rounded-xl text-xs font-serif font-bold transition-all cursor-pointer border whitespace-nowrap ${isJoined ? 'bg-amber-500/20 text-amber-300 border-amber-400/40 shadow-md' : 'bg-purple-600/20 hover:bg-purple-600/40 text-purple-200 border-purple-400/30'}`}>
+                              {isJoined ? 'Đang Nhập Môn' : 'Bái Sư Nhập Môn'}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {activeTab === 'leaderboard' && (
                   <div className="flex flex-col gap-2">
                     <div className="text-[11px] text-cyan-300 font-mono mb-1 flex items-center gap-1.5">
@@ -586,7 +656,7 @@
           </main>
 
           <footer className="w-full">
-            <div className="bg-[#100c1c]/80 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-4 h-28 overflow-y-auto no-scrollbar font-mono text-[11px] flex flex-col gap-1.5 shadow-2xl">
+            <div className="bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-4 h-28 overflow-y-auto no-scrollbar font-mono text-[11px] flex flex-col gap-1.5 shadow-2xl">
               <div className="text-purple-400 font-bold mb-0.5 tracking-wider uppercase text-[10px]">📜 Nhật Ký Tu Chân Thiên Đạo</div>
               {gameState.logs.map(log => (
                 <div key={log.id} className={`${log.type === 'breakthrough' ? 'text-amber-300 font-bold' : log.type === 'fail' ? 'text-red-400' : log.type === 'shop' ? 'text-emerald-300' : 'text-slate-300'}`}>
