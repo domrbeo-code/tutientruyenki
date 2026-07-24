@@ -217,6 +217,8 @@
         const syncCloud = async () => {
           const data = await fetchCloudData();
           let list = data.leaderboard || [];
+          
+          // Cập nhật hoặc thêm mới player hiện tại vào danh sách mà không làm mất người khác
           const index = list.findIndex(item => item.name === playerName);
           if (index >= 0) {
             if (list[index].totalQi < gameState.totalQi) {
@@ -226,6 +228,16 @@
           } else {
             list.push({ name: playerName, totalQi: gameState.totalQi, realm: REALMS[gameState.realmIdx].name });
           }
+          
+          // Gộp chung danh sách cũ trên mây với danh sách hiện tại để bảo toàn toàn bộ đạo hữu
+          if (data.leaderboard) {
+            data.leaderboard.forEach(cloudItem => {
+              if (!list.some(existing => existing.name === cloudItem.name)) {
+                list.push(cloudItem);
+              }
+            });
+          }
+
           list.sort((a, b) => b.totalQi - a.totalQi);
           list = list.slice(0, 10);
 
@@ -249,7 +261,7 @@
           await updateCloudData({ leaderboard: list, activeTribulations: tribs });
           setActiveTribulations(tribs);
           if (data.customSects) setCloudCustomSects(data.customSects);
-          if (data.leaderboard) setCloudLeaderboard(data.leaderboard);
+          if (list) setCloudLeaderboard(list);
         };
 
         syncCloud();
