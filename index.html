@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Chỉ Người Chơi Thật)</title>
+  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Clean Cloud)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -30,7 +30,9 @@
   <script type="text/babel">
     const BIN_ID = "6a622390f5f4af5e29b6690d";
     const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
-    const SAVE_KEY = "tu_tien_game_save_v11";
+    const SAVE_KEY = "tu_tien_game_save_v12";
+
+    const NPC_NAMES = ["CuongDaoTa", "ThanhVanChi", "BachYThien"];
 
     async function fetchCloudData() {
       try {
@@ -43,7 +45,13 @@
         });
         if (!res.ok) throw new Error("Network response was not ok");
         const data = await res.json();
-        return data.record || { leaderboard: [], customSects: [], activeTribulations: {} };
+        let record = data.record || { leaderboard: [], customSects: [], activeTribulations: {} };
+        
+        // Lọc bỏ triệt để các tên NPC nếu còn sót trên cloud
+        if (record.leaderboard) {
+          record.leaderboard = record.leaderboard.filter(item => !NPC_NAMES.includes(item.name));
+        }
+        return record;
       } catch (e) {
         return { leaderboard: [], customSects: [], activeTribulations: {} };
       }
@@ -53,6 +61,9 @@
       try {
         const current = await fetchCloudData();
         let list = current.leaderboard || [];
+
+        // Lọc bỏ NPC một lần nữa cho chắc chắn
+        list = list.filter(item => !NPC_NAMES.includes(item.name));
 
         const idx = list.findIndex(item => item.name === myEntry.name);
         if (idx >= 0) {
@@ -188,7 +199,7 @@
 
       const [gameState, setGameState] = React.useState(() => {
         try {
-          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v10');
+          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v11');
           if (savedState) return JSON.parse(savedState);
         } catch (e) {}
         return {
@@ -274,7 +285,8 @@
           const result = await updateCloudData(playerEntry);
           if (result && isMounted) {
             if (result.leaderboard) {
-              setCloudLeaderboard(result.leaderboard);
+              const cleanList = result.leaderboard.filter(item => !NPC_NAMES.includes(item.name));
+              setCloudLeaderboard(cleanList);
             }
             if (result.customSects) {
               setCloudCustomSects(result.customSects);
@@ -283,7 +295,7 @@
               const now = Date.now();
               const cleanTribs = {};
               Object.entries(result.activeTribulations).forEach(([k, v]) => {
-                if (v && v.endTime > now && v.hp > 0) cleanTribs[k] = v;
+                if (v && v.endTime > now && v.hp > 0 && !NPC_NAMES.includes(k)) cleanTribs[k] = v;
               });
               setActiveTribulations(cleanTribs);
 
@@ -415,6 +427,7 @@
           }
           const delta = Math.abs(tribs[targetPlayerName].hp - oldHp);
 
+          const cleanList = (data.leaderboard || []).filter(item => !NPC_NAMES.includes(item.name));
           const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
             method: 'PUT',
             headers: {
@@ -423,7 +436,7 @@
               'X-Access-Key': API_KEY
             },
             body: JSON.stringify({
-              leaderboard: data.leaderboard || [],
+              leaderboard: cleanList,
               customSects: data.customSects || [],
               activeTribulations: tribs
             })
@@ -519,6 +532,7 @@
 
         const currentData = await fetchCloudData();
         const updatedSects = [...(currentData.customSects || []), newSect];
+        const cleanList = (currentData.leaderboard || []).filter(item => !NPC_NAMES.includes(item.name));
         
         await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: 'PUT',
@@ -528,7 +542,7 @@
             'X-Access-Key': API_KEY
           },
           body: JSON.stringify({
-            leaderboard: currentData.leaderboard || [],
+            leaderboard: cleanList,
             customSects: updatedSects,
             activeTribulations: currentData.activeTribulations || {}
           })
@@ -550,7 +564,7 @@
       const progressPercent = nextRealmObj ? Math.min(100, (gameState.qi / nextRealmObj.req) * 100) : 100;
 
       const fullLeaderboard = React.useMemo(() => {
-        let list = [...cloudLeaderboard];
+        let list = cloudLeaderboard.filter(item => !NPC_NAMES.includes(item.name));
         const playerEntry = {
           name: playerName,
           totalQi: gameState.totalQi,
@@ -624,6 +638,7 @@
           {Object.keys(activeTribulations).length > 0 && (
             <div className="flex flex-col gap-2">
               {Object.entries(activeTribulations).map(([pName, trib]) => {
+                if (NPC_NAMES.includes(pName)) return null;
                 const timeLeft = Math.max(0, Math.ceil((trib.endTime - Date.now()) / 1000));
                 const hasActed = actedPlayers.has(pName);
                 const isLoading = actionLoading === pName;
