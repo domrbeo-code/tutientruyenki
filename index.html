@@ -49,17 +49,18 @@
         const current = await fetchCloudData();
 
         let mergedLeaderboard = current.leaderboard || [];
-        if (partialData.leaderboard) {
-          partialData.leaderboard.forEach(newItem => {
-            const existingIdx = mergedLeaderboard.findIndex(item => item.name === newItem.name);
-            if (existingIdx >= 0) {
-              if (newItem.totalQi >= mergedLeaderboard[existingIdx].totalQi) {
-                mergedLeaderboard[existingIdx] = newItem;
-              }
-            } else {
-              mergedLeaderboard.push(newItem);
+        if (partialData.leaderboard && partialData.leaderboard.length > 0) {
+          const newItem = partialData.leaderboard[0];
+          const existingIdx = mergedLeaderboard.findIndex(item => item.name === newItem.name);
+          
+          if (existingIdx >= 0) {
+            // Chỉ cập nhật khi tổng Qi lớn hơn hoặc cảnh giới thay đổi để cố định thông tin, chống nhấp nháy/mất tích
+            if (newItem.totalQi >= mergedLeaderboard[existingIdx].totalQi || newItem.realm !== mergedLeaderboard[existingIdx].realm) {
+              mergedLeaderboard[existingIdx] = newItem;
             }
-          });
+          } else {
+            mergedLeaderboard.push(newItem);
+          }
         }
         mergedLeaderboard.sort((a, b) => b.totalQi - a.totalQi);
         mergedLeaderboard = mergedLeaderboard.slice(0, 15);
@@ -212,22 +213,18 @@
       const [activeTribulations, setActiveTribulations] = React.useState({});
       const [myTribulation, setMyTribulation] = React.useState(null);
 
-      // ✅ MỚI: Set thay thế playerActionChoice
       const [actedPlayers, setActedPlayers] = React.useState(new Set());
-      // ✅ MỚI: loading khi đang gửi hành động lên cloud
       const [actionLoading, setActionLoading] = React.useState(null);
 
       const [newSectName, setNewSectName] = React.useState('');
       const [newSectDesc, setNewSectDesc] = React.useState('');
 
-      // ✅ MỚI: tick 500ms để countdown mượt mà
       const [, setTick] = React.useState(0);
       React.useEffect(() => {
         const timer = setInterval(() => setTick(t => t + 1), 500);
         return () => clearInterval(timer);
       }, []);
 
-      // ✅ MỚI: xóa actedPlayers khi tribulation biến mất
       React.useEffect(() => {
         const activeNames = new Set(Object.keys(activeTribulations));
         setActedPlayers(prev => {
@@ -270,19 +267,17 @@
         return () => clearInterval(interval);
       }, [qps]);
 
-      // ✅ SỬA: Sync cloud 2s + đồng bộ HP tribulation của bản thân từ cloud
+      // ✅ CỐ ĐỊNH & CHỐNG NHẤP NHÁY BXH: Gửi dữ liệu lên cloud hợp nhất danh sách an toàn
       React.useEffect(() => {
         const syncCloud = async () => {
           const latestData = await fetchCloudData();
           let tribs = latestData.activeTribulations || {};
           const now = Date.now();
 
-          // Dọn expired / HP = 0
           Object.keys(tribs).forEach(pKey => {
             if (tribs[pKey].endTime <= now || tribs[pKey].hp <= 0) delete tribs[pKey];
           });
 
-          // Push state của bản thân
           if (myTribulation) {
             tribs[playerName] = {
               targetRealm: myTribulation.targetRealm,
@@ -300,7 +295,9 @@
           });
 
           if (updatedCloud) {
-            if (updatedCloud.leaderboard) setCloudLeaderboard(updatedCloud.leaderboard);
+            if (updatedCloud.leaderboard && updatedCloud.leaderboard.length > 0) {
+              setCloudLeaderboard(updatedCloud.leaderboard);
+            }
             if (updatedCloud.customSects) setCloudCustomSects(updatedCloud.customSects);
             if (updatedCloud.activeTribulations) {
               const cleanTribs = {};
@@ -310,7 +307,6 @@
               });
               setActiveTribulations(cleanTribs);
 
-              // ✅ MỚI: Sync HP của bản thân từ cloud (nhận sát thương/hồi máu từ người khác)
               if (myTribulation && cleanTribs[playerName]) {
                 const cloudHp = cleanTribs[playerName].hp;
                 if (cloudHp !== myTribulation.hp) {
@@ -322,11 +318,10 @@
         };
 
         syncCloud();
-        const timer = setInterval(syncCloud, 2000);
+        const timer = setInterval(syncCloud, 3000); // Tăng thời gian đồng bộ lên 3s để cực kỳ ổn định, chống nhấp nháy
         return () => clearInterval(timer);
       }, [gameState.totalQi, gameState.realmIdx, playerName, myTribulation]);
 
-      // Kiểm tra kết thúc độ kiếp bản thân (300ms check)
       React.useEffect(() => {
         if (!myTribulation) return;
         const timer = setInterval(() => {
@@ -347,8 +342,7 @@
               setGameState(prev => ({
                 ...prev,
                 logs: [
-                  { id: Date.now().toString(), text: `[Thiên Kiếp Thất Bại]: Pháp trận bị công phá hoặc quá sức chịu đựng, hồn phi phách tán!`, type: 'fail', time: Date.now() },
-                  ...prev.logs
+                  { id: Date.now().toString(), text: `[Thiên Kiếp Thất Bại]: Pháp trận bị công phá hoặc quá sức chịu đựng, hồn phi phách tán!`, type: 'fail', time: Date.now() }
                 ]
               }));
             }
@@ -358,7 +352,6 @@
         return () => clearInterval(timer);
       }, [myTribulation, gameState.realmIdx]);
 
-      // ✅ SỬA: handleBreakthrough async — push cloud NGAY khi bắt đầu độ kiếp
       const handleBreakthrough = async () => {
         const nextRealm = REALMS[gameState.realmIdx + 1];
         if (!nextRealm) return;
@@ -380,7 +373,6 @@
               ]
             }));
 
-            // ✅ Push lên cloud NGAY LẬP TỨC
             try {
               const currentData = await fetchCloudData();
               let tribs = currentData.activeTribulations || {};
@@ -421,7 +413,6 @@
         }
       };
 
-      // ✅ SỬA HOÀN TOÀN: Thực thi hành động NGAY LẬP TỨC lên cloud
       const selectTribulationAction = async (targetPlayerName, actionType) => {
         setActionLoading(targetPlayerName);
         try {
@@ -573,9 +564,22 @@
       const currentJoinedSect = allSects.find(s => s.id === gameState.joinedSectId) || DEFAULT_SECTS[0];
       const nextRealmObj = REALMS[gameState.realmIdx + 1];
       const progressPercent = nextRealmObj ? Math.min(100, (gameState.qi / nextRealmObj.req) * 100) : 100;
-      const fullLeaderboard = cloudLeaderboard.length > 0
-        ? cloudLeaderboard.map(item => ({ ...item, isPlayer: item.name === playerName, title: item.realm || 'Phàm Nhân' }))
-        : [{ name: playerName, totalQi: gameState.totalQi, realm: REALMS[gameState.realmIdx].name, isPlayer: true, title: REALMS[gameState.realmIdx].name }];
+      
+      // ✅ HIỂN THỊ BXH: Hợp nhất danh sách cloud và người chơi hiện tại, đảm bảo thấy nhau đầy đủ không bị mất
+      const fullLeaderboard = React.useMemo(() => {
+        let list = [...cloudLeaderboard];
+        const existingIdx = list.findIndex(item => item.name === playerName);
+        const playerEntry = { name: playerName, totalQi: gameState.totalQi, realm: REALMS[gameState.realmIdx].name, isPlayer: true, title: REALMS[gameState.realmIdx].name };
+        
+        if (existingIdx >= 0) {
+          list[existingIdx] = { ...list[existingIdx], totalQi: Math.max(list[existingIdx].totalQi, gameState.totalQi), realm: REALMS[gameState.realmIdx].name, isPlayer: true, title: REALMS[gameState.realmIdx].name };
+        } else {
+          list.push(playerEntry);
+        }
+        
+        list.sort((a, b) => b.totalQi - a.totalQi);
+        return list.slice(0, 15).map(item => ({ ...item, isPlayer: item.name === playerName, title: item.realm || 'Phàm Nhân' }));
+      }, [cloudLeaderboard, playerName, gameState.totalQi, gameState.realmIdx]);
 
       return (
         <div className="flex flex-col min-h-screen p-4 max-w-7xl mx-auto gap-4">
@@ -623,7 +627,7 @@
             </div>
           </header>
 
-          {/* ✅ Tribulation banners - nút thực thi ngay lập tức */}
+          {/* Tribulation banners */}
           {Object.keys(activeTribulations).length > 0 && (
             <div className="flex flex-col gap-2">
               {Object.entries(activeTribulations).map(([pName, trib]) => {
@@ -935,7 +939,7 @@
                     </div>
                     <div className="flex flex-col gap-2">
                       {fullLeaderboard.map((item, index) => (
-                        <div key={index} className={`flex items-center justify-between p-3.5 rounded-xl border ${item.isPlayer ? 'bg-purple-950/40 border-purple-400/60 shadow-lg' : 'bg-black/50 border-purple-500/20'}`}>
+                        <div key={item.name} className={`flex items-center justify-between p-3.5 rounded-xl border ${item.isPlayer ? 'bg-purple-950/40 border-purple-400/60 shadow-lg' : 'bg-black/50 border-purple-500/20'}`}>
                           <div className="flex items-center gap-3">
                             <span className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs font-bold ${index === 0 ? 'bg-amber-500 text-black' : index === 1 ? 'bg-slate-300 text-black' : index === 2 ? 'bg-amber-700 text-white' : 'bg-purple-900/50 text-purple-200 border border-purple-500/30'}`}>
                               {index + 1}
