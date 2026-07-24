@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Bản Đồng Bộ Real-time 2 Chiều)</title>
+  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Bản Chuẩn Hoá Độ Kiếp)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- React & ReactDOM -->
@@ -33,7 +33,7 @@
   <script type="text/babel">
     const BIN_ID = "6a622390f5f4af5e29b6690d";
     const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
-    const SAVE_KEY = "tu_tien_game_save_v4";
+    const SAVE_KEY = "tu_tien_game_save_v5";
 
     async function fetchCloudData() {
       try {
@@ -51,25 +51,19 @@
       try {
         const current = await fetchCloudData();
         
-        // Lấy danh sách cũ trên mây làm gốc để không bao giờ bị mất tích
         let mergedLeaderboard = current.leaderboard || [];
-        
         if (partialData.leaderboard) {
           partialData.leaderboard.forEach(newItem => {
             const existingIdx = mergedLeaderboard.findIndex(item => item.name === newItem.name);
             if (existingIdx >= 0) {
-              // Chỉ cập nhật khi tổng Qi mới cao hơn hoặc bằng tiến độ cũ
               if (newItem.totalQi >= mergedLeaderboard[existingIdx].totalQi) {
                 mergedLeaderboard[existingIdx] = newItem;
               }
             } else {
-              // Thêm mới nếu là đạo hữu lần đầu lên bảng
               mergedLeaderboard.push(newItem);
             }
           });
         }
-        
-        // Sắp xếp lại theo tổng Qi giảm dần và giữ top 15 cao nhất vĩnh viễn
         mergedLeaderboard.sort((a, b) => b.totalQi - a.totalQi);
         mergedLeaderboard = mergedLeaderboard.slice(0, 15);
 
@@ -82,7 +76,6 @@
           });
         }
 
-        // Riêng độ kiếp thì vẫn giữ cơ chế dọn dẹp khi hết giờ hoặc xong trận
         const mergedTribs = { ...(current.activeTribulations || {}), ...(partialData.activeTribulations || {}) };
 
         const merged = {
@@ -191,7 +184,7 @@
 
       const [gameState, setGameState] = React.useState(() => {
         try {
-          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_state_v3');
+          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_state_v4');
           if (savedState) return JSON.parse(savedState);
         } catch (e) {}
         return {
@@ -220,18 +213,22 @@
       const [cloudCustomSects, setCloudCustomSects] = React.useState([]);
       const [activeTribulations, setActiveTribulations] = React.useState({});
       const [myTribulation, setMyTribulation] = React.useState(null);
+      const [playerActionChoice, setPlayerActionChoice] = React.useState({}); // Lưu lựa chọn 'protect' hoặc 'attack' cho từng người độ kiếp
 
       const [newSectName, setNewSectName] = React.useState('');
       const [newSectDesc, setNewSectDesc] = React.useState('');
 
-      const clickPower = React.useMemo(() => {
-        let base = 1;
+      // Sức mạnh chiến lực tổng hợp dựa trên Cảnh giới và Pháp bảo (Scaling theo tu vi)
+      const combatPower = React.useMemo(() => {
+        let base = 1 + gameState.realmIdx * 3; // Cảnh giới càng cao, chiến lực gốc càng khủng
         gameState.ownedGears.forEach(gearId => {
           const gear = BLACK_MARKET_GEARS.find(g => g.id === gearId);
           if (gear) base += gear.clickBonus;
         });
         return base;
-      }, [gameState.ownedGears]);
+      }, [gameState.realmIdx, gameState.ownedGears]);
+
+      const clickPower = combatPower;
 
       const qps = React.useMemo(() => {
         let total = 0;
@@ -254,7 +251,7 @@
         return () => clearInterval(interval);
       }, [qps]);
 
-      // Đồng bộ 2 chiều liên tục mỗi 4 giây (Gửi dữ liệu lên và kéo dữ liệu về lập tức)
+      // Đồng bộ 2 chiều liên tục mỗi 4 giây
       React.useEffect(() => {
         const syncCloud = async () => {
           let tribs = { ...activeTribulations };
@@ -274,7 +271,6 @@
             if (tribs[pKey].endTime < now || tribs[pKey].hp <= 0) delete tribs[pKey];
           });
 
-          // Gửi data lên mây
           const updatedCloud = await updateCloudData({
             leaderboard: [{ name: playerName, totalQi: gameState.totalQi, realm: REALMS[gameState.realmIdx].name }],
             activeTribulations: tribs
@@ -285,7 +281,6 @@
             if (updatedCloud.customSects) setCloudCustomSects(updatedCloud.customSects);
             if (updatedCloud.activeTribulations) setActiveTribulations(updatedCloud.activeTribulations);
           } else {
-            // Nếu lỗi gửi, ít ra vẫn kéo data mới nhất về cho thiết bị (PC/Điện thoại) nhận nhau
             const latestData = await fetchCloudData();
             if (latestData.leaderboard) setCloudLeaderboard(latestData.leaderboard);
             if (latestData.customSects) setCloudCustomSects(latestData.customSects);
@@ -298,6 +293,7 @@
         return () => clearInterval(timer);
       }, [gameState.totalQi, gameState.realmIdx, playerName, myTribulation]);
 
+      // Kiểm tra kết thúc độ kiếp của chính mình
       React.useEffect(() => {
         if (!myTribulation) return;
         const timer = setInterval(() => {
@@ -310,7 +306,7 @@
                 qi: prev.qi - nextRealm.req,
                 realmIdx: prev.realmIdx + 1,
                 logs: [
-                  { id: Date.now().toString(), text: `[Độ Kiếp Thành Công]: Chống chịu thiên kiếp, bước chân vào ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() },
+                  { id: Date.now().toString(), text: `[Độ Kiếp Thành Công]: Chống chịu qua lôi kiếp, bước chân vào ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() },
                   ...prev.logs
                 ]
               }));
@@ -318,7 +314,7 @@
               setGameState(prev => ({
                 ...prev,
                 logs: [
-                  { id: Date.now().toString(), text: `[Thiên Kiếp Thất Bại]: Bị công phá hoặc chống đỡ không nổi, độ kiếp tiêu tan!`, type: 'fail', time: Date.now() },
+                  { id: Date.now().toString(), text: `[Thiên Kiếp Thất Bại]: Pháp trận bị công phá hoặc quá sức chịu đựng, hồn phi phách tán!`, type: 'fail', time: Date.now() },
                   ...prev.logs
                 ]
               }));
@@ -329,6 +325,47 @@
         return () => clearInterval(timer);
       }, [myTribulation, gameState.realmIdx]);
 
+      // Tự động kích hoạt hành động sau khi đếm ngược 30 giây hoặc khi hết giờ độ kiếp
+      React.useEffect(() => {
+        const interval = setInterval(async () => {
+          const data = await fetchCloudData();
+          let tribs = data.activeTribulations || {};
+          let updated = false;
+
+          Object.keys(tribs).forEach(pName => {
+            const trib = tribs[pName];
+            const timeLeft = Math.floor((trib.endTime - Date.now()) / 1000);
+            
+            // Nếu thời gian độ kiếp vừa chạm mốc kết thúc (hoặc còn đúng hạn chót) mà người chơi đã chọn hành động
+            if (timeLeft <= 0 && playerActionChoice[pName]) {
+              const action = playerActionChoice[pName];
+              let power = combatPower * 15; // Sát thương/Hồi phục cực lớn khi chốt hạ
+              if (action === 'attack' && gameState.joinedSectId === 'huyet_dao') power *= 1.5;
+
+              if (action === 'protect') {
+                tribs[pName].hp = Math.min(tribs[pName].maxHp, tribs[pName].hp + power);
+              } else {
+                tribs[pName].hp = Math.max(0, tribs[pName].hp - power);
+              }
+
+              // Xóa lựa chọn sau khi đã thực thi
+              setPlayerActionChoice(prev => {
+                const copy = { ...prev };
+                delete copy[pName];
+                return copy;
+              });
+              updated = true;
+            }
+          });
+
+          if (updated) {
+            await updateCloudData({ activeTribulations: tribs });
+            setActiveTribulations(tribs);
+          }
+        }, 1000);
+        return () => clearInterval(interval);
+      }, [playerActionChoice, combatPower, gameState.joinedSectId]);
+
       const handleBreakthrough = () => {
         const nextRealm = REALMS[gameState.realmIdx + 1];
         if (!nextRealm) return;
@@ -337,15 +374,15 @@
           if (nextRealm.isMajor) {
             setMyTribulation({
               targetRealm: nextRealm.name,
-              hp: 500,
-              maxHp: 500,
-              endTime: Date.now() + 20000
+              hp: 1000,
+              maxHp: 1000,
+              endTime: Date.now() + 30000 // 30 giây độ kiếp
             });
             setGameState(prev => ({
               ...prev,
               logs: [
-                { id: Date.now().toString(), text: `[Thiên Kiếp Giáng Lâm]: Đạo hữu bắt đầu độ kiếp lên ${nextRealm.name}! Cần bảo vệ pháp trận trong 20 giây!`, type: 'breakthrough', time: Date.now() },
-                ...prev.logs
+                ...prev.logs,
+                { id: Date.now().toString(), text: `[Thiên Kiếp Giáng Lâm]: Đạo hữu bắt đầu độ kiếp lên ${nextRealm.name}! Phải chống đỡ trong 30 giây (Mọi số phận giao phó cho thiên hạ)!`, type: 'breakthrough', time: Date.now() }
               ]
             }));
           } else {
@@ -354,8 +391,8 @@
               qi: prev.qi - nextRealm.req,
               realmIdx: prev.realmIdx + 1,
               logs: [
-                { id: Date.now().toString(), text: `[Đột Phá]: Thành công tiến cấp lên ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() },
-                ...prev.logs
+                ...prev.logs,
+                { id: Date.now().toString(), text: `[Đột Phá]: Thành công tiến cấp lên ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() }
               ]
             }));
           }
@@ -363,40 +400,27 @@
           setGameState(prev => ({
             ...prev,
             logs: [
-              { id: Date.now().toString(), text: `[Tâm Ma]: Linh khí bất túc, xung kích ${nextRealm.name} thất bại!`, type: 'fail', time: Date.now() },
-              ...prev.logs
+              ...prev.logs,
+              { id: Date.now().toString(), text: `[Tâm Ma]: Linh khí bất túc, xung kích ${nextRealm.name} thất bại!`, type: 'fail', time: Date.now() }
             ]
           }));
         }
       };
 
-      const interactTribulation = async (targetPlayerName, actionType) => {
-        const data = await fetchCloudData();
-        let tribs = data.activeTribulations || {};
-        if (!tribs[targetPlayerName]) {
-          alert("Lôi kiếp của đạo hữu này đã kết thúc hoặc không tồn tại!");
-          return;
-        }
+      const selectTribulationAction = (targetPlayerName, actionType) => {
+        // Chỉ cho phép chọn 1 nút duy nhất (Hộ Thủ hoặc Tấn Công) cho mỗi người đang độ kiếp
+        setPlayerActionChoice(prev => ({
+          ...prev,
+          [targetPlayerName]: actionType
+        }));
 
-        let power = clickPower;
-        if (actionType === 'attack' && gameState.joinedSectId === 'huyet_dao') power *= 1.5;
-
-        if (actionType === 'protect') {
-          tribs[targetPlayerName].hp = Math.min(tribs[targetPlayerName].maxHp, tribs[targetPlayerName].hp + power * 5);
-          setGameState(prev => ({
-            ...prev,
-            logs: [{ id: Date.now().toString(), text: `[Hộ Đạo]: Ra tay tương trợ, hồi phục +${power * 5} HP độ kiếp cho ${targetPlayerName}!`, type: 'shop', time: Date.now() }, ...prev.logs]
-          }));
-        } else {
-          tribs[targetPlayerName].hp = Math.max(0, tribs[targetPlayerName].hp - power * 5);
-          setGameState(prev => ({
-            ...prev,
-            logs: [{ id: Date.now().toString(), text: `[Phá Trận]: Công kích lôi kiếp của ${targetPlayerName}, gây ra -${power * 5} HP!`, type: 'fail', time: Date.now() }, ...prev.logs]
-          }));
-        }
-
-        await updateCloudData({ activeTribulations: tribs });
-        setActiveTribulations(tribs);
+        setGameState(prev => ({
+          ...prev,
+          logs: [
+            ...prev.logs,
+            { id: Date.now().toString(), text: `[Thiên Thư]: Đã chọn lệnh "${actionType === 'protect' ? 'Hộ Thủ' : 'Tấn Công'}" cho ${targetPlayerName}. Sẽ thực thi khi hết 30 giây độ kiếp!`, type: 'shop', time: Date.now() }
+          ]
+        }));
       };
 
       const buyItem = (itemId) => {
@@ -411,7 +435,7 @@
             ...prev,
             qi: prev.qi - cost,
             shopCounts: { ...prev.shopCounts, [itemId]: count + 1 },
-            logs: [{ id: Date.now().toString(), text: `[Đan Phòng]: Mua thành công ${item.name}!`, type: 'shop', time: Date.now() }, ...prev.logs]
+            logs: [...prev.logs, { id: Date.now().toString(), text: `[Đan Phòng]: Mua thành công ${item.name}!`, type: 'shop', time: Date.now() }]
           }));
         }
       };
@@ -426,7 +450,7 @@
             qi: prev.qi - cost,
             ownedGears: [...prev.ownedGears, gear.id],
             equippedGearId: prev.equippedGearId || gear.id,
-            logs: [{ id: Date.now().toString(), text: `[Bảo Khố]: Thu phục thành công pháp bảo ${gear.name}!`, type: 'shop', time: Date.now() }, ...prev.logs]
+            logs: [...prev.logs, { id: Date.now().toString(), text: `[Bảo Khố]: Thu phục thành công pháp bảo ${gear.name}!`, type: 'shop', time: Date.now() }]
           }));
         }
       };
@@ -440,7 +464,7 @@
 
       const attackMonster = (multiplier = 1) => {
         if (isDead) return;
-        let dmg = clickPower * multiplier;
+        let dmg = combatPower * multiplier;
         if (gameState.joinedSectId === 'huyet_dao') dmg *= 1.5;
 
         const monster = MONSTERS[currentMonsterIdx];
@@ -451,7 +475,7 @@
             ...prev,
             qi: prev.qi + monster.reward,
             totalQi: prev.totalQi + monster.reward,
-            logs: [{ id: Date.now().toString(), text: `[Trảm Yêu]: Tiêu diệt ${monster.name}, cướp đoạt +${monster.reward} Linh Khí!`, type: 'breakthrough', time: Date.now() }, ...prev.logs]
+            logs: [...prev.logs, { id: Date.now().toString(), text: `[Trảm Yêu]: Tiêu diệt ${monster.name} bằng chiến lực cường đại, cướp đoạt +${monster.reward} Linh Khí!`, type: 'breakthrough', time: Date.now() }]
           }));
           setIsDead(true);
           setTimeout(() => {
@@ -487,7 +511,7 @@
         setGameState(prev => ({
           ...prev,
           joinedSectId: newSect.id,
-          logs: [{ id: Date.now().toString(), text: `[Khai Sơn]: Đạo hữu đã thành công khai lập tông môn "${newSect.name}"!`, type: 'breakthrough', time: Date.now() }, ...prev.logs]
+          logs: [...prev.logs, { id: Date.now().toString(), text: `[Khai Sơn]: Đạo hữu đã thành công khai lập tông môn "${newSect.name}"!`, type: 'breakthrough', time: Date.now() }]
         }));
         setNewSectName('');
         setNewSectDesc('');
@@ -544,6 +568,11 @@
               </div>
               <div className="w-[1px] h-8 bg-white/10"></div>
               <div className="flex flex-col items-end">
+                <span className="text-slate-400 text-[10px]">Chiến Lực</span>
+                <span className="text-red-400 font-bold text-base">{formatNumber(combatPower)}</span>
+              </div>
+              <div className="w-[1px] h-8 bg-white/10"></div>
+              <div className="flex flex-col items-end">
                 <span className="text-slate-400 text-[10px]">Tốc Độ Tụ Khí</span>
                 <span className="text-cyan-400 font-bold text-base">+{formatNumber(qps)}/s</span>
               </div>
@@ -552,39 +581,51 @@
 
           {Object.keys(activeTribulations).length > 0 && (
             <div className="flex flex-col gap-2">
-              {Object.entries(activeTribulations).map(([pName, trib]) => (
-                <div key={pName} className="tribulation-banner bg-[#1a0808]/90 backdrop-blur-xl border-2 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl">
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl animate-bounce">⚡</span>
-                    <div>
-                      <div className="text-xs font-mono text-red-400 font-bold uppercase tracking-wider">Kênh Thiên Kiếp Cảnh</div>
-                      <div className="text-amber-200 font-serif font-bold text-sm">
-                        Đạo hữu <span className="text-cyan-300">{pName}</span> đang độ kiếp lên <span className="text-amber-400">{trib.targetRealm}</span>!
+              {Object.entries(activeTribulations).map(([pName, trib]) => {
+                const timeLeft = Math.max(0, Math.floor((trib.endTime - Date.now()) / 1000));
+                const chosenAction = playerActionChoice[pName];
+                return (
+                  <div key={pName} className="tribulation-banner bg-[#1a0808]/90 backdrop-blur-xl border-2 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl animate-bounce">⚡</span>
+                      <div>
+                        <div className="text-xs font-mono text-red-400 font-bold uppercase tracking-wider">Kênh Thiên Kiếp Cảnh ({timeLeft}s)</div>
+                        <div className="text-amber-200 font-serif font-bold text-sm">
+                          Đạo hữu <span className="text-cyan-300">{pName}</span> đang độ kiếp lên <span className="text-amber-400">{trib.targetRealm}</span>!
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-                    <div className="w-full sm:w-48 bg-black/70 h-4 rounded-full border border-red-500/50 overflow-hidden relative p-0.5">
-                      <div className="bg-gradient-to-r from-red-600 via-orange-500 to-amber-500 h-full rounded-full transition-all duration-300" style={{ width: `${Math.max(0, (trib.hp / trib.maxHp) * 100)}%` }} />
-                      <div className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold text-white drop-shadow">HP: {Math.floor(trib.hp)} / {trib.maxHp}</div>
-                    </div>
-
-                    {pName !== playerName ? (
-                      <div className="flex gap-2 w-full sm:w-auto">
-                        <button onClick={() => interactTribulation(pName, 'protect')} className="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-400/40 rounded-xl text-xs font-serif font-bold text-emerald-200 transition-all cursor-pointer shadow">
-                          🛡️ Hộ Đạo
-                        </button>
-                        <button onClick={() => interactTribulation(pName, 'attack')} className="flex-1 sm:flex-none px-3 py-1.5 bg-red-600/30 hover:bg-red-600/50 border border-red-400/40 rounded-xl text-xs font-serif font-bold text-red-200 transition-all cursor-pointer shadow">
-                          ⚔️ Phá Trận
-                        </button>
+                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+                      <div className="w-full sm:w-48 bg-black/70 h-4 rounded-full border border-red-500/50 overflow-hidden relative p-0.5">
+                        <div className="bg-gradient-to-r from-red-600 via-orange-500 to-amber-500 h-full rounded-full transition-all duration-300" style={{ width: `${Math.max(0, (trib.hp / trib.maxHp) * 100)}%` }} />
+                        <div className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold text-white drop-shadow">HP: {Math.floor(trib.hp)} / {trib.maxHp}</div>
                       </div>
-                    ) : (
-                      <span className="text-xs font-mono text-amber-300 animate-pulse">(Độ kiếp của chính bạn!)</span>
-                    )}
+
+                      {pName !== playerName ? (
+                        <div className="flex gap-2 w-full sm:w-auto">
+                          {!chosenAction ? (
+                            <>
+                              <button onClick={() => selectTribulationAction(pName, 'protect')} className="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-400/40 rounded-xl text-xs font-serif font-bold text-emerald-200 transition-all cursor-pointer shadow">
+                                🛡️ Chọn Hộ Thủ
+                              </button>
+                              <button onClick={() => selectTribulationAction(pName, 'attack')} className="flex-1 sm:flex-none px-3 py-1.5 bg-red-600/30 hover:bg-red-600/50 border border-red-400/40 rounded-xl text-xs font-serif font-bold text-red-200 transition-all cursor-pointer shadow">
+                                ⚔️ Chọn Tấn Công
+                              </button>
+                            </>
+                          ) : (
+                            <span className="text-xs font-mono text-cyan-300 bg-black/60 px-3 py-1.5 rounded-xl border border-cyan-500/40">
+                              Đã chọn: {chosenAction === 'protect' ? '🛡️ Hộ Thủ' : '⚔️ Tấn Công'} (Đang chờ kết toán...)
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs font-mono text-amber-300 animate-pulse">(Đang tĩnh tọa độ kiếp, phó mặc số phận!)</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
@@ -618,7 +659,7 @@
                   
                   {myTribulation ? (
                     <div className="mt-2 w-full py-3 bg-red-950/50 border border-red-500/50 rounded-xl text-xs font-serif font-bold text-red-300 text-center animate-pulse">
-                      ⚡ ĐANG CHỐNG CHỊU THIÊN KIẾP... ({Math.floor((myTribulation.endTime - Date.now())/1000)}s)
+                      ⚡ ĐANG ĐỘ KIẾP ({Math.floor((myTribulation.endTime - Date.now())/1000)}s) - PHÓ MẶC TRỜI XANH!
                     </div>
                   ) : (
                     <button 
@@ -812,7 +853,7 @@
                                 <p className="text-[11px] text-cyan-300">{sect.buff}</p>
                                 <p className="text-[10px] text-slate-400">{sect.desc}</p>
                                 {!isJoined && (
-                                  <button onClick={() => setGameState(prev => ({ ...prev, joinedSectId: sect.id, logs: [{ id: Date.now().toString(), text: `[Tông Môn]: Đạo hữu đã gia nhập "${sect.name}"!`, type: 'shop', time: Date.now() }, ...prev.logs] }))} className="mt-1 py-1.5 px-3 bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/40 rounded-lg text-xs font-serif font-bold text-purple-200 transition-all cursor-pointer w-fit">
+                                  <button onClick={() => setGameState(prev => ({ ...prev, joinedSectId: sect.id, logs: [...prev.logs, { id: Date.now().toString(), text: `[Tông Môn]: Đạo hữu đã gia nhập "${sect.name}"!`, type: 'shop', time: Date.now() }] }))} className="mt-1 py-1.5 px-3 bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/40 rounded-lg text-xs font-serif font-bold text-purple-200 transition-all cursor-pointer w-fit">
                                     Gia Nhập
                                   </button>
                                 )}
