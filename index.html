@@ -89,7 +89,6 @@
           }
         }
 
-        // Hợp nhất marketListings thông minh để tránh bị ghi đè mất đồ ký gửi
         let listings = current.marketListings || [];
         if (myEntry.overrideMarketListings !== undefined) {
           listings = myEntry.overrideMarketListings;
@@ -121,7 +120,6 @@
         return null;
       }
     }
-
     const REALMS = [
       { name: "Phàm Nhân (Sơ Kỳ)", req: 0, isMajor: false },
       { name: "Phàm Nhân (Trung Kỳ)", req: 50, isMajor: false },
@@ -361,7 +359,6 @@
         };
       }, [gameState.totalQi, gameState.realmIdx, playerName, myTribulation]);
 
-      // --- LOGIC KÝ GỬI, MUA BÁN & GỠ BÁN AN TOÀN ---
       const handleListMarketItem = async (uniqueId) => {
         const itemToSell = gameState.inventory.find(i => i.uniqueId === uniqueId);
         if (!itemToSell) return;
@@ -388,7 +385,6 @@
         };
 
         try {
-          // Lấy dữ liệu mới nhất từ cloud trước khi thêm đồ lên chợ để tránh ghi đè
           const currentData = await fetchCloudData();
           const updatedListings = [...(currentData.marketListings || []), newListing];
 
@@ -511,9 +507,7 @@
           alert("Giao dịch thất bại, xin vui lòng thử lại!");
         }
       };
-      // ----------------------------------------------------
-
-      React.useEffect(() => {
+    React.useEffect(() => {
         if (!myTribulation) return;
         const timer = setInterval(() => {
           const now = Date.now();
@@ -1232,7 +1226,6 @@
             </div>
           </main>
 
-          {/* GIAO DIỆN CHỢ ĐEN (MODAL GIAO DỊCH LIÊN SERVER) */}
           {isBlackMarketModalOpen && (
             <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
               <div className="bg-[#120b22] border-2 border-amber-500/50 rounded-2xl w-full max-w-5xl p-6 flex flex-col gap-5 shadow-[0_0_50px_rgba(245,158,11,0.2)] max-h-[85vh]">
@@ -1251,7 +1244,6 @@
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-y-auto no-scrollbar">
-                  {/* CỘT TRÁI: TÚI ĐỒ ĐỂ KÝ GỬI */}
                   <div className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col gap-3">
                     <span className="text-xs font-serif font-bold text-amber-200">📦 Túi Đồ Của Bạn (Chọn bảo vật để ký gửi)</span>
                     <div className="flex flex-col gap-2.5 max-h-[320px] overflow-y-auto no-scrollbar">
@@ -1284,7 +1276,6 @@
                     </div>
                   </div>
 
-                  {/* CỘT PHẢI: DANH SÁCH RAO BÁN TRÊN TOÀN SERVER */}
                   <div className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col gap-3">
                     <span className="text-xs font-serif font-bold text-amber-200">🛒 Vật Phẩm Đang Rao Bán Trên Hắc Thị</span>
                     <div className="flex flex-col gap-2.5 max-h-[320px] overflow-y-auto no-scrollbar">
