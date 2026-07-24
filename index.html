@@ -161,16 +161,30 @@
         return randomName;
       });
 
-      const [gameState, setGameState] = React.useState({
-        qi: 0,
-        totalQi: 0,
-        realmIdx: 0,
-        joinedSectId: 'thanh_van',
-        shopCounts: {},
-        ownedGears: [],
-        equippedGearId: null,
-        logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống tự lập tông môn đã được kích hoạt!', type: 'breakthrough', time: Date.now() }]
+      const [gameState, setGameState] = React.useState(() => {
+        const savedState = localStorage.getItem('tu_tien_game_state');
+        if (savedState) {
+          try {
+            return JSON.parse(savedState);
+          } catch (e) {
+            console.log("Lỗi đọc save game");
+          }
+        }
+        return {
+          qi: 0,
+          totalQi: 0,
+          realmIdx: 0,
+          joinedSectId: 'thanh_van',
+          shopCounts: {},
+          ownedGears: [],
+          equippedGearId: null,
+          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống tự lập tông môn đã được kích hoạt!', type: 'breakthrough', time: Date.now() }]
+        };
       });
+
+      React.useEffect(() => {
+        localStorage.setItem('tu_tien_game_state', JSON.stringify(gameState));
+      }, [gameState]);
 
       const [activeTab, setActiveTab] = React.useState('shop');
       const [currentMonsterIdx, setCurrentMonsterIdx] = React.useState(0);
@@ -423,7 +437,7 @@
               </div>
               <div className="w-[1px] h-8 bg-white/10"></div>
               <div className="flex flex-col items-end">
-                <span className="text-slate-400 text-[10px]">Tốc Độ Tụ Khí (x5)</span>
+                <span className="text-slate-400 text-[10px]">Tốc Độ Tụ Khí</span>
                 <span className="text-cyan-400 font-bold text-base">+{formatNumber(qps)}/s</span>
               </div>
             </div>
