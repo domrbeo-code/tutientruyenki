@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Clean Cloud)</title>
+  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Permanent Cloud Leaderboard)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -30,9 +30,7 @@
   <script type="text/babel">
     const BIN_ID = "6a622390f5f4af5e29b6690d";
     const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
-    const SAVE_KEY = "tu_tien_game_save_v12";
-
-    const NPC_NAMES = ["CuongDaoTa", "ThanhVanChi", "BachYThien"];
+    const SAVE_KEY = "tu_tien_game_save_v13";
 
     async function fetchCloudData() {
       try {
@@ -45,13 +43,7 @@
         });
         if (!res.ok) throw new Error("Network response was not ok");
         const data = await res.json();
-        let record = data.record || { leaderboard: [], customSects: [], activeTribulations: {} };
-        
-        // Lọc bỏ triệt để các tên NPC nếu còn sót trên cloud
-        if (record.leaderboard) {
-          record.leaderboard = record.leaderboard.filter(item => !NPC_NAMES.includes(item.name));
-        }
-        return record;
+        return data.record || { leaderboard: [], customSects: [], activeTribulations: {} };
       } catch (e) {
         return { leaderboard: [], customSects: [], activeTribulations: {} };
       }
@@ -62,18 +54,28 @@
         const current = await fetchCloudData();
         let list = current.leaderboard || [];
 
-        // Lọc bỏ NPC một lần nữa cho chắc chắn
-        list = list.filter(item => !NPC_NAMES.includes(item.name));
-
+        // Tìm xem người chơi đã tồn tại trên mây chưa
         const idx = list.findIndex(item => item.name === myEntry.name);
+        
         if (idx >= 0) {
-          if (myEntry.totalQi >= list[idx].totalQi || myEntry.realm !== list[idx].realm) {
-            list[idx] = myEntry;
-          }
+          // Cập nhật thông số mới nhất của người chơi kể cả khi họ offline sau đó
+          list[idx] = {
+            ...list[idx],
+            totalQi: myEntry.totalQi,
+            realm: myEntry.realm,
+            lastOnline: Date.now()
+          };
         } else {
-          list.push(myEntry);
+          // Thêm mới hoàn toàn nếu lần đầu xuất hiện
+          list.push({
+            name: myEntry.name,
+            totalQi: myEntry.totalQi,
+            realm: myEntry.realm,
+            lastOnline: Date.now()
+          });
         }
 
+        // Sắp xếp và giữ lại top 20 cao thủ bám trụ vĩnh viễn trên mây
         list.sort((a, b) => b.totalQi - a.totalQi);
         list = list.slice(0, 20);
 
@@ -199,7 +201,7 @@
 
       const [gameState, setGameState] = React.useState(() => {
         try {
-          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v11');
+          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v12');
           if (savedState) return JSON.parse(savedState);
         } catch (e) {}
         return {
@@ -210,7 +212,7 @@
           shopCounts: {},
           ownedGears: [],
           equippedGearId: null,
-          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống đồng bộ Thiên Thư Bảng online đã kích hoạt!', type: 'breakthrough', time: Date.now() }]
+          logs: [{ id: '1', text: '[Đại Đạo]: Thiên Thư Bảng đồng bộ vĩnh viễn đã sẵn sàng!', type: 'breakthrough', time: Date.now() }]
         };
       });
 
@@ -272,6 +274,7 @@
         return () => clearInterval(interval);
       }, [qps]);
 
+      // Tự động đồng bộ lên mây mỗi 4 giây để giữ tên trên bảng xếp hạng vĩnh viễn
       React.useEffect(() => {
         let isMounted = true;
         const doSync = async () => {
@@ -285,8 +288,7 @@
           const result = await updateCloudData(playerEntry);
           if (result && isMounted) {
             if (result.leaderboard) {
-              const cleanList = result.leaderboard.filter(item => !NPC_NAMES.includes(item.name));
-              setCloudLeaderboard(cleanList);
+              setCloudLeaderboard(result.leaderboard);
             }
             if (result.customSects) {
               setCloudCustomSects(result.customSects);
@@ -295,7 +297,7 @@
               const now = Date.now();
               const cleanTribs = {};
               Object.entries(result.activeTribulations).forEach(([k, v]) => {
-                if (v && v.endTime > now && v.hp > 0 && !NPC_NAMES.includes(k)) cleanTribs[k] = v;
+                if (v && v.endTime > now && v.hp > 0) cleanTribs[k] = v;
               });
               setActiveTribulations(cleanTribs);
 
@@ -427,7 +429,6 @@
           }
           const delta = Math.abs(tribs[targetPlayerName].hp - oldHp);
 
-          const cleanList = (data.leaderboard || []).filter(item => !NPC_NAMES.includes(item.name));
           const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
             method: 'PUT',
             headers: {
@@ -436,7 +437,7 @@
               'X-Access-Key': API_KEY
             },
             body: JSON.stringify({
-              leaderboard: cleanList,
+              leaderboard: data.leaderboard || [],
               customSects: data.customSects || [],
               activeTribulations: tribs
             })
@@ -532,7 +533,6 @@
 
         const currentData = await fetchCloudData();
         const updatedSects = [...(currentData.customSects || []), newSect];
-        const cleanList = (currentData.leaderboard || []).filter(item => !NPC_NAMES.includes(item.name));
         
         await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: 'PUT',
@@ -542,7 +542,7 @@
             'X-Access-Key': API_KEY
           },
           body: JSON.stringify({
-            leaderboard: cleanList,
+            leaderboard: currentData.leaderboard || [],
             customSects: updatedSects,
             activeTribulations: currentData.activeTribulations || {}
           })
@@ -564,7 +564,7 @@
       const progressPercent = nextRealmObj ? Math.min(100, (gameState.qi / nextRealmObj.req) * 100) : 100;
 
       const fullLeaderboard = React.useMemo(() => {
-        let list = cloudLeaderboard.filter(item => !NPC_NAMES.includes(item.name));
+        let list = [...cloudLeaderboard];
         const playerEntry = {
           name: playerName,
           totalQi: gameState.totalQi,
@@ -638,7 +638,6 @@
           {Object.keys(activeTribulations).length > 0 && (
             <div className="flex flex-col gap-2">
               {Object.entries(activeTribulations).map(([pName, trib]) => {
-                if (NPC_NAMES.includes(pName)) return null;
                 const timeLeft = Math.max(0, Math.ceil((trib.endTime - Date.now()) / 1000));
                 const hasActed = actedPlayers.has(pName);
                 const isLoading = actionLoading === pName;
@@ -942,7 +941,7 @@
                   <div className="flex flex-col gap-4">
                     <div>
                       <h2 className="font-serif font-bold text-base text-amber-200">Thiên Thư Bảng</h2>
-                      <p className="text-xs text-slate-400">Ghi danh những đại năng cường giả thực tế dẫn đầu toàn cõi tu tiên.</p>
+                      <p className="text-xs text-slate-400">Ghi danh những đại năng cường giả luôn bám trụ vĩnh viễn trên bảng xếp hạng.</p>
                     </div>
                     <div className="flex flex-col gap-2">
                       {fullLeaderboard.length === 0 ? (
