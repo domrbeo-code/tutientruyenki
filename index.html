@@ -85,10 +85,11 @@
       { id: 'huyet_dao', name: 'Huyết Đao Môn', buff: 'Tăng +50% Sát thương Trảm Yêu', desc: 'Chuyên tu sát phạt, chiến lực kinh người.' }
     ];
 
+    // Đã nhân 5 tốc độ thu thập (qps) cơ bản
     const SHOP_ITEMS = [
-      { id: 'linh_thach', name: 'Tụ Linh Trận', baseCost: 50, qps: 1, desc: 'Tự động hấp thu linh khí vi mô từ hư không.' },
-      { id: 'duoc_vien', name: 'Dược Viên Đan Dược', baseCost: 350, qps: 6, desc: 'Trồng linh dược ngàn năm luyện hóa đan dược.' },
-      { id: 'linh_tuyen', name: 'Linh Tuyền Nhãn', baseCost: 1800, qps: 30, desc: 'Mạch nước ngầm tinh thuần đậm đặc linh khí.' }
+      { id: 'linh_thach', name: 'Tụ Linh Trận', baseCost: 50, qps: 5, desc: 'Tự động hấp thu linh khí vi mô từ hư không.' },
+      { id: 'duoc_vien', name: 'Dược Viên Đan Dược', baseCost: 350, qps: 30, desc: 'Trồng linh dược ngàn năm luyện hóa đan dược.' },
+      { id: 'linh_tuyen', name: 'Linh Tuyền Nhãn', baseCost: 1800, qps: 150, desc: 'Mạch nước ngầm tinh thuần đậm đặc linh khí.' }
     ];
 
     const BLACK_MARKET_GEARS = [
@@ -127,15 +128,13 @@
         shopCounts: {},
         ownedGears: [],
         equippedGearId: null,
-        logs: [{ id: '1', text: '[Đại Đạo]: Chúc mừng đạo hữu bước chân vào thế giới tu chân!', type: 'breakthrough', time: Date.now() }]
+        logs: [{ id: '1', text: '[Đại Đạo]: Gia tốc tu luyện x5 đã được kích hoạt thành công!', type: 'breakthrough', time: Date.now() }]
       });
 
       const [activeTab, setActiveTab] = React.useState('shop');
       const [currentMonsterIdx, setCurrentMonsterIdx] = React.useState(0);
       const [monsterHp, setMonsterHp] = React.useState(MONSTERS[0].hp);
       const [isDead, setIsDead] = React.useState(false);
-      const [cdSkill1, setCdSkill1] = React.useState(0);
-      const [cdSkill2, setCdSkill2] = React.useState(0);
       const [cloudLeaderboard, setCloudLeaderboard] = React.useState([]);
 
       const clickPower = React.useMemo(() => {
@@ -312,7 +311,6 @@
 
       return (
         <div className="flex flex-col min-h-screen p-4 max-w-7xl mx-auto gap-4">
-          {/* Header Thông Tin Nhân Vật */}
           <header className="sect-glow bg-[#100c1c]/80 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl relative overflow-hidden">
             <div className="absolute -top-12 -left-12 w-32 h-32 bg-purple-600/10 rounded-full blur-2xl pointer-events-none"></div>
             <div className="flex items-center gap-3">
@@ -332,15 +330,13 @@
               </div>
               <div className="w-[1px] h-8 bg-white/10"></div>
               <div className="flex flex-col items-end">
-                <span className="text-slate-400 text-[10px]">Tốc Độ Tụ Khí</span>
+                <span className="text-slate-400 text-[10px]">Tốc Độ Tụ Khí (x5)</span>
                 <span className="text-cyan-400 font-bold text-base">+{formatNumber(qps)}/s</span>
               </div>
             </div>
           </header>
 
-          {/* Main Layout */}
           <main className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
-            {/* Cột Trái: Trấn Thủ & Đột Phá */}
             <div className="col-span-1 lg:col-span-4 flex flex-col gap-4">
               <div className="bg-[#100c1c]/80 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-2xl flex flex-col items-center justify-center gap-5 relative">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
@@ -369,7 +365,6 @@
                 </div>
               </div>
 
-              {/* Tông Môn Box */}
               <div className="bg-[#100c1c]/80 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 shadow-2xl">
                 <h3 className="font-serif text-xs text-amber-300 mb-3 font-bold tracking-widest flex items-center gap-2">
                   <span>🏛️</span> TÔNG MÔN THẾ LỰC
@@ -395,7 +390,6 @@
               </div>
             </div>
 
-            {/* Cột Phải: Các Tab Chức Năng */}
             <div className="col-span-1 lg:col-span-8 flex flex-col gap-4">
               <div className="flex gap-1.5 bg-[#100c1c]/80 p-1.5 rounded-2xl border border-purple-500/30 overflow-x-auto no-scrollbar shadow-xl">
                 {[
@@ -424,7 +418,7 @@
                               <span className="font-serif font-bold text-xs text-amber-200">{item.name}</span>
                               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/50 border border-purple-500/30 text-cyan-300">Sở hữu: {count}</span>
                             </div>
-                            <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">{item.desc}</p>
+                            <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">{item.desc} <span className="text-cyan-300 font-mono font-bold">(+{item.qps}/s)</span></p>
                           </div>
                           <div className="flex justify-between items-center pt-2.5 border-t border-purple-500/20">
                             <span className="text-xs font-mono text-amber-400 font-bold">{formatNumber(cost)} Qi</span>
@@ -523,7 +517,6 @@
             </div>
           </main>
 
-          {/* Footer Nhật Ký Tu Chân */}
           <footer className="w-full">
             <div className="bg-[#100c1c]/80 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-4 h-28 overflow-y-auto no-scrollbar font-mono text-[11px] flex flex-col gap-1.5 shadow-2xl">
               <div className="text-purple-400 font-bold mb-0.5 tracking-wider uppercase text-[10px]">📜 Nhật Ký Tu Chân Thiên Đạo</div>
