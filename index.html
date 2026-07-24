@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Deep Tribulation Fix)</title>
+  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Instant Tribulation Fix)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -30,7 +30,7 @@
   <script type="text/babel">
     const BIN_ID = "6a622390f5f4af5e29b6690d";
     const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
-    const SAVE_KEY = "tu_tien_game_save_v20";
+    const SAVE_KEY = "tu_tien_game_save_v21";
 
     async function fetchCloudData() {
       try {
@@ -214,7 +214,7 @@
 
       const [gameState, setGameState] = React.useState(() => {
         try {
-          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v19');
+          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v20');
           if (savedState) {
             const parsed = JSON.parse(savedState);
             if (!parsed.inventory) parsed.inventory = [];
@@ -229,7 +229,7 @@
           shopCounts: {},
           inventory: [],
           equippedGearId: null,
-          logs: [{ id: '1', text: '[Đại Đạo]: Đã sửa triệt để lỗi đồng bộ HP thời gian thực khi độ kiếp!', type: 'breakthrough', time: Date.now() }]
+          logs: [{ id: '1', text: '[Đại Đạo]: Đã sửa triệt để độ trễ hiển thị thông báo độ kiếp!', type: 'breakthrough', time: Date.now() }]
         };
       });
 
@@ -319,7 +319,7 @@
         return () => clearInterval(interval);
       }, [qps]);
 
-      // FAST SYNC ENGINE (Every 1 second to instantly grab HP updates from cloud)
+      // INSTANT SYNC ENGINE & IMMEDIATE TRIBULATION BROADCAST
       React.useEffect(() => {
         let isMounted = true;
         const doSync = async () => {
@@ -343,7 +343,6 @@
               });
               setActiveTribulations(cleanTribs);
 
-              // INSTANT PULL FOR OWN TRIBULATION HP
               if (myTribulation && cleanTribs[playerName]) {
                 const cloudHp = cleanTribs[playerName].hp;
                 if (cloudHp !== myTribulation.hp) {
@@ -355,7 +354,7 @@
         };
 
         doSync();
-        const syncInterval = setInterval(doSync, 1000); // Tăng tốc đồng bộ lên mỗi 1 giây
+        const syncInterval = setInterval(doSync, 1000);
         return () => {
           isMounted = false;
           clearInterval(syncInterval);
@@ -592,6 +591,8 @@
               maxHp: 1200,
               endTime: Date.now() + 30000
             };
+            
+            // CẬP NHẬT TRỰC TIẾP LÊN STATE VÀ CLOUD NGAY LẬP TỨC ĐỂ TRÁNH ĐỘ TRỄ HIỂN THỊ BÊN MÁY KHÁC
             setMyTribulation(tribData);
             setGameState(prev => ({
               ...prev,
