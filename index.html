@@ -51,12 +51,14 @@
       try {
         const current = await fetchCloudData();
         
+        // Gộp bảng xếp hạng thông minh hơn, giữ lại các đạo hữu khác đang online
         let mergedLeaderboard = current.leaderboard || [];
         if (partialData.leaderboard) {
           partialData.leaderboard.forEach(newItem => {
             const existingIdx = mergedLeaderboard.findIndex(item => item.name === newItem.name);
             if (existingIdx >= 0) {
-              if (newItem.totalQi > mergedLeaderboard[existingIdx].totalQi) {
+              // Cập nhật nếu Qi mới cao hơn hoặc bằng
+              if (newItem.totalQi >= mergedLeaderboard[existingIdx].totalQi) {
                 mergedLeaderboard[existingIdx] = newItem;
               }
             } else {
@@ -65,7 +67,7 @@
           });
         }
         mergedLeaderboard.sort((a, b) => b.totalQi - a.totalQi);
-        mergedLeaderboard = mergedLeaderboard.slice(0, 10);
+        mergedLeaderboard = mergedLeaderboard.slice(0, 15);
 
         let mergedSects = current.customSects || [];
         if (partialData.customSects) {
@@ -86,7 +88,7 @@
 
         await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: 'PUT',
-          headers: {
+      headers: {
             'Content-Type': 'application/json',
             'X-Master-Key': API_KEY
           },
@@ -94,7 +96,6 @@
         });
         return merged;
       } catch (e) {
-        console.log("Lỗi đồng bộ mây");
         return null;
       }
     }
