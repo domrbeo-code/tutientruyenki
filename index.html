@@ -47,10 +47,43 @@
       }
     }
 
-    async function updateCloudData(newData) {
+    async function updateCloudData(partialData) {
       try {
         const current = await fetchCloudData();
-        const merged = { ...current, ...newData };
+        
+        let mergedLeaderboard = current.leaderboard || [];
+        if (partialData.leaderboard) {
+          partialData.leaderboard.forEach(newItem => {
+            const existingIdx = mergedLeaderboard.findIndex(item => item.name === newItem.name);
+            if (existingIdx >= 0) {
+              if (newItem.totalQi > mergedLeaderboard[existingIdx].totalQi) {
+                mergedLeaderboard[existingIdx] = newItem;
+              }
+            } else {
+              mergedLeaderboard.push(newItem);
+            }
+          });
+        }
+        mergedLeaderboard.sort((a, b) => b.totalQi - a.totalQi);
+        mergedLeaderboard = mergedLeaderboard.slice(0, 10);
+
+        let mergedSects = current.customSects || [];
+        if (partialData.customSects) {
+          partialData.customSects.forEach(newSect => {
+            if (!mergedSects.some(s => s.id === newSect.id)) {
+              mergedSects.push(newSect);
+            }
+          });
+        }
+
+        const mergedTribs = { ...(current.activeTribulations || {}), ...(partialData.activeTribulations || {}) };
+
+        const merged = {
+          leaderboard: mergedLeaderboard,
+          customSects: mergedSects,
+          activeTribulations: mergedTribs
+        };
+
         await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: 'PUT',
           headers: {
@@ -59,8 +92,10 @@
           },
           body: JSON.stringify(merged)
         });
+        return merged;
       } catch (e) {
         console.log("Lỗi đồng bộ mây");
+        return null;
       }
     }
 
@@ -215,33 +250,7 @@
 
       React.useEffect(() => {
         const syncCloud = async () => {
-          const data = await fetchCloudData();
-          let list = data.leaderboard || [];
-          
-          // Cập nhật hoặc thêm mới player hiện tại vào danh sách mà không làm mất người khác
-          const index = list.findIndex(item => item.name === playerName);
-          if (index >= 0) {
-            if (list[index].totalQi < gameState.totalQi) {
-              list[index].totalQi = gameState.totalQi;
-              list[index].realm = REALMS[gameState.realmIdx].name;
-            }
-          } else {
-            list.push({ name: playerName, totalQi: gameState.totalQi, realm: REALMS[gameState.realmIdx].name });
-          }
-          
-          // Gộp chung danh sách cũ trên mây với danh sách hiện tại để bảo toàn toàn bộ đạo hữu
-          if (data.leaderboard) {
-            data.leaderboard.forEach(cloudItem => {
-              if (!list.some(existing => existing.name === cloudItem.name)) {
-                list.push(cloudItem);
-              }
-            });
-          }
-
-          list.sort((a, b) => b.totalQi - a.totalQi);
-          list = list.slice(0, 10);
-
-          let tribs = data.activeTribulations || {};
+          let tribs = activeTribulations;
           if (myTribulation) {
             tribs[playerName] = {
               targetRealm: myTribulation.targetRealm,
@@ -258,10 +267,16 @@
             if (tribs[pKey].endTime < now || tribs[pKey].hp <= 0) delete tribs[pKey];
           });
 
-          await updateCloudData({ leaderboard: list, activeTribulations: tribs });
-          setActiveTribulations(tribs);
-          if (data.customSects) setCloudCustomSects(data.customSects);
-          if (list) setCloudLeaderboard(list);
+          const updatedCloud = await updateCloudData({
+            leaderboard: [{ name: playerName, totalQi: gameState.totalQi, realm: REALMS[gameState.realmIdx].name }],
+            activeTribulations: tribs
+          });
+
+          if (updatedCloud) {
+            if (updatedCloud.leaderboard) setCloudLeaderboard(updatedCloud.leaderboard);
+            if (updatedCloud.customSects) setCloudCustomSects(updatedCloud.customSects);
+            if (updatedCloud.activeTribulations) setActiveTribulations(updatedCloud.activeTribulations);
+          }
         };
 
         syncCloud();
@@ -469,7 +484,6 @@
 
       const nextRealmObj = REALMS[gameState.realmIdx + 1];
       const progressPercent = nextRealmObj ? Math.min(100, (gameState.qi / nextRealmObj.req) * 100) : 100;
-      const equippedBook = BLACK_MARKET_GEARS.find(g => g.id === gameState.equippedGearId) || { multiplier: 3, name: 'Kiếm Khí' };
 
       const fullLeaderboard = cloudLeaderboard.length > 0 ? cloudLeaderboard.map(item => ({
         ...item,
@@ -629,145 +643,34 @@
                 ))}
               </div>
 
-              <div className="bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 shadow-2xl min-h-[380px] max-h-[500px] overflow-y-auto no-scrollbar">
+              <div className="bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-2xl flex-1 flex flex-col min-h-[420px]">
                 {activeTab === 'shop' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {SHOP_ITEMS.map(item => {
-                      const count = gameState.shopCounts[item.id] || 0;
-                      let cost = Math.floor(item.baseCost * Math.pow(1.6, count));
-                      if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
-                      return (
-                        <div key={item.id} className="p-4 rounded-xl border border-purple-500/20 bg-purple-950/20 flex flex-col justify-between gap-3 hover:border-purple-500/40 transition-all">
-                          <div>
-                            <div className="flex justify-between items-start">
-                              <span className="font-serif font-bold text-xs text-amber-200">{item.name}</span>
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/50 border border-purple-500/30 text-cyan-300">Sở hữu: {count}</span>
-                            </div>
-                            <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">{item.desc} <span className="text-cyan-300 font-mono font-bold">(+{item.qps}/s)</span></p>
-                          </div>
-                          <div className="flex justify-between items-center pt-2.5 border-t border-purple-500/20">
-                            <span className="text-xs font-mono text-amber-400 font-bold">{formatNumber(cost)} Qi</span>
-                            <button onClick={()=>buyItem(item.id)} className="px-3.5 py-1.5 bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-400/40 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-md">Đổi Lấy</button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {activeTab === 'blackmarket' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {BLACK_MARKET_GEARS.map(gear => {
-                      const isOwned = gameState.ownedGears.includes(gear.id);
-                      const isEquipped = gameState.equippedGearId === gear.id;
-                      let cost = gear.cost;
-                      if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
-
-                      return (
-                        <div key={gear.id} className={`p-4 rounded-xl border ${isEquipped ? 'border-amber-400/80 bg-amber-500/10' : 'border-purple-500/20 bg-purple-950/20'} flex flex-col justify-between gap-3`}>
-                          <div>
-                            <div className="flex justify-between items-start">
-                              <span className={`font-serif font-bold text-xs ${gear.color}`}>{gear.name}</span>
-                              <span className="text-[10px] px-2 py-0.5 rounded bg-black/60 border border-white/10 text-slate-300">{gear.tier}</span>
-                            </div>
-                            <div className="text-[11px] font-mono text-cyan-300 mt-1.5 flex gap-3">
-                              {gear.clickBonus > 0 && <span>+{formatNumber(gear.clickBonus)} Click</span>}
-                              {gear.qpsBonus > 0 && <span>+{formatNumber(gear.qpsBonus)} Qps</span>}
-                            </div>
-                          </div>
-                          <div className="flex justify-between items-center pt-2.5 border-t border-purple-500/20">
-                            <span className="text-xs font-mono text-amber-400 font-bold">{isOwned ? 'Đã Thu Phục' : `${formatNumber(cost)} Qi`}</span>
-                            {isOwned ? (
-                              <button onClick={()=>equipGear(gear.id)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${isEquipped ? 'bg-red-500/20 text-red-300 border-red-500/40' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'}`}>
-                                {isEquipped ? 'Thu Hồi' : 'Sử Dụng'}
-                              </button>
-                            ) : (
-                              <button onClick={()=>buyGear(gear)} className="px-3.5 py-1.5 bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-400/40 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-md">Mua Lại</button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {activeTab === 'combat' && (
-                  <div className="flex flex-col gap-4 items-center justify-center py-2">
-                    <div className="flex gap-2.5 overflow-x-auto w-full pb-2 no-scrollbar justify-center">
-                      {MONSTERS.map((m, idx) => (
-                        <button key={m.id} onClick={()=>{setCurrentMonsterIdx(idx); setMonsterHp(m.hp);}} className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 min-w-[100px] cursor-pointer transition-all ${currentMonsterIdx === idx ? 'border-amber-400 bg-amber-500/10 shadow-[0_0_15px_rgba(251,191,36,0.2)]' : 'border-purple-500/20 bg-purple-950/20'}`}>
-                          <span className="text-2xl">{m.icon}</span>
-                          <span className="text-[11px] text-amber-100 font-serif font-bold text-center">{m.name}</span>
-                        </button>
-                      ))}
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <h2 className="font-serif font-bold text-base text-amber-200">Đan Phòng & Tụ Linh Trận</h2>
+                      <p className="text-xs text-slate-400">Xây dựng kiến trúc tu luyện để gia tăng tốc độ tích tụ linh khí tự động.</p>
                     </div>
-
-                    <div className="w-full max-w-md p-5 rounded-2xl border border-purple-500/30 bg-black/50 flex flex-col items-center gap-4 relative overflow-hidden shadow-inner">
-                      <div className="text-4xl animate-pulse">{MONSTERS[currentMonsterIdx].icon}</div>
-                      <div className="font-serif font-bold text-sm text-amber-200 tracking-wider">{MONSTERS[currentMonsterIdx].name}</div>
-                      <div className="w-full bg-black/80 h-3.5 rounded-full border border-red-500/40 overflow-hidden relative p-0.5">
-                        <div className="bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 h-full rounded-full transition-all duration-200 shadow-[0_0_10px_rgba(239,68,68,0.5)]" style={{ width: `${Math.max(0, (monsterHp / MONSTERS[currentMonsterIdx].hp) * 100)}%` }} />
-                        <div className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold text-white drop-shadow">HP: {monsterHp} / {MONSTERS[currentMonsterIdx].hp}</div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3 w-full mt-2">
-                        <button disabled={isDead} onClick={()=>attackMonster(1)} className="py-3 bg-purple-700/30 hover:bg-purple-700/50 border border-purple-400/40 rounded-xl text-xs font-serif font-bold text-purple-200 cursor-pointer shadow-md transition-all">⚔️ Xuất Kiếm</button>
-                        <button disabled={isDead} onClick={()=>attackMonster(equippedBook.multiplier || 3)} className="py-3 bg-amber-600/30 hover:bg-amber-600/50 border border-amber-400/40 rounded-xl text-xs font-serif font-bold text-amber-200 cursor-pointer shadow-md transition-all">✨ {equippedBook.name || 'Kiếm Khí'}</button>
-                      </div>
-                      {isDead && <div className="text-xs text-red-400 animate-pulse font-mono tracking-wider">Yêu thú đã ngã xuống, đang ngưng tụ lại...</div>}
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === 'sect' && (
-                  <div className="flex flex-col gap-5">
-                    {gameState.realmIdx >= 8 && (
-                      <form onSubmit={handleCreateSect} className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 flex flex-col gap-3">
-                        <div className="font-serif font-bold text-xs text-amber-300 flex items-center gap-1.5">
-                          <span>✨</span> Khai Sơn Lập Phái (Yêu cầu: Trúc Cơ Kỳ Sơ Kỳ+)
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          <input 
-                            type="text" 
-                            placeholder="Tên Tông Môn (VD: Nghịch Thiên Tông)" 
-                            value={newSectName}
-                            onChange={(e)=>setNewSectName(e.target.value)}
-                            className="bg-black/60 border border-purple-500/30 rounded-xl px-3 py-2 text-xs text-amber-100 focus:outline-none focus:border-amber-400 font-mono"
-                          />
-                          <input 
-                            type="text" 
-                            placeholder="Mô tả / Slogan tông môn" 
-                            value={newSectDesc}
-                            onChange={(e)=>setNewSectDesc(e.target.value)}
-                            className="bg-black/60 border border-purple-500/30 rounded-xl px-3 py-2 text-xs text-amber-100 focus:outline-none focus:border-amber-400 font-mono"
-                          />
-                        </div>
-                        <button type="submit" className="py-2.5 bg-gradient-to-r from-amber-600/40 to-purple-600/40 hover:from-amber-600/60 hover:to-purple-600/60 border border-amber-400/40 rounded-xl text-xs font-serif font-bold text-amber-200 transition-all cursor-pointer shadow-md">
-                          🏛️ Xác Nhận Khai Sơn
-                        </button>
-                      </form>
-                    )}
-
-                    <div className="flex flex-col gap-2.5">
-                      <div className="text-[11px] text-cyan-300 font-mono flex items-center gap-1.5">
-                        <span>🌐</span> Danh sách Tông Môn trên đại lục (Mọi cảnh giới đều có thể bái nhập tự do)
-                      </div>
-                      {allSects.map(s => {
-                        const isJoined = gameState.joinedSectId === s.id;
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {SHOP_ITEMS.map(item => {
+                        const count = gameState.shopCounts[item.id] || 0;
+                        let cost = Math.floor(item.baseCost * Math.pow(1.6, count));
+                        if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
+                        const canBuy = gameState.qi >= cost;
                         return (
-                          <div key={s.id} className={`p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all ${isJoined ? 'border-amber-400/80 bg-amber-500/10 shadow-[0_0_15px_rgba(251,191,36,0.15)]' : 'border-purple-500/20 bg-purple-950/20'}`}>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-serif font-bold text-xs text-amber-200">{s.name}</span>
-                                <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-black/60 border border-white/10 text-slate-300">Sáng lập: {s.founder || 'Hệ Thống'}</span>
+                          <div key={item.id} className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col justify-between gap-3">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex justify-between items-center">
+                                <span className="font-serif font-bold text-sm text-amber-200">{item.name}</span>
+                                <span className="text-xs font-mono px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-500/30">SL: {count}</span>
                               </div>
-                              <p className="text-[11px] text-cyan-300 mt-1">{s.buff}</p>
-                              <p className="text-[10px] text-slate-400 mt-0.5">{s.desc}</p>
+                              <p className="text-[11px] text-slate-400">{item.desc}</p>
+                              <span className="text-[10px] font-mono text-cyan-400 mt-1">Hiệu quả: +{item.qps}/s</span>
                             </div>
                             <button 
-                              onClick={()=>setGameState(prev=>({...prev, joinedSectId: s.id, logs: [{id:Date.now().toString(), text:`[Bái Sư]: Thành công gia nhập ${s.name}!`, type:'breakthrough', time:Date.now()}, ...prev.logs]}))}
-                              className={`px-4 py-2 rounded-xl text-xs font-serif font-bold transition-all cursor-pointer border whitespace-nowrap ${isJoined ? 'bg-amber-500/20 text-amber-300 border-amber-400/40 shadow-md' : 'bg-purple-600/20 hover:bg-purple-600/40 text-purple-200 border-purple-400/30'}`}>
-                              {isJoined ? 'Đang Nhập Môn' : 'Bái Sư Nhập Môn'}
+                              onClick={() => buyItem(item.id)}
+                              disabled={!canBuy}
+                              className={`w-full py-2 rounded-xl text-xs font-serif font-bold transition-all ${canBuy ? 'bg-purple-600/40 hover:bg-purple-600/60 border border-purple-400/50 text-amber-200 cursor-pointer shadow' : 'bg-slate-800/40 border border-slate-700 text-slate-500 cursor-not-allowed'}`}>
+                              Luyện Hóa ({formatNumber(cost)} Qi)
                             </button>
                           </div>
                         );
@@ -776,44 +679,206 @@
                   </div>
                 )}
 
-                {activeTab === 'leaderboard' && (
-                  <div className="flex flex-col gap-2">
-                    <div className="text-[11px] text-cyan-300 font-mono mb-1 flex items-center gap-1.5">
-                      <span>🌐</span> Bảng xếp hạng đồng bộ trực tuyến thời gian thực qua JSONBin
+                {activeTab === 'blackmarket' && (
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <h2 className="font-serif font-bold text-base text-amber-200">Chợ Đen Pháp Bảo & Tông Quy</h2>
+                      <p className="text-xs text-slate-400">Sở hữu bảo vật thượng cổ để khuếch đại uy lực hấp thu linh khí và chiến lực.</p>
                     </div>
-                    {fullLeaderboard.map((item, idx) => (
-                      <div key={idx} className={`p-3 rounded-xl border flex justify-between items-center transition-all ${item.isPlayer ? 'border-amber-400/60 bg-amber-500/10 shadow-[0_0_15px_rgba(251,191,36,0.1)]' : 'border-purple-500/20 bg-purple-950/20'}`}>
-                        <div className="flex items-center gap-3.5">
-                          <span className={`font-mono text-xs font-bold w-6 text-center ${idx === 0 ? 'text-amber-400 text-sm' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-amber-600' : 'text-slate-500'}`}>#{idx + 1}</span>
-                          <span className="text-xs font-serif font-bold text-amber-100">{item.name}</span>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {BLACK_MARKET_GEARS.map(gear => {
+                        let cost = gear.cost;
+                        if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
+                        const isOwned = gameState.ownedGears.includes(gear.id);
+                        const isEquipped = gameState.equippedGearId === gear.id;
+                        const canBuy = gameState.qi >= cost;
+                        return (
+                          <div key={gear.id} className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col justify-between gap-3">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex justify-between items-center">
+                                <span className={`font-serif font-bold text-sm ${gear.color}`}>{gear.name}</span>
+                                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">{gear.tier}</span>
+                              </div>
+                              <div className="text-[11px] font-mono text-cyan-300 mt-1">
+                                {gear.clickBonus > 0 && <div>+ {gear.clickBonus} Qi / Nhấn</div>}
+                                {gear.qpsBonus > 0 && <div>+ {gear.qpsBonus} Qi / giây</div>}
+                              </div>
+                            </div>
+                            {isOwned ? (
+                              <button 
+                                onClick={() => equipGear(gear.id)}
+                                className={`w-full py-2 rounded-xl text-xs font-serif font-bold transition-all cursor-pointer ${isEquipped ? 'bg-amber-600/40 border border-amber-400/50 text-amber-200' : 'bg-purple-600/30 border border-purple-400/40 text-purple-200 hover:bg-purple-600/50'}`}>
+                                {isEquipped ? 'Đang Trang Bị' : 'Trang Bị'}
+                              </button>
+                            ) : (
+                              <button 
+                                onClick={() => buyGear(gear)}
+                                disabled={!canBuy}
+                                className={`w-full py-2 rounded-xl text-xs font-serif font-bold transition-all ${canBuy ? 'bg-purple-600/40 hover:bg-purple-600/60 border border-purple-400/50 text-amber-200 cursor-pointer shadow' : 'bg-slate-800/40 border border-slate-700 text-slate-500 cursor-not-allowed'}`}>
+                                Đổi Lấy ({formatNumber(cost)} Qi)
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'combat' && (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="font-serif font-bold text-base text-amber-200">Trảm Yêu Thử Luyện</h2>
+                        <p className="text-xs text-slate-400">Tiêu diệt yêu thú hoang dã để cướp đoạt linh khí bồi dưỡng cảnh giới.</p>
+                      </div>
+                      <div className="flex gap-2">
+                        {MONSTERS.map((m, idx) => (
+                          <button key={m.id} onClick={() => { setCurrentMonsterIdx(idx); setMonsterHp(m.hp); }} className={`px-3 py-1 rounded-lg text-xs font-mono font-bold cursor-pointer ${currentMonsterIdx === idx ? 'bg-purple-600 text-white border border-purple-400' : 'bg-black/40 text-slate-400 border border-white/10'}`}>
+                            {m.icon} {m.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex-1 bg-black/50 border border-purple-500/20 rounded-2xl p-6 flex flex-col items-center justify-center gap-6 relative overflow-hidden">
+                      <div className="text-6xl animate-bounce">{MONSTERS[currentMonsterIdx].icon}</div>
+                      <div className="text-center">
+                        <div className="font-serif font-bold text-lg text-amber-200">{MONSTERS[currentMonsterIdx].name}</div>
+                        <div className="text-xs font-mono text-cyan-300 mt-1">Phần Thưởng: +{MONSTERS[currentMonsterIdx].reward} Linh Khí</div>
+                      </div>
+
+                      <div className="w-full max-w-md flex flex-col gap-2">
+                        <div className="flex justify-between text-xs font-mono text-slate-300">
+                          <span>Sinh Lực Yêu Thú</span>
+                          <span className="text-red-400 font-bold">{Math.max(0, monsterHp)} / {MONSTERS[currentMonsterIdx].hp}</span>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-mono text-amber-400 font-bold">{formatNumber(item.totalQi || 0)} Qi</span>
-                          <span className="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-black/50 border border-purple-500/30 text-purple-300">{item.title}</span>
+                        <div className="w-full bg-black/80 h-4 rounded-full border border-red-500/40 overflow-hidden p-0.5">
+                          <div className="bg-gradient-to-r from-red-600 to-orange-500 h-full rounded-full transition-all duration-200" style={{ width: `${Math.max(0, (monsterHp / MONSTERS[currentMonsterIdx].hp) * 100)}%` }} />
                         </div>
                       </div>
-                    ))}
+
+                      <div className="flex gap-3 w-full max-w-md">
+                        <button 
+                          onClick={() => attackMonster(1)}
+                          disabled={isDead}
+                          className={`flex-1 py-3 rounded-xl text-xs font-serif font-bold transition-all shadow-lg ${isDead ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed' : 'bg-red-950/60 hover:bg-red-900/80 border border-red-500/50 text-red-200 cursor-pointer'}`}>
+                          ⚔️ Ra Đòn Cơ Bản
+                        </button>
+                        <button 
+                          onClick={() => attackMonster(3)}
+                          disabled={isDead}
+                          className={`flex-1 py-3 rounded-xl text-xs font-serif font-bold transition-all shadow-lg ${isDead ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed' : 'bg-gradient-to-r from-amber-700/60 to-red-700/60 hover:from-amber-600/80 hover:to-red-600/80 border border-amber-400/50 text-amber-200 cursor-pointer'}`}>
+                          🔥 Xuất Chiêu Tất Sát (3x)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'sect' && (
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <h2 className="font-serif font-bold text-base text-amber-200">Vạn Đạo Tông Môn</h2>
+                      <p className="text-xs text-slate-400">Gia nhập hoặc tự mình khai sơn lập phái để nhận thiên phú đặc quyền độc nhất.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-3">
+                        <h3 className="text-xs font-serif font-bold text-amber-300 uppercase tracking-wider">Danh Sách Tông Môn</h3>
+                        <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto no-scrollbar">
+                          {allSects.map(sect => {
+                            const isJoined = gameState.joinedSectId === sect.id;
+                            return (
+                              <div key={sect.id} className={`p-4 rounded-xl border flex flex-col justify-between gap-2 ${isJoined ? 'bg-purple-950/40 border-purple-400/60 shadow-lg' : 'bg-black/50 border-purple-500/20'}`}>
+                                <div className="flex justify-between items-center">
+                                  <span className="font-serif font-bold text-sm text-amber-200">{sect.name}</span>
+                                  <span className="text-[10px] font-mono text-slate-400">Sáng lập: {sect.founder || 'Hệ Thống'}</span>
+                                </div>
+                                <p className="text-[11px] text-cyan-300">{sect.buff}</p>
+                                <p className="text-[10px] text-slate-400">{sect.desc}</p>
+                                {!isJoined && (
+                                  <button onClick={() => setGameState(prev => ({ ...prev, joinedSectId: sect.id, logs: [{ id: Date.now().toString(), text: `[Tông Môn]: Đạo hữu đã gia nhập "${sect.name}"!`, type: 'shop', time: Date.now() }, ...prev.logs] }))} className="mt-1 py-1.5 px-3 bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/40 rounded-lg text-xs font-serif font-bold text-purple-200 transition-all cursor-pointer w-fit">
+                                    Gia Nhập
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="bg-black/50 border border-purple-500/20 rounded-2xl p-5 flex flex-col gap-3">
+                        <h3 className="text-xs font-serif font-bold text-amber-300 uppercase tracking-wider">Khai Sơn Lập Phái</h3>
+                        <p className="text-[11px] text-slate-400">Yêu cầu cảnh giới: <span className="text-cyan-400 font-bold">Trúc Cơ Kỳ (Sơ Kỳ)</span> trở lên để sáng lập thế lực riêng.</p>
+                        
+                        <form onSubmit={handleCreateSect} className="flex flex-col gap-3 mt-1">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-mono text-slate-400">Tên Tông Môn</label>
+                            <input 
+                              type="text" 
+                              value={newSectName} 
+                              onChange={(e) => setNewSectName(e.target.value)}
+                              placeholder="Ví dụ: Thiên Kiếm Tông..."
+                              className="bg-black/80 border border-purple-500/30 rounded-xl px-3 py-2 text-xs text-amber-100 font-mono focus:outline-none focus:border-cyan-400"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-mono text-slate-400">Mô Tả Thế Lực</label>
+                            <textarea 
+                              value={newSectDesc} 
+                              onChange={(e) => setNewSectDesc(e.target.value)}
+                              placeholder="Mô tả về tôn chỉ tông môn..."
+                              className="bg-black/80 border border-purple-500/30 rounded-xl px-3 py-2 text-xs text-amber-100 font-mono focus:outline-none focus:border-cyan-400 h-20 resize-none"
+                            />
+                          </div>
+                          <button type="submit" className="mt-2 py-2.5 bg-gradient-to-r from-purple-700/60 to-indigo-700/60 hover:from-purple-600/80 hover:to-indigo-600/80 border border-purple-400/50 rounded-xl text-xs font-serif font-bold text-amber-200 transition-all cursor-pointer shadow">
+                            Tạo Lập Tông Môn Mới
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'leaderboard' && (
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <h2 className="font-serif font-bold text-base text-amber-200">Thiên Thư Bảng (Bảng Xếp Hạng Đạo Hữu)</h2>
+                      <p className="text-xs text-slate-400">Ghi danh những đại năng cường giả dẫn đầu toàn cõi tu tiên.</p>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      {fullLeaderboard.map((item, index) => (
+                        <div key={index} className={`flex items-center justify-between p-3.5 rounded-xl border ${item.isPlayer ? 'bg-purple-950/40 border-purple-400/60 shadow-lg' : 'bg-black/50 border-purple-500/20'}`}>
+                          <div className="flex items-center gap-3">
+                            <span className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs font-bold ${index === 0 ? 'bg-amber-500 text-black' : index === 1 ? 'bg-slate-300 text-black' : index === 2 ? 'bg-amber-700 text-white' : 'bg-purple-900/50 text-purple-200 border border-purple-500/30'}`}>
+                              {index + 1}
+                            </span>
+                            <div className="flex flex-col">
+                              <span className="font-serif font-bold text-sm text-amber-200 flex items-center gap-2">
+                                {item.name} {item.isPlayer && <span className="text-[10px] font-mono px-1.5 py-0.2 bg-cyan-600/40 text-cyan-200 border border-cyan-400/50 rounded">Chính Mình</span>}
+                              </span>
+                              <span className="text-[10px] font-mono text-cyan-300">{item.title}</span>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end font-mono">
+                            <span className="text-amber-400 font-bold text-xs">{formatNumber(item.totalQi)} Qi</span>
+                            <span className="text-[10px] text-slate-400">Tích Lũy</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
             </div>
           </main>
-
-          <footer className="w-full">
-            <div className="bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-4 h-28 overflow-y-auto no-scrollbar font-mono text-[11px] flex flex-col gap-1.5 shadow-2xl">
-              <div className="text-purple-400 font-bold mb-0.5 tracking-wider uppercase text-[10px]">📜 Nhật Ký Tu Chân Thiên Đạo</div>
-              {gameState.logs.map(log => (
-                <div key={log.id} className={`${log.type === 'breakthrough' ? 'text-amber-300 font-bold' : log.type === 'fail' ? 'text-red-400' : log.type === 'shop' ? 'text-emerald-300' : 'text-slate-300'}`}>
-                  {log.text}
-                </div>
-              ))}
-            </div>
-          </footer>
         </div>
       );
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    ReactDOM.render(<App />, document.getElementById('root'));
   </script>
 </body>
 </html>
