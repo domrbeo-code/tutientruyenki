@@ -281,7 +281,7 @@
         };
 
         syncCloud();
-        const timer = setInterval(syncCloud, 4000);
+        const timer = setInterval(syncCloud, 8000);
         return () => clearInterval(timer);
       }, [gameState.totalQi, gameState.realmIdx, playerName, myTribulation]);
 
