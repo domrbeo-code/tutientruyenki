@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle</title>
+  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Kiếp Phạt Tranh Đoạt)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- React & ReactDOM -->
@@ -19,7 +19,12 @@
       0%, 100% { box-shadow: 0 0 25px rgba(168, 85, 247, 0.2), inset 0 0 15px rgba(6, 182, 212, 0.2); }
       50% { box-shadow: 0 0 45px rgba(168, 85, 247, 0.4), inset 0 0 25px rgba(6, 182, 212, 0.4); }
     }
+    @keyframes tribPulse {
+      0%, 100% { border-color: rgba(239, 68, 68, 0.6); box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+      50% { border-color: rgba(251, 191, 36, 0.9); box-shadow: 0 0 35px rgba(251, 191, 36, 0.6); }
+    }
     .sect-glow { animation: pulseGlow 4s infinite ease-in-out; }
+    .tribulation-banner { animation: tribPulse 2s infinite ease-in-out; }
   </style>
 </head>
 <body class="bg-[#050508] text-amber-50 min-h-screen font-sans selection:bg-purple-500 selection:text-white bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-950/30 via-[#050508] to-black">
@@ -35,9 +40,9 @@
           headers: { 'X-Master-Key': API_KEY }
         });
         const data = await res.json();
-        return data.record || { leaderboard: [], customSects: [] };
+        return data.record || { leaderboard: [], customSects: [], activeTribulations: {} };
       } catch (e) {
-        return { leaderboard: [], customSects: [] };
+        return { leaderboard: [], customSects: [], activeTribulations: {} };
       }
     }
 
@@ -59,71 +64,37 @@
     }
 
     const REALMS = [
-      { name: "Phàm Nhân (Sơ Kỳ)", req: 0 },
-      { name: "Phàm Nhân (Trung Kỳ)", req: 50 },
-      { name: "Phàm Nhân (Hậu Kỳ)", req: 120 },
-      { name: "Phàm Nhân (Viên Mãn)", req: 250 },
-      { name: "Luyện Khí Kỳ (Sơ Kỳ)", req: 500 },
-      { name: "Luyện Khí Kỳ (Trung Kỳ)", req: 900 },
-      { name: "Luyện Khí Kỳ (Hậu Kỳ)", req: 1500 },
-      { name: "Luyện Khí Kỳ (Viên Mãn)", req: 2500 },
-      { name: "Trúc Cơ Kỳ (Sơ Kỳ)", req: 4000 },
-      { name: "Trúc Cơ Kỳ (Trung Kỳ)", req: 6500 },
-      { name: "Trúc Cơ Kỳ (Hậu Kỳ)", req: 10000 },
-      { name: "Trúc Cơ Kỳ (Viên Mãn)", req: 16000 },
-      { name: "Kim Đan Kỳ (Sơ Kỳ)", req: 25000 },
-      { name: "Kim Đan Kỳ (Trung Kỳ)", req: 40000 },
-      { name: "Kim Đan Kỳ (Hậu Kỳ)", req: 65000 },
-      { name: "Kim Đan Kỳ (Viên Mãn)", req: 100000 },
-      { name: "Nguyên Anh Kỳ (Sơ Kỳ)", req: 160000 },
-      { name: "Nguyên Anh Kỳ (Trung Kỳ)", req: 250000 },
-      { name: "Nguyên Anh Kỳ (Hậu Kỳ)", req: 400000 },
-      { name: "Nguyên Anh Kỳ (Viên Mãn)", req: 650000 },
-      { name: "Hóa Thần Kỳ (Sơ Kỳ)", req: 1000000 },
-      { name: "Hóa Thần Kỳ (Trung Kỳ)", req: 1800000 },
-      { name: "Hóa Thần Kỳ (Hậu Kỳ)", req: 3000000 },
-      { name: "Hóa Thần Kỳ (Viên Mãn)", req: 5000000 },
-      { name: "Luyện Hư Kỳ (Sơ Kỳ)", req: 8000000 },
-      { name: "Luyện Hư Kỳ (Trung Kỳ)", req: 13000000 },
-      { name: "Luyện Hư Kỳ (Hậu Kỳ)", req: 21000000 },
-      { name: "Luyện Hư Kỳ (Viên Mãn)", req: 35000000 },
-      { name: "Hợp Thể Kỳ (Sơ Kỳ)", req: 55000000 },
-      { name: "Hợp Thể Kỳ (Trung Kỳ)", req: 85000000 },
-      { name: "Hợp Thể Kỳ (Hậu Kỳ)", req: 130000000 },
-      { name: "Hợp Thể Kỳ (Viên Mãn)", req: 200000000 },
-      { name: "Đại Thừa Kỳ (Sơ Kỳ)", req: 300000000 },
-      { name: "Đại Thừa Kỳ (Trung Kỳ)", req: 450000000 },
-      { name: "Đại Thừa Kỳ (Hậu Kỳ)", req: 700000000 },
-      { name: "Đại Thừa Kỳ (Viên Mãn)", req: 1000000000 },
-      { name: "Độ Kiếp Kỳ (Sơ Kỳ)", req: 1500000000 },
-      { name: "Độ Kiếp Kỳ (Trung Kỳ)", req: 2200000000 },
-      { name: "Độ Kiếp Kỳ (Hậu Kỳ)", req: 3200000000 },
-      { name: "Độ Kiếp Kỳ (Viên Mãn)", req: 4500000000 },
-      { name: "Chân Tiên (Sơ Kỳ)", req: 6000000000 },
-      { name: "Chân Tiên (Trung Kỳ)", req: 8000000000 },
-      { name: "Chân Tiên (Hậu Kỳ)", req: 11000000000 },
-      { name: "Chân Tiên (Viên Mãn)", req: 15000000000 },
-      { name: "Kim Tiên (Sơ Kỳ)", req: 20000000000 },
-      { name: "Kim Tiên (Trung Kỳ)", req: 28000000000 },
-      { name: "Kim Tiên (Hậu Kỳ)", req: 38000000000 },
-      { name: "Kim Tiên (Viên Mãn)", req: 50000000000 },
-      { name: "Thái Ất (Sơ Kỳ)", req: 70000000000 },
-      { name: "Thái Ất (Trung Kỳ)", req: 95000000000 },
-      { name: "Thái Ất (Hậu Kỳ)", req: 130000000000 },
-      { name: "Thái Ất (Viên Mãn)", req: 180000000000 },
-      { name: "Đại La Tôn Giả (Sơ Kỳ)", req: 250000000000 },
-      { name: "Đại La Tôn Giả (Trung Kỳ)", req: 350000000000 },
-      { name: "Đại La Tôn Giả (Hậu Kỳ)", req: 500000000000 },
-      { name: "Đại La Tôn Giả (Viên Mãn)", req: 700000000000 },
-      { name: "Tiên Vương (Sơ Kỳ)", req: 1000000000000 },
-      { name: "Tiên Đế (Viên Mãn)", req: 1500000000000 },
-      { name: "Đạo Tổ Cảnh", req: 3000000000000 }
+      { name: "Phàm Nhân (Sơ Kỳ)", req: 0, isMajor: false },
+      { name: "Phàm Nhân (Trung Kỳ)", req: 50, isMajor: false },
+      { name: "Phàm Nhân (Hậu Kỳ)", req: 120, isMajor: false },
+      { name: "Phàm Nhân (Viên Mãn)", req: 250, isMajor: false },
+      { name: "Luyện Khí Kỳ (Sơ Kỳ)", req: 500, isMajor: true }, // Mốc lớn
+      { name: "Luyện Khí Kỳ (Trung Kỳ)", req: 900, isMajor: false },
+      { name: "Luyện Khí Kỳ (Hậu Kỳ)", req: 1500, isMajor: false },
+      { name: "Luyện Khí Kỳ (Viên Mãn)", req: 2500, isMajor: false },
+      { name: "Trúc Cơ Kỳ (Sơ Kỳ)", req: 4000, isMajor: true }, // Mốc lớn
+      { name: "Trúc Cơ Kỳ (Trung Kỳ)", req: 6500, isMajor: false },
+      { name: "Trúc Cơ Kỳ (Hậu Kỳ)", req: 10000, isMajor: false },
+      { name: "Trúc Cơ Kỳ (Viên Mãn)", req: 16000, isMajor: false },
+      { name: "Kim Đan Kỳ (Sơ Kỳ)", req: 25000, isMajor: true }, // Mốc lớn
+      { name: "Kim Đan Kỳ (Trung Kỳ)", req: 40000, isMajor: false },
+      { name: "Kim Đan Kỳ (Hậu Kỳ)", req: 65000, isMajor: false },
+      { name: "Kim Đan Kỳ (Viên Mãn)", req: 100000, isMajor: false },
+      { name: "Nguyên Anh Kỳ (Sơ Kỳ)", req: 160000, isMajor: true },
+      { name: "Nguyên Anh Kỳ (Trung Kỳ)", req: 250000, isMajor: false },
+      { name: "Nguyên Anh Kỳ (Hậu Kỳ)", req: 400000, isMajor: false },
+      { name: "Nguyên Anh Kỳ (Viên Mãn)", req: 650000, isMajor: false },
+      { name: "Hóa Thần Kỳ (Sơ Kỳ)", req: 1000000, isMajor: true },
+      { name: "Hóa Thần Kỳ (Trung Kỳ)", req: 1800000, isMajor: false },
+      { name: "Hóa Thần Kỳ (Hậu Kỳ)", req: 3000000, isMajor: false },
+      { name: "Hóa Thần Kỳ (Viên Mãn)", req: 5000000, isMajor: false },
+      { name: "Đạo Tổ Cảnh", req: 10000000, isMajor: true }
     ];
 
     const DEFAULT_SECTS = [
       { id: 'thanh_van', name: 'Thanh Vân Môn', buff: 'Tăng +20% Tốc độ Thu Thập', desc: 'Kiếm đạo chính phái, linh khí uy nghiêm.', founder: 'Hệ Thống' },
       { id: 'am_duong', name: 'Âm Dương Cốc', buff: 'Giảm 20% Giá mua Đan Dược & Bảo Vật', desc: 'Hành sự cổ quái, pháp tắc huyền bí.', founder: 'Hệ Thống' },
-      { id: 'huyet_dao', name: 'Huyết Đao Môn', buff: 'Tăng +50% Sát thương Trảm Yêu', desc: 'Chuyên tu sát phạt, chiến lực kinh người.', founder: 'Hệ Thống' }
+      { id: 'huyet_dao', name: 'Huyết Đao Môn', buff: 'Tăng +50% Sát thương Trảm Yêu & Phá Trận', desc: 'Chuyên tu sát phạt, chiến lực kinh người.', founder: 'Hệ Thống' }
     ];
 
     const SHOP_ITEMS = [
@@ -163,13 +134,9 @@
 
       const [gameState, setGameState] = React.useState(() => {
         try {
-          const savedState = localStorage.getItem('tu_tien_game_state_v2');
-          if (savedState) {
-            return JSON.parse(savedState);
-          }
-        } catch (e) {
-          console.log("Lỗi đọc save game, dùng mặc định");
-        }
+          const savedState = localStorage.getItem('tu_tien_game_state_v3');
+          if (savedState) return JSON.parse(savedState);
+        } catch (e) {}
         return {
           qi: 0,
           totalQi: 0,
@@ -178,17 +145,14 @@
           shopCounts: {},
           ownedGears: [],
           equippedGearId: null,
-          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống tự lập tông môn đã được kích hoạt!', type: 'breakthrough', time: Date.now() }]
+          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống lôi kiếp tranh đoạt đã kích hoạt!', type: 'breakthrough', time: Date.now() }]
         };
       });
 
-      // Lưu state ngay lập tức mỗi khi có thay đổi
       React.useEffect(() => {
         try {
-          localStorage.setItem('tu_tien_game_state_v2', JSON.stringify(gameState));
-        } catch (e) {
-          console.log("Không thể ghi vào localStorage");
-        }
+          localStorage.setItem('tu_tien_game_state_v3', JSON.stringify(gameState));
+        } catch (e) {}
       }, [gameState]);
 
       const [activeTab, setActiveTab] = React.useState('shop');
@@ -197,6 +161,11 @@
       const [isDead, setIsDead] = React.useState(false);
       const [cloudLeaderboard, setCloudLeaderboard] = React.useState([]);
       const [cloudCustomSects, setCloudCustomSects] = React.useState([]);
+      const [activeTribulations, setActiveTribulations] = React.useState({});
+      
+      // Trạng thái khi chính mình đang độ kiếp mốc lớn
+      const [myTribulation, setMyTribulation] = React.useState(null); // { targetRealm, hp, maxHp, endTime }
+
       const [newSectName, setNewSectName] = React.useState('');
       const [newSectDesc, setNewSectDesc] = React.useState('');
 
@@ -219,24 +188,24 @@
         return total;
       }, [gameState.shopCounts, gameState.joinedSectId]);
 
+      // Tụ khí mỗi giây
       React.useEffect(() => {
         const interval = setInterval(() => {
           setGameState(prev => {
             const added = qps;
             if (added <= 0) return prev;
-            return {
-              ...prev,
-              qi: prev.qi + added,
-              totalQi: prev.totalQi + added
-            };
+            return { ...prev, qi: prev.qi + added, totalQi: prev.totalQi + added };
           });
         }, 1000);
         return () => clearInterval(interval);
       }, [qps]);
 
+      // Đồng bộ cloud liên tục (Bảng xếp hạng & Lôi kiếp đang diễn ra)
       React.useEffect(() => {
-        const syncToCloud = async () => {
+        const syncCloud = async () => {
           const data = await fetchCloudData();
+          
+          // 1. Cập nhật bảng xếp hạng
           let list = data.leaderboard || [];
           const index = list.findIndex(item => item.name === playerName);
           if (index >= 0) {
@@ -249,48 +218,109 @@
           }
           list.sort((a, b) => b.totalQi - a.totalQi);
           list = list.slice(0, 10);
-          await updateCloudData({ leaderboard: list });
-        };
-        const timer = setInterval(syncToCloud, 10000);
-        return () => clearInterval(timer);
-      }, [gameState.totalQi, gameState.realmIdx, playerName]);
 
-      React.useEffect(() => {
-        const loadCloud = async () => {
-          const data = await fetchCloudData();
-          if (data.leaderboard) setCloudLeaderboard(data.leaderboard);
+          // 2. Đồng bộ lôi kiếp của chính mình nếu đang độ kiếp
+          let tribs = data.activeTribulations || {};
+          if (myTribulation) {
+            tribs[playerName] = {
+              targetRealm: myTribulation.targetRealm,
+              hp: myTribulation.hp,
+              maxHp: myTribulation.maxHp,
+              endTime: myTribulation.endTime
+            };
+          } else {
+            // Nếu hết thời gian hoặc hoàn thành, xóa tên mình khỏi danh sách lôi kiếp trên cloud
+            if (tribs[playerName]) {
+              delete tribs[playerName];
+            }
+          }
+
+          // Dọn dẹp các lôi kiếp đã hết giờ ở các người chơi khác
+          const now = Date.now();
+          Object.keys(tribs).forEach(pKey => {
+            if (tribs[pKey].endTime < now || tribs[pKey].hp <= 0) {
+              delete tribs[pKey];
+            }
+          });
+
+          await updateCloudData({ leaderboard: list, activeTribulations: tribs });
+          setActiveTribulations(tribs);
           if (data.customSects) setCloudCustomSects(data.customSects);
+          if (data.leaderboard) setCloudLeaderboard(data.leaderboard);
         };
-        loadCloud();
-        const timer = setInterval(loadCloud, 10000);
-        return () => clearInterval(timer);
-      }, []);
 
-      const handleTouchQi = () => {
-        setGameState(prev => ({
-          ...prev,
-          qi: prev.qi + clickPower,
-          totalQi: prev.totalQi + clickPower
-        }));
-      };
+        syncCloud();
+        const timer = setInterval(syncCloud, 4000);
+        return () => clearInterval(timer);
+      }, [gameState.totalQi, gameState.realmIdx, playerName, myTribulation]);
+
+      // Xử lý đếm ngược độ kiếp của bản thân
+      React.useEffect(() => {
+        if (!myTribulation) return;
+        const timer = setInterval(() => {
+          const now = Date.now();
+          if (now >= myTribulation.endTime || myTribulation.hp <= 0) {
+            // Hết giờ hoặc còn máu -> Kiểm tra kết quả
+            if (myTribulation.hp > 0) {
+              // Hộ đạo thành công / Vượt qua lôi kiếp!
+              const nextRealm = REALMS[gameState.realmIdx + 1];
+              setGameState(prev => ({
+                ...prev,
+                qi: prev.qi - nextRealm.req,
+                realmIdx: prev.realmIdx + 1,
+                logs: [
+                  { id: Date.now().toString(), text: `[Độ Kiếp Thành Công]: Chống chịu thiên kiếp, bước chân vào ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() },
+                  ...prev.logs
+                ]
+              }));
+            } else {
+              // Bị phá nát độ kiếp -> Thất bại
+              setGameState(prev => ({
+                ...prev,
+                logs: [
+                  { id: Date.now().toString(), text: `[Thiên Kiếp Thất Bại]: Bị ngoại lực công phá hoặc chống đỡ không nổi, độ kiếp tiêu tan!`, type: 'fail', time: Date.now() },
+                  ...prev.logs
+                ]
+              }));
+            }
+            setMyTribulation(null);
+          }
+        }, 1000);
+        return () => clearInterval(timer);
+      }, [myTribulation, gameState.realmIdx]);
 
       const handleBreakthrough = () => {
         const nextRealm = REALMS[gameState.realmIdx + 1];
         if (!nextRealm) return;
 
         if (gameState.qi >= nextRealm.req) {
-          setGameState(prev => {
-            const newRealmIdx = prev.realmIdx + 1;
-            return {
+          if (nextRealm.isMajor) {
+            // Nếu là mốc lớn (Luyện Khí, Trúc Cơ, Kim Đan...): Kích hoạt Lôi Kiếp Realtime cho mọi người thấy!
+            setMyTribulation({
+              targetRealm: nextRealm.name,
+              hp: 500, // Thanh máu độ kiếp cần bảo vệ
+              maxHp: 500,
+              endTime: Date.now() + 20000 // 20 giây sinh tử
+            });
+            setGameState(prev => ({
               ...prev,
-              qi: prev.qi - nextRealm.req,
-              realmIdx: newRealmIdx,
               logs: [
-                { id: Date.now().toString(), text: `[Thiên Kiếp]: Lôi kiếp giáng lâm! Đạo hữu đã đột phá thành công lên ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() },
+                { id: Date.now().toString(), text: `[Thiên Kiếp Giáng Lâm]: Đạo hữu bắt đầu độ kiếp lên ${nextRealm.name}! Cần bảo vệ pháp trận trong 20 giây!`, type: 'breakthrough', time: Date.now() },
                 ...prev.logs
               ]
-            };
-          });
+            }));
+          } else {
+            // Cảnh giới nhỏ đột phá ngay lập tức
+            setGameState(prev => ({
+              ...prev,
+              qi: prev.qi - nextRealm.req,
+              realmIdx: prev.realmIdx + 1,
+              logs: [
+                { id: Date.now().toString(), text: `[Đột Phá]: Thành công tiến cấp lên ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() },
+                ...prev.logs
+              ]
+            }));
+          }
         } else {
           setGameState(prev => ({
             ...prev,
@@ -300,6 +330,36 @@
             ]
           }));
         }
+      };
+
+      // Tương tác với Lôi Kiếp của người chơi khác (Bảo Vệ hoặc Tấn Công)
+      const interactTribulation = async (targetPlayerName, actionType) => {
+        const data = await fetchCloudData();
+        let tribs = data.activeTribulations || {};
+        if (!tribs[targetPlayerName]) {
+          alert("Lôi kiếp của đạo hữu này đã kết thúc hoặc không tồn tại!");
+          return;
+        }
+
+        let power = clickPower;
+        if (actionType === 'attack' && gameState.joinedSectId === 'huyet_dao') power *= 1.5;
+
+        if (actionType === 'protect') {
+          tribs[targetPlayerName].hp = Math.min(tribs[targetPlayerName].maxHp, tribs[targetPlayerName].hp + power * 5);
+          setGameState(prev => ({
+            ...prev,
+            logs: [{ id: Date.now().toString(), text: `[Hộ Đạo]: Ra tay tương trợ, hồi phục +${power * 5} HP độ kiếp cho ${targetPlayerName}!`, type: 'shop', time: Date.now() }, ...prev.logs]
+          }));
+        } else {
+          tribs[targetPlayerName].hp = Math.max(0, tribs[targetPlayerName].hp - power * 5);
+          setGameState(prev => ({
+            ...prev,
+            logs: [{ id: Date.now().toString(), text: `[Phá Trận]: Công kích lôi kiếp của ${targetPlayerName}, gây ra -${power * 5} HP!`, type: 'fail', time: Date.now() }, ...prev.logs]
+          }));
+        }
+
+        await updateCloudData({ activeTribulations: tribs });
+        setActiveTribulations(tribs);
       };
 
       const buyItem = (itemId) => {
@@ -314,10 +374,7 @@
             ...prev,
             qi: prev.qi - cost,
             shopCounts: { ...prev.shopCounts, [itemId]: count + 1 },
-            logs: [
-              { id: Date.now().toString(), text: `[Đان Phòng]: Mua thành công ${item.name}!`, type: 'shop', time: Date.now() },
-              ...prev.logs
-            ]
+            logs: [{ id: Date.now().toString(), text: `[Đan Phòng]: Mua thành công ${item.name}!`, type: 'shop', time: Date.now() }, ...prev.logs]
           }));
         }
       };
@@ -332,10 +389,7 @@
             qi: prev.qi - cost,
             ownedGears: [...prev.ownedGears, gear.id],
             equippedGearId: prev.equippedGearId || gear.id,
-            logs: [
-              { id: Date.now().toString(), text: `[Bảo Khố]: Thu phục thành công pháp bảo ${gear.name}!`, type: 'shop', time: Date.now() },
-              ...prev.logs
-            ]
+            logs: [{ id: Date.now().toString(), text: `[Bảo Khố]: Thu phục thành công pháp bảo ${gear.name}!`, type: 'shop', time: Date.now() }, ...prev.logs]
           }));
         }
       };
@@ -360,10 +414,7 @@
             ...prev,
             qi: prev.qi + monster.reward,
             totalQi: prev.totalQi + monster.reward,
-            logs: [
-              { id: Date.now().toString(), text: `[Trảm Yêu]: Tiêu diệt ${monster.name}, cướp đoạt +${monster.reward} Linh Khí!`, type: 'breakthrough', time: Date.now() },
-              ...prev.logs
-            ]
+            logs: [{ id: Date.now().toString(), text: `[Trảm Yêu]: Tiêu diệt ${monster.name}, cướp đoạt +${monster.reward} Linh Khí!`, type: 'breakthrough', time: Date.now() }, ...prev.logs]
           }));
           setIsDead(true);
           setTimeout(() => {
@@ -399,10 +450,7 @@
         setGameState(prev => ({
           ...prev,
           joinedSectId: newSect.id,
-          logs: [
-            { id: Date.now().toString(), text: `[Khai Sơn]: Đạo hữu đã thành công khai lập tông môn "${newSect.name}"!`, type: 'breakthrough', time: Date.now() },
-            ...prev.logs
-          ]
+          logs: [{ id: Date.now().toString(), text: `[Khai Sơn]: Đạo hữu đã thành công khai lập tông môn "${newSect.name}"!`, type: 'breakthrough', time: Date.now() }, ...prev.logs]
         }));
         setNewSectName('');
         setNewSectDesc('');
@@ -448,13 +496,60 @@
             </div>
           </header>
 
+          {/* KHU VỰC THÔNG BÁO LÔI KIẾP REALTIME (NẾU CÓ NGƯỜI ĐỘ KIẾP) */}
+          {Object.keys(activeTribulations).length > 0 && (
+            <div className="flex flex-col gap-2">
+              {Object.entries(activeTribulations).map(([pName, trib]) => (
+                <div key={pName} className="tribulation-banner bg-[#1a0808]/90 backdrop-blur-xl border-2 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl animate-bounce">⚡</span>
+                    <div>
+                      <div className="text-xs font-mono text-red-400 font-bold uppercase tracking-wider">Kênh Thiên Kiếp Cảnh</div>
+                      <div className="text-amber-200 font-serif font-bold text-sm">
+                        Đạo hữu <span className="text-cyan-300">{pName}</span> đang độ kiếp lên <span className="text-amber-400">{trib.targetRealm}</span>!
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+                    {/* Thanh máu độ kiếp */}
+                    <div className="w-full sm:w-48 bg-black/70 h-4 rounded-full border border-red-500/50 overflow-hidden relative p-0.5">
+                      <div className="bg-gradient-to-r from-red-600 via-orange-500 to-amber-500 h-full rounded-full transition-all duration-300" style={{ width: `${Math.max(0, (trib.hp / trib.maxHp) * 100)}%` }} />
+                      <div className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold text-white drop-shadow">HP: {Math.floor(trib.hp)} / {trib.maxHp}</div>
+                    </div>
+
+                    {/* Nút hành động Hộ Đạo / Tấn Công */}
+                    {pName !== playerName ? (
+                      <div className="flex gap-2 w-full sm:w-auto">
+                        <button onClick={() => interactTribulation(pName, 'protect')} className="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-400/40 rounded-xl text-xs font-serif font-bold text-emerald-200 transition-all cursor-pointer shadow">
+                          🛡️ Hộ Đạo
+                        </button>
+                        <button onClick={() => interactTribulation(pName, 'attack')} className="flex-1 sm:flex-none px-3 py-1.5 bg-red-600/30 hover:bg-red-600/50 border border-red-400/40 rounded-xl text-xs font-serif font-bold text-red-200 transition-all cursor-pointer shadow">
+                          ⚔️ Phá Trận
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs font-mono text-amber-300 animate-pulse">(Độ kiếp của chính bạn!)</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           <main className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
             <div className="col-span-1 lg:col-span-4 flex flex-col gap-4">
               <div className="bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-2xl flex flex-col items-center justify-center gap-5 relative">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
                 
                 <button 
-                  onClick={handleTouchQi}
+                  onClick={() => {
+                    setGameState(prev => ({
+                      ...prev,
+                      qi: prev.qi + clickPower,
+                      totalQi: prev.totalQi + clickPower
+                    }));
+                  }}
                   className="relative w-44 h-44 rounded-full bg-gradient-to-br from-purple-900/40 via-indigo-950/60 to-slate-900 border-2 border-purple-500/50 hover:border-cyan-400 hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(168,85,247,0.2)] flex flex-col items-center justify-center gap-1.5 cursor-pointer group">
                   <span className="text-4xl group-hover:scale-110 transition-transform">🌌</span>
                   <span className="font-serif font-bold text-sm tracking-wider text-amber-200">HẤP THU LINH KHÍ</span>
@@ -469,11 +564,18 @@
                   <div className="w-full bg-black/60 h-3 rounded-full border border-purple-500/30 overflow-hidden p-0.5">
                     <div className="bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-400 h-full rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(6,182,212,0.5)]" style={{ width: `${progressPercent}%` }} />
                   </div>
-                  <button 
-                    onClick={handleBreakthrough}
-                    className="mt-2 w-full py-3 bg-gradient-to-r from-purple-700/40 to-indigo-700/40 hover:from-purple-600/60 hover:to-indigo-600/60 border border-purple-400/40 rounded-xl text-xs font-serif font-bold text-amber-200 tracking-widest transition-all shadow-lg cursor-pointer">
-                    ⚡ XUNG KÍCH ĐỘT PHÁ
-                  </button>
+                  
+                  {myTribulation ? (
+                    <div className="mt-2 w-full py-3 bg-red-950/50 border border-red-500/50 rounded-xl text-xs font-serif font-bold text-red-300 text-center animate-pulse">
+                      ⚡ ĐANG CHỐNG CHỊU THIÊN KIẾP... ({Math.floor((myTribulation.endTime - Date.now())/1000)}s)
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={handleBreakthrough}
+                      className="mt-2 w-full py-3 bg-gradient-to-r from-purple-700/40 to-indigo-700/40 hover:from-purple-600/60 hover:to-indigo-600/60 border border-purple-400/40 rounded-xl text-xs font-serif font-bold text-amber-200 tracking-widest transition-all shadow-lg cursor-pointer">
+                      ⚡ XUNG KÍCH ĐỘT PHÁ {nextRealmObj?.isMajor ? '(Mốc Lớn)' : ''}
+                    </button>
+                  )}
                 </div>
               </div>
 
