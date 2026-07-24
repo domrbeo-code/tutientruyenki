@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Bản Sửa Lỗi Nhấp Nháy)</title>
+  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Bản Đồng Bộ Thời Gian Chuẩn Xác)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- React & ReactDOM -->
@@ -33,7 +33,7 @@
   <script type="text/babel">
     const BIN_ID = "6a622390f5f4af5e29b6690d";
     const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
-    const SAVE_KEY = "tu_tien_game_save_v6";
+    const SAVE_KEY = "tu_tien_game_save_v7";
 
     async function fetchCloudData() {
       try {
@@ -76,7 +76,6 @@
           });
         }
 
-        // Cho phép ghi đè hoàn toàn activeTribulations từ request gửi lên để tránh kẹt trạng thái rác
         let mergedTribs = current.activeTribulations || {};
         if (partialData.activeTribulations !== undefined) {
           mergedTribs = partialData.activeTribulations;
@@ -188,7 +187,7 @@
 
       const [gameState, setGameState] = React.useState(() => {
         try {
-          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_state_v5');
+          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_state_v6');
           if (savedState) return JSON.parse(savedState);
         } catch (e) {}
         return {
@@ -199,7 +198,7 @@
           shopCounts: {},
           ownedGears: [],
           equippedGearId: null,
-          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống lưu trữ bảo mật đã kích hoạt!', type: 'breakthrough', time: Date.now() }]
+          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống đồng bộ thời gian tuyệt đối đã kích hoạt!', type: 'breakthrough', time: Date.now() }]
         };
       });
 
@@ -254,13 +253,21 @@
         return () => clearInterval(interval);
       }, [qps]);
 
-      // Đồng bộ 2 chiều liên tục (kiểm soát tuyệt đối trạng thái độ kiếp của bản thân để chống nhấp nháy)
+      // Đồng bộ cloud liên tục mỗi 2.5 giây dựa trên timestamp chuẩn
       React.useEffect(() => {
         const syncCloud = async () => {
           const latestData = await fetchCloudData();
           let tribs = latestData.activeTribulations || {};
+          const now = Date.now();
 
-          // Nếu mình đang độ kiếp, đưa state của mình lên mây
+          // Dọn sạch các lôi kiếp đã quá hạn trên cloud chung
+          Object.keys(tribs).forEach(pKey => {
+            if (tribs[pKey].endTime <= now || tribs[pKey].hp <= 0) {
+              delete tribs[pKey];
+            }
+          });
+
+          // Nếu mình đang độ kiếp, đẩy state mới nhất của mình lên
           if (myTribulation) {
             tribs[playerName] = {
               targetRealm: myTribulation.targetRealm,
@@ -269,19 +276,11 @@
               endTime: myTribulation.endTime
             };
           } else {
-            // Nếu mình KHÔNG độ kiếp, ép buộc xóa tên mình khỏi danh sách active trên mây ngay lập tức
+            // Nếu không độ kiếp mà lỡ trên cloud còn sót tên mình thì xóa dứt điểm
             if (tribs[playerName]) {
               delete tribs[playerName];
             }
           }
-
-          // Dọn dẹp các lôi kiếp đã hết giờ chung của người khác
-          const now = Date.now();
-          Object.keys(tribs).forEach(pKey => {
-            if (tribs[pKey].endTime <= now || tribs[pKey].hp <= 0) {
-              delete tribs[pKey];
-            }
-          });
 
           const updatedCloud = await updateCloudData({
             leaderboard: [{ name: playerName, totalQi: gameState.totalQi, realm: REALMS[gameState.realmIdx].name }],
@@ -291,16 +290,26 @@
           if (updatedCloud) {
             if (updatedCloud.leaderboard) setCloudLeaderboard(updatedCloud.leaderboard);
             if (updatedCloud.customSects) setCloudCustomSects(updatedCloud.customSects);
-            if (updatedCloud.activeTribulations) setActiveTribulations(updatedCloud.activeTribulations);
+            if (updatedCloud.activeTribulations) {
+              // Lọc bỏ những cái đã hết hạn để UI hoàn toàn đồng bộ mượt mà
+              const cleanTribs = {};
+              const currentTimestamp = Date.now();
+              Object.entries(updatedCloud.activeTribulations).forEach(([k, v]) => {
+                if (v.endTime > currentTimestamp && v.hp > 0) {
+                  cleanTribs[k] = v;
+                }
+              });
+              setActiveTribulations(cleanTribs);
+            }
           }
         };
 
         syncCloud();
-        const timer = setInterval(syncCloud, 3000);
+        const timer = setInterval(syncCloud, 2500);
         return () => clearInterval(timer);
       }, [gameState.totalQi, gameState.realmIdx, playerName, myTribulation]);
 
-      // Kiểm tra kết thúc độ kiếp của chính mình
+      // Kiểm tra kết thúc độ kiếp của chính bản thân (Dựa vào mốc thời gian tuyệt đối endTime)
       React.useEffect(() => {
         if (!myTribulation) return;
         const timer = setInterval(() => {
@@ -325,14 +334,13 @@
                 ]
               }));
             }
-            // Đặt về null ngay lập tức để trigger state sync dọn sạch banner trên mây
             setMyTribulation(null);
           }
-        }, 500);
+        }, 300);
         return () => clearInterval(timer);
       }, [myTribulation, gameState.realmIdx]);
 
-      // Tự động kích hoạt hành động sau khi hết 30 giây độ kiếp
+      // Xử lý tự động chốt hành động Hộ Thủ / Tấn Công chung cho tất cả các máy khi hết thời gian 30s
       React.useEffect(() => {
         const interval = setInterval(async () => {
           const data = await fetchCloudData();
@@ -343,7 +351,7 @@
           Object.keys(tribs).forEach(pName => {
             const trib = tribs[pName];
             
-            // Nếu đã đến hạn chót kết thúc và người chơi có chọn hành động
+            // Nếu đã qua mốc endTime và có người chọn hành động, thực hiện tính toán sát thương/hồi máu chốt hạ
             if (now >= trib.endTime && playerActionChoice[pName]) {
               const action = playerActionChoice[pName];
               let power = combatPower * 20;
@@ -382,7 +390,7 @@
               targetRealm: nextRealm.name,
               hp: 1200,
               maxHp: 1200,
-              endTime: Date.now() + 30000 // Đúng 30 giây
+              endTime: Date.now() + 30000 // Cố định đúng 30 giây thời gian tuyệt đối
             });
             setGameState(prev => ({
               ...prev,
@@ -587,7 +595,7 @@
           {Object.keys(activeTribulations).length > 0 && (
             <div className="flex flex-col gap-2">
               {Object.entries(activeTribulations).map(([pName, trib]) => {
-                const timeLeft = Math.max(0, Math.floor((trib.endTime - Date.now()) / 1000));
+                const timeLeft = Math.max(0, Math.ceil((trib.endTime - Date.now()) / 1000));
                 const chosenAction = playerActionChoice[pName];
                 return (
                   <div key={pName} className="tribulation-banner bg-[#1a0808]/90 backdrop-blur-xl border-2 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl">
@@ -620,7 +628,7 @@
                             </>
                           ) : (
                             <span className="text-xs font-mono text-cyan-300 bg-black/60 px-3 py-1.5 rounded-xl border border-cyan-500/40">
-                              Đã chọn: {chosenAction === 'protect' ? '🛡️ Hộ Thủ' : '⚔️ Tấn Công'} (Đang chờ kết toán...)
+                              Đã chọn: {chosenAction === 'protect' ? '🛡️ Hộ Thủ' : '⚔️ Tấn Công'} (Chờ kết toán...)
                             </span>
                           )}
                         </div>
@@ -664,7 +672,7 @@
                   
                   {myTribulation ? (
                     <div className="mt-2 w-full py-3 bg-red-950/50 border border-red-500/50 rounded-xl text-xs font-serif font-bold text-red-300 text-center animate-pulse">
-                      ⚡ ĐANG ĐỘ KIẾP ({Math.max(0, Math.floor((myTribulation.endTime - Date.now())/1000))}s) - PHÓ MẶC TRỜI XANH!
+                      ⚡ ĐANG ĐỘ KIẾP ({Math.max(0, Math.ceil((myTribulation.endTime - Date.now())/1000))}s) - PHÓ MẶC TRỜI XANH!
                     </div>
                   ) : (
                     <button 
