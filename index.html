@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Real-time Sync & Black Market Fixed)</title>
+  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Strict Tribulation & Penalty Fixed)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -30,7 +30,7 @@
   <script type="text/babel">
     const BIN_ID = "6a622390f5f4af5e29b6690d";
     const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
-    const SAVE_KEY = "tu_tien_game_save_v18";
+    const SAVE_KEY = "tu_tien_game_save_v19";
 
     async function fetchCloudData() {
       try {
@@ -120,6 +120,7 @@
         return null;
       }
     }
+
     const REALMS = [
       { name: "Phàm Nhân (Sơ Kỳ)", req: 0, isMajor: false },
       { name: "Phàm Nhân (Trung Kỳ)", req: 50, isMajor: false },
@@ -213,7 +214,7 @@
 
       const [gameState, setGameState] = React.useState(() => {
         try {
-          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v17');
+          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v18');
           if (savedState) {
             const parsed = JSON.parse(savedState);
             if (!parsed.inventory) parsed.inventory = [];
@@ -228,7 +229,7 @@
           shopCounts: {},
           inventory: [],
           equippedGearId: null,
-          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống Chợ Đen ký gửi vĩnh viễn đã được củng cố!', type: 'breakthrough', time: Date.now() }]
+          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống Thiên Kiếp và hình phạt thất bại đã được củng cố!', type: 'breakthrough', time: Date.now() }]
         };
       });
 
@@ -507,7 +508,8 @@
           alert("Giao dịch thất bại, xin vui lòng thử lại!");
         }
       };
-    React.useEffect(() => {
+
+      React.useEffect(() => {
         if (!myTribulation) return;
         const timer = setInterval(() => {
           const now = Date.now();
@@ -535,22 +537,47 @@
                 return updatedState;
               });
             } else {
-              setGameState(prev => ({
-                ...prev,
-                logs: [{ id: Date.now().toString(), text: `[Thiên Kiếp Thất Bại]: Pháp trận bị công phá, hồn phi phách tán!`, type: 'fail', time: Date.now() }]
-              }));
-              updateCloudData({
-                name: playerName,
-                totalQi: gameState.totalQi,
-                realm: REALMS[gameState.realmIdx].name,
-                myTribulation: null
+              // THẤT BẠI KHI ĐỘ KIẾP: Mất 60% Linh khí (qi & totalQi) và 1 trang bị ngẫu nhiên trong túi đồ
+              setGameState(prev => {
+                const lostQi = Math.floor(prev.qi * 0.6);
+                const lostTotalQi = Math.floor(prev.totalQi * 0.6);
+                
+                let updatedInventory = [...prev.inventory];
+                let lostGearName = null;
+                if (updatedInventory.length > 0) {
+                  const randomIdx = Math.floor(Math.random() * updatedInventory.length);
+                  const removedItem = updatedInventory.splice(randomIdx, 1)[0];
+                  const foundGear = ALL_GEARS.find(g => g.id === removedItem.gearId);
+                  if (foundGear) lostGearName = foundGear.name;
+                }
+
+                const penaltyText = lostGearName 
+                  ? `[Thiên Kiếp Thất Bại]: Pháp trận bị công phá! Mất ${formatNumber(lostQi)} Qi và đánh rơi bảo vật "${lostGearName}"!`
+                  : `[Thiên Kiếp Thất Bại]: Pháp trận bị công phá! Mất ${formatNumber(lostQi)} Qi!`;
+
+                const updatedState = {
+                  ...prev,
+                  qi: Math.max(0, prev.qi - lostQi),
+                  totalQi: Math.max(0, prev.totalQi - lostTotalQi),
+                  inventory: updatedInventory,
+                  logs: [{ id: Date.now().toString(), text: penaltyText, type: 'fail', time: Date.now() }, ...prev.logs]
+                };
+
+                updateCloudData({
+                  name: playerName,
+                  totalQi: updatedState.totalQi,
+                  realm: REALMS[updatedState.realmIdx].name,
+                  myTribulation: null
+                });
+
+                return updatedState;
               });
             }
             setMyTribulation(null);
           }
         }, 500);
         return () => clearInterval(timer);
-      }, [myTribulation, gameState.realmIdx, playerName, gameState.totalQi]);
+      }, [myTribulation, gameState.realmIdx, playerName, gameState.totalQi, gameState.qi]);
 
       const handleBreakthrough = async () => {
         const nextRealm = REALMS[gameState.realmIdx + 1];
