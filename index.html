@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Kiếp Phạt Tranh Đoạt)</title>
+  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Bản Chuẩn Lưu Save)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- React & ReactDOM -->
@@ -33,6 +33,7 @@
   <script type="text/babel">
     const BIN_ID = "6a622390f5f4af5e29b6690d";
     const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
+    const SAVE_KEY = "tu_tien_game_save_v4"; // Key cố định, không bao giờ bị reset mất save nữa
 
     async function fetchCloudData() {
       try {
@@ -68,15 +69,15 @@
       { name: "Phàm Nhân (Trung Kỳ)", req: 50, isMajor: false },
       { name: "Phàm Nhân (Hậu Kỳ)", req: 120, isMajor: false },
       { name: "Phàm Nhân (Viên Mãn)", req: 250, isMajor: false },
-      { name: "Luyện Khí Kỳ (Sơ Kỳ)", req: 500, isMajor: true }, // Mốc lớn
+      { name: "Luyện Khí Kỳ (Sơ Kỳ)", req: 500, isMajor: true },
       { name: "Luyện Khí Kỳ (Trung Kỳ)", req: 900, isMajor: false },
       { name: "Luyện Khí Kỳ (Hậu Kỳ)", req: 1500, isMajor: false },
       { name: "Luyện Khí Kỳ (Viên Mãn)", req: 2500, isMajor: false },
-      { name: "Trúc Cơ Kỳ (Sơ Kỳ)", req: 4000, isMajor: true }, // Mốc lớn
+      { name: "Trúc Cơ Kỳ (Sơ Kỳ)", req: 4000, isMajor: true },
       { name: "Trúc Cơ Kỳ (Trung Kỳ)", req: 6500, isMajor: false },
       { name: "Trúc Cơ Kỳ (Hậu Kỳ)", req: 10000, isMajor: false },
       { name: "Trúc Cơ Kỳ (Viên Mãn)", req: 16000, isMajor: false },
-      { name: "Kim Đan Kỳ (Sơ Kỳ)", req: 25000, isMajor: true }, // Mốc lớn
+      { name: "Kim Đan Kỳ (Sơ Kỳ)", req: 25000, isMajor: true },
       { name: "Kim Đan Kỳ (Trung Kỳ)", req: 40000, isMajor: false },
       { name: "Kim Đan Kỳ (Hậu Kỳ)", req: 65000, isMajor: false },
       { name: "Kim Đan Kỳ (Viên Mãn)", req: 100000, isMajor: false },
@@ -134,7 +135,8 @@
 
       const [gameState, setGameState] = React.useState(() => {
         try {
-          const savedState = localStorage.getItem('tu_tien_game_state_v3');
+          // Ưu tiên đọc từ key chuẩn mới, nếu không thấy thì quét các key cũ để gom lại tránh mất save
+          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_state_v3');
           if (savedState) return JSON.parse(savedState);
         } catch (e) {}
         return {
@@ -145,13 +147,13 @@
           shopCounts: {},
           ownedGears: [],
           equippedGearId: null,
-          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống lôi kiếp tranh đoạt đã kích hoạt!', type: 'breakthrough', time: Date.now() }]
+          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống lưu trữ bảo mật đã kích hoạt!', type: 'breakthrough', time: Date.now() }]
         };
       });
 
       React.useEffect(() => {
         try {
-          localStorage.setItem('tu_tien_game_state_v3', JSON.stringify(gameState));
+          localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
         } catch (e) {}
       }, [gameState]);
 
@@ -162,9 +164,7 @@
       const [cloudLeaderboard, setCloudLeaderboard] = React.useState([]);
       const [cloudCustomSects, setCloudCustomSects] = React.useState([]);
       const [activeTribulations, setActiveTribulations] = React.useState({});
-      
-      // Trạng thái khi chính mình đang độ kiếp mốc lớn
-      const [myTribulation, setMyTribulation] = React.useState(null); // { targetRealm, hp, maxHp, endTime }
+      const [myTribulation, setMyTribulation] = React.useState(null);
 
       const [newSectName, setNewSectName] = React.useState('');
       const [newSectDesc, setNewSectDesc] = React.useState('');
@@ -188,7 +188,6 @@
         return total;
       }, [gameState.shopCounts, gameState.joinedSectId]);
 
-      // Tụ khí mỗi giây
       React.useEffect(() => {
         const interval = setInterval(() => {
           setGameState(prev => {
@@ -200,12 +199,9 @@
         return () => clearInterval(interval);
       }, [qps]);
 
-      // Đồng bộ cloud liên tục (Bảng xếp hạng & Lôi kiếp đang diễn ra)
       React.useEffect(() => {
         const syncCloud = async () => {
           const data = await fetchCloudData();
-          
-          // 1. Cập nhật bảng xếp hạng
           let list = data.leaderboard || [];
           const index = list.findIndex(item => item.name === playerName);
           if (index >= 0) {
@@ -219,7 +215,6 @@
           list.sort((a, b) => b.totalQi - a.totalQi);
           list = list.slice(0, 10);
 
-          // 2. Đồng bộ lôi kiếp của chính mình nếu đang độ kiếp
           let tribs = data.activeTribulations || {};
           if (myTribulation) {
             tribs[playerName] = {
@@ -229,18 +224,12 @@
               endTime: myTribulation.endTime
             };
           } else {
-            // Nếu hết thời gian hoặc hoàn thành, xóa tên mình khỏi danh sách lôi kiếp trên cloud
-            if (tribs[playerName]) {
-              delete tribs[playerName];
-            }
+            if (tribs[playerName]) delete tribs[playerName];
           }
 
-          // Dọn dẹp các lôi kiếp đã hết giờ ở các người chơi khác
           const now = Date.now();
           Object.keys(tribs).forEach(pKey => {
-            if (tribs[pKey].endTime < now || tribs[pKey].hp <= 0) {
-              delete tribs[pKey];
-            }
+            if (tribs[pKey].endTime < now || tribs[pKey].hp <= 0) delete tribs[pKey];
           });
 
           await updateCloudData({ leaderboard: list, activeTribulations: tribs });
@@ -254,15 +243,12 @@
         return () => clearInterval(timer);
       }, [gameState.totalQi, gameState.realmIdx, playerName, myTribulation]);
 
-      // Xử lý đếm ngược độ kiếp của bản thân
       React.useEffect(() => {
         if (!myTribulation) return;
         const timer = setInterval(() => {
           const now = Date.now();
           if (now >= myTribulation.endTime || myTribulation.hp <= 0) {
-            // Hết giờ hoặc còn máu -> Kiểm tra kết quả
             if (myTribulation.hp > 0) {
-              // Hộ đạo thành công / Vượt qua lôi kiếp!
               const nextRealm = REALMS[gameState.realmIdx + 1];
               setGameState(prev => ({
                 ...prev,
@@ -274,11 +260,10 @@
                 ]
               }));
             } else {
-              // Bị phá nát độ kiếp -> Thất bại
               setGameState(prev => ({
                 ...prev,
                 logs: [
-                  { id: Date.now().toString(), text: `[Thiên Kiếp Thất Bại]: Bị ngoại lực công phá hoặc chống đỡ không nổi, độ kiếp tiêu tan!`, type: 'fail', time: Date.now() },
+                  { id: Date.now().toString(), text: `[Thiên Kiếp Thất Bại]: Bị công phá hoặc chống đỡ không nổi, độ kiếp tiêu tan!`, type: 'fail', time: Date.now() },
                   ...prev.logs
                 ]
               }));
@@ -295,12 +280,11 @@
 
         if (gameState.qi >= nextRealm.req) {
           if (nextRealm.isMajor) {
-            // Nếu là mốc lớn (Luyện Khí, Trúc Cơ, Kim Đan...): Kích hoạt Lôi Kiếp Realtime cho mọi người thấy!
             setMyTribulation({
               targetRealm: nextRealm.name,
-              hp: 500, // Thanh máu độ kiếp cần bảo vệ
+              hp: 500,
               maxHp: 500,
-              endTime: Date.now() + 20000 // 20 giây sinh tử
+              endTime: Date.now() + 20000
             });
             setGameState(prev => ({
               ...prev,
@@ -310,7 +294,6 @@
               ]
             }));
           } else {
-            // Cảnh giới nhỏ đột phá ngay lập tức
             setGameState(prev => ({
               ...prev,
               qi: prev.qi - nextRealm.req,
@@ -332,7 +315,6 @@
         }
       };
 
-      // Tương tác với Lôi Kiếp của người chơi khác (Bảo Vệ hoặc Tấn Công)
       const interactTribulation = async (targetPlayerName, actionType) => {
         const data = await fetchCloudData();
         let tribs = data.activeTribulations || {};
@@ -496,7 +478,6 @@
             </div>
           </header>
 
-          {/* KHU VỰC THÔNG BÁO LÔI KIẾP REALTIME (NẾU CÓ NGƯỜI ĐỘ KIẾP) */}
           {Object.keys(activeTribulations).length > 0 && (
             <div className="flex flex-col gap-2">
               {Object.entries(activeTribulations).map(([pName, trib]) => (
@@ -512,13 +493,11 @@
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-                    {/* Thanh máu độ kiếp */}
                     <div className="w-full sm:w-48 bg-black/70 h-4 rounded-full border border-red-500/50 overflow-hidden relative p-0.5">
                       <div className="bg-gradient-to-r from-red-600 via-orange-500 to-amber-500 h-full rounded-full transition-all duration-300" style={{ width: `${Math.max(0, (trib.hp / trib.maxHp) * 100)}%` }} />
                       <div className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold text-white drop-shadow">HP: {Math.floor(trib.hp)} / {trib.maxHp}</div>
                     </div>
 
-                    {/* Nút hành động Hộ Đạo / Tấn Công */}
                     {pName !== playerName ? (
                       <div className="flex gap-2 w-full sm:w-auto">
                         <button onClick={() => interactTribulation(pName, 'protect')} className="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-400/40 rounded-xl text-xs font-serif font-bold text-emerald-200 transition-all cursor-pointer shadow">
