@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Real-time Sync & Black Market)</title>
+  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Real-time Sync & Black Market Fixed)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -30,7 +30,7 @@
   <script type="text/babel">
     const BIN_ID = "6a622390f5f4af5e29b6690d";
     const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
-    const SAVE_KEY = "tu_tien_game_save_v17";
+    const SAVE_KEY = "tu_tien_game_save_v18";
 
     async function fetchCloudData() {
       try {
@@ -89,9 +89,14 @@
           }
         }
 
+        // Hợp nhất marketListings thông minh để tránh bị ghi đè mất đồ ký gửi
         let listings = current.marketListings || [];
-        if (myEntry.newMarketListings !== undefined) {
-          listings = myEntry.newMarketListings;
+        if (myEntry.overrideMarketListings !== undefined) {
+          listings = myEntry.overrideMarketListings;
+        } else if (myEntry.newListing) {
+          if (!listings.some(l => l.listingId === myEntry.newListing.listingId)) {
+            listings.push(myEntry.newListing);
+          }
         }
 
         const payload = {
@@ -210,7 +215,7 @@
 
       const [gameState, setGameState] = React.useState(() => {
         try {
-          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v16');
+          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v17');
           if (savedState) {
             const parsed = JSON.parse(savedState);
             if (!parsed.inventory) parsed.inventory = [];
@@ -225,7 +230,7 @@
           shopCounts: {},
           inventory: [],
           equippedGearId: null,
-          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống Chợ Đen ký gửi liên server đã khởi chạy!', type: 'breakthrough', time: Date.now() }]
+          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống Chợ Đen ký gửi vĩnh viễn đã được củng cố!', type: 'breakthrough', time: Date.now() }]
         };
       });
 
@@ -349,14 +354,14 @@
         };
 
         doSync();
-        const syncInterval = setInterval(doSync, 2000);
+        const syncInterval = setInterval(doSync, 3000);
         return () => {
           isMounted = false;
           clearInterval(syncInterval);
         };
       }, [gameState.totalQi, gameState.realmIdx, playerName, myTribulation]);
 
-      // --- LOGIC KÝ GỬI, MUA BÁN & GỠ BÁN CHỢ ĐEN ---
+      // --- LOGIC KÝ GỬI, MUA BÁN & GỠ BÁN AN TOÀN ---
       const handleListMarketItem = async (uniqueId) => {
         const itemToSell = gameState.inventory.find(i => i.uniqueId === uniqueId);
         if (!itemToSell) return;
@@ -371,7 +376,6 @@
         const gearData = ALL_GEARS.find(g => g.id === itemToSell.gearId);
         if (!gearData) return;
 
-        // Nếu đang trang bị thì tự động tháo trước khi bán
         const updatedInventory = gameState.inventory.filter(i => i.uniqueId !== uniqueId);
 
         const newListing = {
@@ -384,6 +388,7 @@
         };
 
         try {
+          // Lấy dữ liệu mới nhất từ cloud trước khi thêm đồ lên chợ để tránh ghi đè
           const currentData = await fetchCloudData();
           const updatedListings = [...(currentData.marketListings || []), newListing];
 
@@ -391,7 +396,7 @@
             name: playerName,
             totalQi: gameState.totalQi,
             realm: REALMS[gameState.realmIdx].name,
-            newMarketListings: updatedListings
+            overrideMarketListings: updatedListings
           });
 
           if (res && res.marketListings) {
@@ -406,6 +411,7 @@
               { id: Date.now().toString(), text: `[Hắc Thị]: Ký gửi thành công ${gearData.name} với giá ${formatNumber(price)} Qi!`, type: 'shop', time: Date.now() }
             ]
           }));
+          alert("Ký gửi bảo vật lên Hắc Thị thành công!");
         } catch (e) {
           alert("Lỗi kết nối cloud khi ký gửi bảo vật!");
         }
@@ -422,14 +428,13 @@
             name: playerName,
             totalQi: gameState.totalQi,
             realm: REALMS[gameState.realmIdx].name,
-            newMarketListings: updatedListings
+            overrideMarketListings: updatedListings
           });
 
           if (res && res.marketListings) {
             setMarketListings(res.marketListings);
           }
 
-          // Trả lại món đồ vào túi của chủ nhân
           const returnedItem = {
             uniqueId: listing.gearUniqueId || ('item_' + Date.now()),
             gearId: listing.gearId,
@@ -468,18 +473,17 @@
           const currentData = await fetchCloudData();
           const targetListing = (currentData.marketListings || []).find(l => l.listingId === listing.listingId);
           if (!targetListing) {
-            alert("Vật phẩm này đã được người khác mua mất hoặc đã bị gỡ!");
+            alert("Vật phẩm này đã được người khác mua mất hoặc đã bị chủ nhân gỡ!");
             return;
           }
 
           const updatedListings = (currentData.marketListings || []).filter(l => l.listingId !== listing.listingId);
 
-          // Cập nhật cloud với danh sách mới
           const res = await updateCloudData({
             name: playerName,
-            totalQi: gameState.totalQi - listing.price, // tạm trừ qi người mua trên cloud nếu muốn, hoặc cập nhật qua state
+            totalQi: gameState.totalQi - listing.price,
             realm: REALMS[gameState.realmIdx].name,
-            newMarketListings: updatedListings
+            overrideMarketListings: updatedListings
           });
 
           if (res && res.marketListings) {
@@ -507,7 +511,6 @@
           alert("Giao dịch thất bại, xin vui lòng thử lại!");
         }
       };
-
       // ----------------------------------------------------
 
       React.useEffect(() => {
