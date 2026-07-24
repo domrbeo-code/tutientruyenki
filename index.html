@@ -537,7 +537,6 @@
                 return updatedState;
               });
             } else {
-              // THẤT BẠI KHI ĐỘ KIẾP: Mất 60% Linh khí (qi & totalQi) và 1 trang bị ngẫu nhiên trong túi đồ
               setGameState(prev => {
                 const lostQi = Math.floor(prev.qi * 0.6);
                 const lostTotalQi = Math.floor(prev.totalQi * 0.6);
