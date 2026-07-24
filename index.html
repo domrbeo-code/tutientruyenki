@@ -70,13 +70,81 @@
     }
 
     const REALMS = [
-      { name: "Luyện Khí Kỳ", req: 0 },
-      { name: "Trúc Cơ Kỳ", req: 1000 },
-      { name: "Kim Đan Kỳ", req: 25000 },
-      { name: "Nguyên Anh Kỳ", req: 500000 },
-      { name: "Hóa Thần Kỳ", req: 10000000 },
-      { name: "Luyện Hư Kỳ", req: 250000000 },
-      { name: "Độ Kiếp Kỳ", req: 5000000000 }
+      // Phàm Nhân
+      { name: "Phàm Nhân (Sơ Kỳ)", req: 0 },
+      { name: "Phàm Nhân (Trung Kỳ)", req: 50 },
+      { name: "Phàm Nhân (Hậu Kỳ)", req: 120 },
+      { name: "Phàm Nhân (Viên Mãn)", req: 250 },
+      // Luyện Khí Kỳ
+      { name: "Luyện Khí Kỳ (Sơ Kỳ)", req: 500 },
+      { name: "Luyện Khí Kỳ (Trung Kỳ)", req: 900 },
+      { name: "Luyện Khí Kỳ (Hậu Kỳ)", req: 1500 },
+      { name: "Luyện Khí Kỳ (Viên Mãn)", req: 2500 },
+      // Trúc Cơ Kỳ
+      { name: "Trúc Cơ Kỳ (Sơ Kỳ)", req: 4000 },
+      { name: "Trúc Cơ Kỳ (Trung Kỳ)", req: 6500 },
+      { name: "Trúc Cơ Kỳ (Hậu Kỳ)", req: 10000 },
+      { name: "Trúc Cơ Kỳ (Viên Mãn)", req: 16000 },
+      // Kim Đan Kỳ
+      { name: "Kim Đan Kỳ (Sơ Kỳ)", req: 25000 },
+      { name: "Kim Đan Kỳ (Trung Kỳ)", req: 40000 },
+      { name: "Kim Đan Kỳ (Hậu Kỳ)", req: 65000 },
+      { name: "Kim Đan Kỳ (Viên Mãn)", req: 100000 },
+      // Nguyên Anh Kỳ
+      { name: "Nguyên Anh Kỳ (Sơ Kỳ)", req: 160000 },
+      { name: "Nguyên Anh Kỳ (Trung Kỳ)", req: 250000 },
+      { name: "Nguyên Anh Kỳ (Hậu Kỳ)", req: 400000 },
+      { name: "Nguyên Anh Kỳ (Viên Mãn)", req: 650000 },
+      // Hóa Thần Kỳ
+      { name: "Hóa Thần Kỳ (Sơ Kỳ)", req: 1000000 },
+      { name: "Hóa Thần Kỳ (Trung Kỳ)", req: 1800000 },
+      { name: "Hóa Thần Kỳ (Hậu Kỳ)", req: 3000000 },
+      { name: "Hóa Thần Kỳ (Viên Mãn)", req: 5000000 },
+      // Luyện Hư Kỳ
+      { name: "Luyện Hư Kỳ (Sơ Kỳ)", req: 8000000 },
+      { name: "Luyện Hư Kỳ (Trung Kỳ)", req: 13000000 },
+      { name: "Luyện Hư Kỳ (Hậu Kỳ)", req: 21000000 },
+      { name: "Luyện Hư Kỳ (Viên Mãn)", req: 35000000 },
+      // Hợp Thể Kỳ
+      { name: "Hợp Thể Kỳ (Sơ Kỳ)", req: 55000000 },
+      { name: "Hợp Thể Kỳ (Trung Kỳ)", req: 85000000 },
+      { name: "Hợp Thể Kỳ (Hậu Kỳ)", req: 130000000 },
+      { name: "Hợp Thể Kỳ (Viên Mãn)", req: 200000000 },
+      // Đại Thừa Kỳ
+      { name: "Đại Thừa Kỳ (Sơ Kỳ)", req: 300000000 },
+      { name: "Đại Thừa Kỳ (Trung Kỳ)", req: 450000000 },
+      { name: "Đại Thừa Kỳ (Hậu Kỳ)", req: 700000000 },
+      { name: "Đại Thừa Kỳ (Viên Mãn)", req: 1000000000 },
+      // Độ Kiếp Kỳ
+      { name: "Độ Kiếp Kỳ (Sơ Kỳ)", req: 1500000000 },
+      { name: "Độ Kiếp Kỳ (Trung Kỳ)", req: 2200000000 },
+      { name: "Độ Kiếp Kỳ (Hậu Kỳ)", req: 3200000000 },
+      { name: "Độ Kiếp Kỳ (Viên Mãn)", req: 4500000000 },
+      // Chân Tiên
+      { name: "Chân Tiên (Sơ Kỳ)", req: 6000000000 },
+      { name: "Chân Tiên (Trung Kỳ)", req: 8000000000 },
+      { name: "Chân Tiên (Hậu Kỳ)", req: 11000000000 },
+      { name: "Chân Tiên (Viên Mãn)", req: 15000000000 },
+      // Kim Tiên
+      { name: "Kim Tiên (Sơ Kỳ)", req: 20000000000 },
+      { name: "Kim Tiên (Trung Kỳ)", req: 28000000000 },
+      { name: "Kim Tiên (Hậu Kỳ)", req: 38000000000 },
+      { name: "Kim Tiên (Viên Mãn)", req: 50000000000 },
+      // Thái Ất Ngọc Tiên
+      { name: "Thái Ất (Sơ Kỳ)", req: 70000000000 },
+      { name: "Thái Ất (Trung Kỳ)", req: 95000000000 },
+      { name: "Thái Ất (Hậu Kỳ)", req: 130000000000 },
+      { name: "Thái Ất (Viên Mãn)", req: 180000000000 },
+      // Đại罗 Tiên Tôn (Đại La)
+      { name: "Đại La Tôn Giả (Sơ Kỳ)", req: 250000000000 },
+      { name: "Đại La Tôn Giả (Trung Kỳ)", req: 350000000000 },
+      { name: "Đại La Tôn Giả (Hậu Kỳ)", req: 500000000000 },
+      { name: "Đại La Tôn Giả (Viên Mãn)", req: 700000000000 },
+      // Tiên Vương / Tiên Đế
+      { name: "Tiên Vương (Sơ Kỳ)", req: 1000000000000 },
+      { name: "Tiên Đế (Viên Mãn)", req: 1500000000000 },
+      // Đạo Tổ
+      { name: "Đạo Tổ Cảnh", req: 3000000000000 }
     ];
 
     const SECTS = [
@@ -85,7 +153,6 @@
       { id: 'huyet_dao', name: 'Huyết Đao Môn', buff: 'Tăng +50% Sát thương Trảm Yêu', desc: 'Chuyên tu sát phạt, chiến lực kinh người.' }
     ];
 
-    // Đã nhân 5 tốc độ thu thập (qps) cơ bản
     const SHOP_ITEMS = [
       { id: 'linh_thach', name: 'Tụ Linh Trận', baseCost: 50, qps: 5, desc: 'Tự động hấp thu linh khí vi mô từ hư không.' },
       { id: 'duoc_vien', name: 'Dược Viên Đan Dược', baseCost: 350, qps: 30, desc: 'Trồng linh dược ngàn năm luyện hóa đan dược.' },
@@ -105,6 +172,7 @@
     ];
 
     const formatNumber = (num) => {
+      if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
       if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
       if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
       if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
@@ -128,7 +196,7 @@
         shopCounts: {},
         ownedGears: [],
         equippedGearId: null,
-        logs: [{ id: '1', text: '[Đại Đạo]: Gia tốc tu luyện x5 đã được kích hoạt thành công!', type: 'breakthrough', time: Date.now() }]
+        logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống cảnh giới từ Phàm Nhân đến Đạo Tổ đã được thiết lập!', type: 'breakthrough', time: Date.now() }]
       });
 
       const [activeTab, setActiveTab] = React.useState('shop');
@@ -306,7 +374,7 @@
       const fullLeaderboard = cloudLeaderboard.length > 0 ? cloudLeaderboard.map(item => ({
         ...item,
         isPlayer: item.name === playerName,
-        title: item.realm || 'Luyện Khí Kỳ'
+        title: item.realm || 'Phàm Nhân'
       })) : [{ name: playerName, totalQi: gameState.totalQi, realm: REALMS[gameState.realmIdx].name, isPlayer: true, title: REALMS[gameState.realmIdx].name }];
 
       return (
@@ -317,7 +385,7 @@
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-800 flex items-center justify-center border border-purple-400/40 text-xl shadow-inner">🧘‍♂️</div>
               <div>
                 <div className="text-[11px] font-mono text-cyan-400 tracking-wider uppercase">Đạo Hữu: <span className="text-amber-200 font-bold">{playerName}</span></div>
-                <h1 className="text-2xl font-serif font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-purple-300 to-cyan-300">
+                <h1 className="text-xl md:text-2xl font-serif font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-purple-300 to-cyan-300">
                   {REALMS[gameState.realmIdx].name}
                 </h1>
               </div>
@@ -352,7 +420,7 @@
                 <div className="w-full flex flex-col gap-2 mt-2">
                   <div className="flex justify-between text-xs font-mono text-slate-300">
                     <span className="text-purple-300">Tiến Cảnh Giới</span>
-                    <span className="text-amber-300">{nextRealmObj ? `${formatNumber(gameState.qi)} / ${formatNumber(nextRealmObj.req)}` : 'Đã Đạt Đại Viên Mãn'}</span>
+                    <span className="text-amber-300">{nextRealmObj ? `${formatNumber(gameState.qi)} / ${formatNumber(nextRealmObj.req)}` : 'Đã Đạt Đạo Tổ Cảnh'}</span>
                   </div>
                   <div className="w-full bg-black/60 h-3 rounded-full border border-purple-500/30 overflow-hidden p-0.5">
                     <div className="bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-400 h-full rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(6,182,212,0.5)]" style={{ width: `${progressPercent}%` }} />
