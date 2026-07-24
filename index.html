@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Real-time Sync)</title>
+  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Real-time Sync & Gear Drops)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -30,7 +30,7 @@
   <script type="text/babel">
     const BIN_ID = "6a622390f5f4af5e29b6690d";
     const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
-    const SAVE_KEY = "tu_tien_game_save_v15";
+    const SAVE_KEY = "tu_tien_game_save_v16";
 
     async function fetchCloudData() {
       try {
@@ -43,9 +43,9 @@
         });
         if (!res.ok) throw new Error("Network response was not ok");
         const data = await res.json();
-        return data.record || { leaderboard: [], customSects: [], activeTribulations: {} };
+        return data.record || { leaderboard: [], customSects: [], activeTribulations: {}, marketListings: [] };
       } catch (e) {
-        return { leaderboard: [], customSects: [], activeTribulations: {} };
+        return { leaderboard: [], customSects: [], activeTribulations: {}, marketListings: [] };
       }
     }
 
@@ -92,7 +92,8 @@
         const payload = {
           leaderboard: list,
           customSects: sects,
-          activeTribulations: tribs
+          activeTribulations: tribs,
+          marketListings: current.marketListings || []
         };
 
         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
@@ -151,10 +152,18 @@
       { id: 'linh_tuyen', name: 'Linh Tuyền Nhãn', baseCost: 1800, qps: 150, desc: 'Mạch nước ngầm tinh thuần đậm đặc linh khí.' }
     ];
 
-    const BLACK_MARKET_GEARS = [
-      { id: 'kiem_1', name: 'Thiết Kiếm Phàm Phí', tier: 'Phàm Phí', cost: 500, clickBonus: 5, qpsBonus: 0, color: 'text-slate-400' },
-      { id: 'kiem_2', name: 'Thanh Cương Bảo Kiếm', tier: 'Hạ Phẩm', cost: 3000, clickBonus: 25, qpsBonus: 10, color: 'text-emerald-400' },
-      { id: 'kiem_3', name: 'Phá Thiên Thần Kiếm', tier: 'Trung Phẩm', cost: 15000, clickBonus: 100, qpsBonus: 50, color: 'text-cyan-400' }
+    // 10 Món Trang Bị Nhận Từ Trảm Yêu
+    const ALL_GEARS = [
+      { id: 'gear_1', name: 'Thiết Kiếm Phàm Phí', tier: 'Phàm Phí', color: 'text-slate-400', clickBonus: 5, qpsBonus: 0, dropRate: 0.35, desc: 'Kiếm sắt đúc thô sơ của phàm nhân.' },
+      { id: 'gear_2', name: 'Gỗ Đào Bùa Chú', tier: 'Phàm Phí', color: 'text-slate-400', clickBonus: 3, qpsBonus: 2, dropRate: 0.30, desc: 'Khúc gỗ đào khắc linh văn đơn giản.' },
+      { id: 'gear_3', name: 'Thanh Cương Bảo Kiếm', tier: 'Hạ Phẩm', color: 'text-emerald-400', clickBonus: 25, qpsBonus: 10, dropRate: 0.18, desc: 'Kiếm đúc bằng thanh cương thạch.' },
+      { id: 'gear_4', name: 'Bách Luyện Đao', tier: 'Hạ Phẩm', color: 'text-emerald-400', clickBonus: 35, qpsBonus: 5, dropRate: 0.15, desc: 'Đao được tôi luyện qua trăm lửa.' },
+      { id: 'gear_5', name: 'Phá Thiên Thần Kiếm', tier: 'Trung Phẩm', color: 'text-cyan-400', clickBonus: 100, qpsBonus: 50, dropRate: 0.08, desc: 'Bảo vật trung cấp phát sáng xanh lam.' },
+      { id: 'gear_6', name: 'Áo Giáp Huyền Thiết', tier: 'Trung Phẩm', color: 'text-cyan-400', clickBonus: 80, qpsBonus: 70, dropRate: 0.07, desc: 'Giáp trụ đúc từ huyền thiết nặng ngàn cân.' },
+      { id: 'gear_7', name: 'Xích Huyết Thương', tier: 'Thượng Phẩm', color: 'text-purple-400', clickBonus: 250, qpsBonus: 150, dropRate: 0.03, desc: 'Ngọn giáo nhuốm máu đại yêu thượng cổ.' },
+      { id: 'gear_8', name: 'Tử Kim Lô (Thu Nhỏ)', tier: 'Thượng Phẩm', color: 'text-purple-400', clickBonus: 200, qpsBonus: 300, dropRate: 0.025, desc: 'Lò luyện đan mô phỏng thượng cổ.' },
+      { id: 'gear_9', name: 'Long Lân Kiếm', tier: 'Cực Phẩm', color: 'text-amber-400', clickBonus: 600, qpsBonus: 800, dropRate: 0.01, desc: 'Kiếm khảm vảy của Giao Long.' },
+      { id: 'gear_10', name: 'Hỗn Nguyên Phù Đồ Tháp', tier: 'Tiên Thiên', color: 'text-red-500 animate-pulse', clickBonus: 1500, qpsBonus: 2500, dropRate: 0.003, desc: 'Tháp thu nhỏ chứa đạo vận hồng mông.' }
     ];
 
     const MONSTERS = [
@@ -197,8 +206,12 @@
 
       const [gameState, setGameState] = React.useState(() => {
         try {
-          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v14');
-          if (savedState) return JSON.parse(savedState);
+          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v15');
+          if (savedState) {
+            const parsed = JSON.parse(savedState);
+            if (!parsed.inventory) parsed.inventory = [];
+            return parsed;
+          }
         } catch (e) {}
         return {
           qi: 0,
@@ -206,9 +219,9 @@
           realmIdx: 0,
           joinedSectId: 'thanh_van',
           shopCounts: {},
-          ownedGears: [],
+          inventory: [], // Danh sách các item/trang bị thu thập được
           equippedGearId: null,
-          logs: [{ id: '1', text: '[Đại Đạo]: Đồng bộ thời gian thực (1-2s) đã được kích hoạt!', type: 'breakthrough', time: Date.now() }]
+          logs: [{ id: '1', text: '[Đại Đạo]: Hệ thống trang bị & Trảm yêu rơi đồ đã sẵn sàng!', type: 'breakthrough', time: Date.now() }]
         };
       });
 
@@ -217,6 +230,8 @@
       }, [gameState]);
 
       const [activeTab, setActiveTab] = React.useState('shop');
+      const [isBlackMarketModalOpen, setIsBlackMarketModalOpen] = React.useState(false); // UI Chợ Đen lớn riêng biệt
+
       const [currentMonsterIdx, setCurrentMonsterIdx] = React.useState(0);
       const [monsterHp, setMonsterHp] = React.useState(MONSTERS[0].hp);
       const [isDead, setIsDead] = React.useState(false);
@@ -240,12 +255,14 @@
 
       const combatPower = React.useMemo(() => {
         let base = 1 + gameState.realmIdx * 3;
-        gameState.ownedGears.forEach(gearId => {
-          const gear = BLACK_MARKET_GEARS.find(g => g.id === gearId);
-          if (gear) base += gear.clickBonus;
+        gameState.inventory.forEach(item => {
+          if (item.isEquipped) {
+            const gear = ALL_GEARS.find(g => g.id === item.gearId);
+            if (gear) base += gear.clickBonus;
+          }
         });
         return base;
-      }, [gameState.realmIdx, gameState.ownedGears]);
+      }, [gameState.realmIdx, gameState.inventory]);
 
       const clickPower = combatPower;
 
@@ -255,11 +272,17 @@
           const count = gameState.shopCounts[item.id] || 0;
           total += count * item.qps;
         });
+        gameState.inventory.forEach(item => {
+          if (item.isEquipped) {
+            const gear = ALL_GEARS.find(g => g.id === item.gearId);
+            if (gear) total += gear.qpsBonus;
+          }
+        });
         if (gameState.joinedSectId === 'thanh_van') total *= 1.2;
         return total;
-      }, [gameState.shopCounts, gameState.joinedSectId]);
+      }, [gameState.shopCounts, gameState.inventory, gameState.joinedSectId]);
 
-      // Vòng lặp thu thập linh khí có gắn cơ chế khóa trần
+      // Vòng lặp thu thập linh khí
       React.useEffect(() => {
         const interval = setInterval(() => {
           setGameState(prev => {
@@ -270,9 +293,7 @@
               return { ...prev, qi: prev.qi + added, totalQi: prev.totalQi + added };
             }
 
-            if (prev.qi >= nextRealmObj.req) {
-              return prev; 
-            }
+            if (prev.qi >= nextRealmObj.req) return prev;
 
             const added = qps;
             if (added <= 0) return prev;
@@ -289,7 +310,7 @@
         return () => clearInterval(interval);
       }, [qps]);
 
-      // Đồng bộ cloud cực nhanh (2 giây một lần để thấy thay đổi lập tức)
+      // Đồng bộ cloud 2 giây
       React.useEffect(() => {
         let isMounted = true;
         const doSync = async () => {
@@ -302,12 +323,8 @@
 
           const result = await updateCloudData(playerEntry);
           if (result && isMounted) {
-            if (result.leaderboard) {
-              setCloudLeaderboard(result.leaderboard);
-            }
-            if (result.customSects) {
-              setCloudCustomSects(result.customSects);
-            }
+            if (result.leaderboard) setCloudLeaderboard(result.leaderboard);
+            if (result.customSects) setCloudCustomSects(result.customSects);
             if (result.activeTribulations) {
               const now = Date.now();
               const cleanTribs = {};
@@ -351,7 +368,6 @@
                     ...prev.logs
                   ]
                 };
-                // Đồng bộ ngay lập tức lên cloud khi vừa độ kiếp thành công
                 updateCloudData({
                   name: playerName,
                   totalQi: updatedState.totalQi,
@@ -365,9 +381,7 @@
             } else {
               setGameState(prev => ({
                 ...prev,
-                logs: [
-                  { id: Date.now().toString(), text: `[Thiên Kiếp Thất Bại]: Pháp trận bị công phá, hồn phi phách tán!`, type: 'fail', time: Date.now() }
-                ]
+                logs: [{ id: Date.now().toString(), text: `[Thiên Kiếp Thất Bại]: Pháp trận bị công phá, hồn phi phách tán!`, type: 'fail', time: Date.now() }]
               }));
               updateCloudData({
                 name: playerName,
@@ -411,7 +425,6 @@
             });
 
           } else {
-            // Đột phá tiểu cảnh giới thông thường -> Đồng bộ ngay lập tức lên bảng xếp hạng
             const nextIdx = gameState.realmIdx + 1;
             const newQi = gameState.qi - nextRealm.req;
             setGameState(prev => ({
@@ -452,11 +465,7 @@
           if (!tribs[targetPlayerName]) {
             setGameState(prev => ({
               ...prev,
-              logs: [...prev.logs, {
-                id: Date.now().toString(),
-                text: `[Thiên Thư]: Độ kiếp của ${targetPlayerName} đã kết thúc!`,
-                type: 'fail', time: Date.now()
-              }]
+              logs: [...prev.logs, { id: Date.now().toString(), text: `[Thiên Thư]: Độ kiếp của ${targetPlayerName} đã kết thúc!`, type: 'fail', time: Date.now() }]
             }));
             setActionLoading(null);
             return;
@@ -483,7 +492,8 @@
             body: JSON.stringify({
               leaderboard: data.leaderboard || [],
               customSects: data.customSects || [],
-              activeTribulations: tribs
+              activeTribulations: tribs,
+              marketListings: data.marketListings || []
             })
           });
           const updated = await res.json();
@@ -496,11 +506,7 @@
           const actionText = actionType === 'protect' ? `🛡️ Hộ Thủ (+${Math.floor(delta)} HP)` : `⚔️ Tấn Công (-${Math.floor(delta)} HP)`;
           setGameState(prev => ({
             ...prev,
-            logs: [...prev.logs, {
-              id: Date.now().toString(),
-              text: `[Thiên Thư]: Thực thi ${actionText} cho ${targetPlayerName}!`,
-              type: 'shop', time: Date.now()
-            }]
+            logs: [...prev.logs, { id: Date.now().toString(), text: `[Thiên Thư]: Thực thi ${actionText} cho ${targetPlayerName}!`, type: 'shop', time: Date.now() }]
           }));
         } catch (e) {}
         setActionLoading(null);
@@ -522,42 +528,78 @@
         }
       };
 
-      const buyGear = (gear) => {
-        let cost = gear.cost;
-        if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
-        if (gameState.qi >= cost && !gameState.ownedGears.includes(gear.id)) {
-          setGameState(prev => ({
-            ...prev,
-            qi: prev.qi - cost,
-            ownedGears: [...prev.ownedGears, gear.id],
-            equippedGearId: prev.equippedGearId || gear.id,
-            logs: [...prev.logs, { id: Date.now().toString(), text: `[Bảo Khố]: Thu phục thành công pháp bảo ${gear.name}!`, type: 'shop', time: Date.now() }]
-          }));
-        }
-      };
-
-      const equipGear = (gearId) => {
-        setGameState(prev => ({ ...prev, equippedGearId: prev.equippedGearId === gearId ? null : gearId }));
-      };
-
+      // Xử lý tấn công quái và nhận trang bị rơi ra ngẫu nhiên
       const attackMonster = (multiplier = 1) => {
         if (isDead) return;
         let dmg = combatPower * multiplier;
         if (gameState.joinedSectId === 'huyet_dao') dmg *= 1.5;
         const monster = MONSTERS[currentMonsterIdx];
         const nextHp = monsterHp - dmg;
+
         if (nextHp <= 0) {
+          // Tính toán rớt trang bị ngẫu nhiên dựa vào dropRate
+          let droppedItemsLogs = [];
+          let newInventoryItems = [...gameState.inventory];
+
+          ALL_GEARS.forEach(gear => {
+            const roll = Math.random();
+            if (roll <= gear.dropRate) {
+              const uniqueId = 'item_' + Date.now() + '_' + Math.random().toString(36.substring(2, 7));
+              newInventoryItems.push({
+                uniqueId: uniqueId,
+                gearId: gear.id,
+                isEquipped: false
+              });
+              droppedItemsLogs.push(gear.name);
+            }
+          });
+
+          let dropLogText = droppedItemsLogs.length > 0 
+            ? ` | Nhận được bảo vật: ${droppedItemsLogs.join(', ')}!` 
+            : '';
+
           setGameState(prev => ({
             ...prev,
             qi: prev.qi + monster.reward,
             totalQi: prev.totalQi + monster.reward,
-            logs: [...prev.logs, { id: Date.now().toString(), text: `[Trảm Yêu]: Tiêu diệt ${monster.name}, cướp đoạt +${monster.reward} Linh Khí!`, type: 'breakthrough', time: Date.now() }]
+            inventory: newInventoryItems,
+            logs: [
+              ...prev.logs, 
+              { id: Date.now().toString(), text: `[Trảm Yêu]: Tiêu diệt ${monster.name}, cướp đoạt +${monster.reward} Linh Khí${dropLogText}`, type: 'breakthrough', time: Date.now() }
+            ]
           }));
+
           setIsDead(true);
           setTimeout(() => { setMonsterHp(MONSTERS[currentMonsterIdx].hp); setIsDead(false); }, 3000);
         } else {
           setMonsterHp(nextHp);
         }
+      };
+
+      const toggleEquipInventoryItem = (uniqueId) => {
+        setGameState(prev => {
+          const targetItem = prev.inventory.find(i => i.uniqueId === uniqueId);
+          if (!targetItem) return prev;
+
+          const willBeEquipped = !targetItem.isEquipped;
+          const gearData = ALL_GEARS.find(g => g.id === targetItem.gearId);
+
+          const updatedInventory = prev.inventory.map(item => {
+            if (item.uniqueId === uniqueId) {
+              return { ...item, isEquipped: willBeEquipped };
+            }
+            return item;
+          });
+
+          return {
+            ...prev,
+            inventory: updatedInventory,
+            logs: [
+              ...prev.logs,
+              { id: Date.now().toString(), text: `[Túi Đồ]: ${willBeEquipped ? 'Đã trang bị' : 'Đã tháo'} pháp bảo ${gearData?.name || 'Vật Phẩm'}!`, type: 'shop', time: Date.now() }
+            ]
+          };
+        });
       };
 
       const handleCreateSect = async (e) => {
@@ -588,7 +630,8 @@
           body: JSON.stringify({
             leaderboard: currentData.leaderboard || [],
             customSects: updatedSects,
-            activeTribulations: currentData.activeTribulations || {}
+            activeTribulations: currentData.activeTribulations || {},
+            marketListings: currentData.marketListings || []
           })
         });
 
@@ -636,7 +679,7 @@
       }, [cloudLeaderboard, playerName, gameState.totalQi, gameState.realmIdx]);
 
       return (
-        <div className="flex flex-col min-h-screen p-4 max-w-7xl mx-auto gap-4">
+        <div className="flex flex-col min-h-screen p-4 max-w-7xl mx-auto gap-4 relative">
           <header className="sect-glow bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl relative overflow-hidden">
             <div className="absolute -top-12 -left-12 w-32 h-32 bg-purple-600/10 rounded-full blur-2xl pointer-events-none"></div>
             <div className="flex items-center gap-3 w-full md:w-auto">
@@ -662,21 +705,27 @@
                 </h1>
               </div>
             </div>
-            <div className="flex items-center gap-6 font-mono bg-black/40 px-5 py-2.5 rounded-xl border border-white/10 flex-shrink-0">
-              <div className="flex flex-col items-end">
-                <span className="text-slate-400 text-[10px]">Linh Khí (Qi)</span>
-                <span className="text-amber-400 font-bold text-base">{formatNumber(gameState.qi)}</span>
+            <div className="flex items-center gap-4 flex-wrap justify-end">
+              <div className="flex items-center gap-4 font-mono bg-black/40 px-5 py-2.5 rounded-xl border border-white/10 flex-shrink-0">
+                <div className="flex flex-col items-end">
+                  <span className="text-slate-400 text-[10px]">Linh Khí (Qi)</span>
+                  <span className="text-amber-400 font-bold text-base">{formatNumber(gameState.qi)}</span>
+                </div>
+                <div className="w-[1px] h-8 bg-white/10"></div>
+                <div className="flex flex-col items-end">
+                  <span className="text-slate-400 text-[10px]">Chiến Lực</span>
+                  <span className="text-red-400 font-bold text-base">{formatNumber(combatPower)}</span>
+                </div>
+                <div className="w-[1px] h-8 bg-white/10"></div>
+                <div className="flex flex-col items-end">
+                  <span className="text-slate-400 text-[10px]">Tốc Độ Tụ Khí</span>
+                  <span className="text-cyan-400 font-bold text-base">+{formatNumber(qps)}/s</span>
+                </div>
               </div>
-              <div className="w-[1px] h-8 bg-white/10"></div>
-              <div className="flex flex-col items-end">
-                <span className="text-slate-400 text-[10px]">Chiến Lực</span>
-                <span className="text-red-400 font-bold text-base">{formatNumber(combatPower)}</span>
-              </div>
-              <div className="w-[1px] h-8 bg-white/10"></div>
-              <div className="flex flex-col items-end">
-                <span className="text-slate-400 text-[10px]">Tốc Độ Tụ Khí</span>
-                <span className="text-cyan-400 font-bold text-base">+{formatNumber(qps)}/s</span>
-              </div>
+              <button onClick={() => setIsBlackMarketModalOpen(true)}
+                className="px-4 py-3 bg-gradient-to-r from-amber-700/80 to-purple-800/80 hover:from-amber-600 hover:to-purple-700 border border-amber-400/50 rounded-xl text-xs font-serif font-bold text-amber-200 shadow-lg cursor-pointer flex items-center gap-2 animate-pulse">
+                <span>🖤</span> Chợ Đen Trao Đổi
+              </button>
             </div>
           </header>
 
@@ -771,7 +820,7 @@
                   </div>
                   {myTribulation ? (
                     <div className="mt-2 w-full py-3 bg-red-950/50 border border-red-500/50 rounded-xl text-xs font-serif font-bold text-red-300 text-center animate-pulse">
-                      ⚡ ĐANG ĐỘ KIẾP ({Math.max(0, Math.ceil((myTribulation.endTime - Date.now()) / 1000))}s) — HP: {Math.floor(myTribulation.hp)}/{myTribulation.maxHp}
+                      ⚡ Đang độ kiếp ({Math.max(0, Math.ceil((myTribulation.endTime - Date.now()) / 1000))}s) — HP: {Math.floor(myTribulation.hp)}/{myTribulation.maxHp}
                     </div>
                   ) : (
                     <button onClick={handleBreakthrough}
@@ -796,7 +845,7 @@
               <div className="flex gap-1.5 bg-[#100c1c]/85 p-1.5 rounded-2xl border border-purple-500/30 overflow-x-auto no-scrollbar shadow-xl">
                 {[
                   { id: 'shop', name: '💊 Đan Phòng & Trận Pháp' },
-                  { id: 'blackmarket', name: '🖤 Chợ Đen Pháp Bảo' },
+                  { id: 'inventory', name: '🎒 Túi Đồ & Bảo Vật' },
                   { id: 'combat', name: '⚔️ Trảm Yêu Thử Luyện' },
                   { id: 'sect', name: '⛩️ Vạn Đạo Tông Môn' },
                   { id: 'leaderboard', name: '📜 Thiên Thư Bảng' }
@@ -842,46 +891,44 @@
                   </div>
                 )}
 
-                {activeTab === 'blackmarket' && (
+                {activeTab === 'inventory' && (
                   <div className="flex flex-col gap-4">
                     <div>
-                      <h2 className="font-serif font-bold text-base text-amber-200">Chợ Đen Pháp Bảo & Tông Quy</h2>
-                      <p className="text-xs text-slate-400">Sở hữu bảo vật thượng cổ để khuếch đại uy lực hấp thu linh khí và chiến lực.</p>
+                      <h2 className="font-serif font-bold text-base text-amber-200">Túi Đồ & Trang Bị Nhận Được</h2>
+                      <p className="text-xs text-slate-400">Các pháp bảo thu phục từ Trảm Yêu Thử Luyện. Trang bị để khuếch đại chiến lực.</p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      {BLACK_MARKET_GEARS.map(gear => {
-                        let cost = gear.cost;
-                        if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
-                        const isOwned = gameState.ownedGears.includes(gear.id);
-                        const isEquipped = gameState.equippedGearId === gear.id;
-                        const canBuy = gameState.qi >= cost;
-                        return (
-                          <div key={gear.id} className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col justify-between gap-3">
-                            <div className="flex flex-col gap-1">
-                              <div className="flex justify-between items-center">
-                                <span className={`font-serif font-bold text-sm ${gear.color}`}>{gear.name}</span>
-                                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">{gear.tier}</span>
+                    {gameState.inventory.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-16 gap-2 text-slate-500 font-mono text-xs">
+                        <span>🎒 Túi đồ trống rỗng...</span>
+                        <span>Hãy đi đến mục "Trảm Yêu Thử Luyện" để tiêu diệt yêu thú và nhận trang bị!</span>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[350px] overflow-y-auto no-scrollbar">
+                        {gameState.inventory.map(item => {
+                          const gear = ALL_GEARS.find(g => g.id === item.gearId);
+                          if (!gear) return null;
+                          return (
+                            <div key={item.uniqueId} className={`p-3.5 rounded-xl border flex flex-col justify-between gap-3 ${item.isEquipped ? 'bg-amber-950/30 border-amber-500/50 shadow-lg' : 'bg-black/50 border-purple-500/20'}`}>
+                              <div className="flex flex-col gap-1">
+                                <div className="flex justify-between items-center">
+                                  <span className={`font-serif font-bold text-sm ${gear.color}`}>{gear.name}</span>
+                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">{gear.tier}</span>
+                                </div>
+                                <p className="text-[10px] text-slate-400">{gear.desc}</p>
+                                <div className="text-[11px] font-mono text-cyan-300 mt-1">
+                                  {gear.clickBonus > 0 && <div>+ {gear.clickBonus} Qi / Nhấn</div>}
+                                  {gear.qpsBonus > 0 && <div>+ {gear.qpsBonus} Qi / giây</div>}
+                                </div>
                               </div>
-                              <div className="text-[11px] font-mono text-cyan-300 mt-1">
-                                {gear.clickBonus > 0 && <div>+ {gear.clickBonus} Qi / Nhấn</div>}
-                                {gear.qpsBonus > 0 && <div>+ {gear.qpsBonus} Qi / giây</div>}
-                              </div>
+                              <button onClick={() => toggleEquipInventoryItem(item.uniqueId)}
+                                className={`w-full py-2 rounded-xl text-xs font-serif font-bold transition-all cursor-pointer ${item.isEquipped ? 'bg-amber-600/40 border border-amber-400/50 text-amber-200' : 'bg-purple-600/30 border border-purple-400/40 text-purple-200 hover:bg-purple-600/50'}`}>
+                                {item.isEquipped ? 'Đang Trang Bị' : 'Trang Bị'}
+                              </button>
                             </div>
-                            {isOwned ? (
-                              <button onClick={() => equipGear(gear.id)}
-                                className={`w-full py-2 rounded-xl text-xs font-serif font-bold transition-all cursor-pointer ${isEquipped ? 'bg-amber-600/40 border border-amber-400/50 text-amber-200' : 'bg-purple-600/30 border border-purple-400/40 text-purple-200 hover:bg-purple-600/50'}`}>
-                                {isEquipped ? 'Đang Trang Bị' : 'Trang Bị'}
-                              </button>
-                            ) : (
-                              <button onClick={() => buyGear(gear)} disabled={!canBuy}
-                                className={`w-full py-2 rounded-xl text-xs font-serif font-bold transition-all ${canBuy ? 'bg-purple-600/40 hover:bg-purple-600/60 border border-purple-400/50 text-amber-200 cursor-pointer shadow' : 'bg-slate-800/40 border border-slate-700 text-slate-500 cursor-not-allowed'}`}>
-                                Đổi Lấy ({formatNumber(cost)} Qi)
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -890,7 +937,7 @@
                     <div className="flex justify-between items-center">
                       <div>
                         <h2 className="font-serif font-bold text-base text-amber-200">Trảm Yêu Thử Luyện</h2>
-                        <p className="text-xs text-slate-400">Tiêu diệt yêu thú hoang dã để cướp đoạt linh khí bồi dưỡng cảnh giới.</p>
+                        <p className="text-xs text-slate-400">Tiêu diệt yêu thú để nhận linh khí và rớt trang bị ngẫu nhiên.</p>
                       </div>
                       <div className="flex gap-2">
                         {MONSTERS.map((m, idx) => (
@@ -905,7 +952,7 @@
                       <div className="text-6xl animate-bounce">{MONSTERS[currentMonsterIdx].icon}</div>
                       <div className="text-center">
                         <div className="font-serif font-bold text-lg text-amber-200">{MONSTERS[currentMonsterIdx].name}</div>
-                        <div className="text-xs font-mono text-cyan-300 mt-1">Phần Thưởng: +{MONSTERS[currentMonsterIdx].reward} Linh Khí</div>
+                        <div className="text-xs font-mono text-cyan-300 mt-1">Phần Thưởng: +{MONSTERS[currentMonsterIdx].reward} Linh Khí & Rơi Bảo Vật</div>
                       </div>
                       <div className="w-full max-w-md flex flex-col gap-2">
                         <div className="flex justify-between text-xs font-mono text-slate-300">
@@ -1024,6 +1071,68 @@
               </div>
             </div>
           </main>
+
+          {/* GIAO DIỆN CHỢ ĐEN (MODAL RIÊNG BIỆT) */}
+          {isBlackMarketModalOpen && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="bg-[#120b22] border-2 border-amber-500/50 rounded-2xl w-full max-w-4xl p-6 flex flex-col gap-5 shadow-[0_0_50px_rgba(245,158,11,0.2)] max-h-[85vh]">
+                <div className="flex justify-between items-center border-b border-purple-500/30 pb-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🖤</span>
+                    <div>
+                      <h2 className="font-serif font-bold text-lg text-amber-200">Hắc Thị Chợ Đen — Giao Dịch Bảo Vật</h2>
+                      <p className="text-xs text-slate-400">Nơi các đại năng quyên góp và trao đổi pháp bảo phi pháp qua Thiên Thư Cloud.</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsBlackMarketModalOpen(false)}
+                    className="w-8 h-8 rounded-full bg-red-950/50 border border-red-500/50 flex items-center justify-center text-red-300 hover:bg-red-900 cursor-pointer text-sm font-bold">
+                    ✕
+                  </button>
+                </div>
+                
+                <div className="flex-1 flex flex-col gap-4 overflow-y-auto no-scrollbar">
+                  <div className="p-4 bg-purple-950/30 border border-purple-500/30 rounded-xl flex flex-col gap-2">
+                    <span className="text-xs font-serif font-bold text-amber-300">💡 Hướng Dẫn Giao Dịch Chợ Đen</span>
+                    <p className="text-xs text-slate-300">
+                      Hệ thống trang bị rơi ra từ việc Trảm Yêu đã được lưu trữ trong Túi Đồ của đạo hữu. Ta đã chuẩn bị sẵn khung giao diện riêng biệt này để đạo hữu có thể tiếp tục xây dựng tính năng treo bán hoặc mua lại bảo vật của người chơi khác trong bước tiếp theo!
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col gap-3">
+                      <span className="text-xs font-serif font-bold text-amber-200">📦 Bảo Vật Đang Có Trong Túi Đồ Của Bạn</span>
+                      <div className="flex flex-col gap-2 max-h-48 overflow-y-auto no-scrollbar">
+                        {gameState.inventory.length === 0 ? (
+                          <span className="text-xs text-slate-500 font-mono">Không có bảo vật nào trong túi.</span>
+                        ) : (
+                          gameState.inventory.map(item => {
+                            const gear = ALL_GEARS.find(g => g.id === item.gearId);
+                            if (!gear) return null;
+                            return (
+                              <div key={item.uniqueId} className="flex justify-between items-center p-2 bg-purple-950/20 border border-purple-500/20 rounded-lg text-xs">
+                                <span className={gear.color}>{gear.name} ({gear.tier})</span>
+                                <button onClick={() => alert("Chức năng ký gửi chợ đen sắp ra mắt! Đạo hữu hãy sẵn sàng.")}
+                                  className="px-2.5 py-1 bg-amber-600/30 hover:bg-amber-600/50 border border-amber-400/40 text-amber-200 rounded cursor-pointer font-serif">
+                                  Ký Gửi Bán
+                                </button>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col gap-3">
+                      <span className="text-xs font-serif font-bold text-amber-200">🛒 Vật Phẩm Rao Bán Từ Đại Năng Khác</span>
+                      <div className="flex flex-col items-center justify-center h-32 text-xs text-slate-500 font-mono">
+                        <span>Chưa có vật phẩm nào được treo bán trên Hắc Thị.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
