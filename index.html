@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Instant Tribulation Fix)</title>
+  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Optimized Sync & Fix)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -360,14 +360,22 @@
         return () => clearInterval(interval);
       }, [qps]);
 
+      // Optimized Cloud Sync using refs to prevent interval/effect resetting loop spam
+      const gameStateRef = React.useRef(gameState);
+      gameStateRef.current = gameState;
+      const myTribulationRef = React.useRef(myTribulation);
+      myTribulationRef.current = myTribulation;
+
       React.useEffect(() => {
         let isMounted = true;
         const doSync = async () => {
+          const state = gameStateRef.current;
+          const trib = myTribulationRef.current;
           const playerEntry = {
             name: playerName,
-            totalQi: gameState.totalQi,
-            realm: REALMS[gameState.realmIdx].name,
-            myTribulation: myTribulation
+            totalQi: state.totalQi,
+            realm: REALMS[state.realmIdx].name,
+            myTribulation: trib
           };
 
           const result = await updateCloudData(playerEntry);
@@ -383,9 +391,9 @@
               });
               setActiveTribulations(cleanTribs);
 
-              if (myTribulation && cleanTribs[playerName]) {
+              if (trib && cleanTribs[playerName]) {
                 const cloudHp = cleanTribs[playerName].hp;
-                if (cloudHp !== myTribulation.hp) {
+                if (cloudHp !== trib.hp) {
                   setMyTribulation(prev => prev ? { ...prev, hp: cloudHp } : null);
                 }
               }
@@ -394,12 +402,12 @@
         };
 
         doSync();
-        const syncInterval = setInterval(doSync, 1000);
+        const syncInterval = setInterval(doSync, 2000);
         return () => {
           isMounted = false;
           clearInterval(syncInterval);
         };
-      }, [gameState.totalQi, gameState.realmIdx, playerName, myTribulation]);
+      }, [playerName]);
 
       const handleListMarketItem = async (uniqueId) => {
         const itemToSell = gameState.inventory.find(i => i.uniqueId === uniqueId);
@@ -519,7 +527,7 @@
 
           const res = await updateCloudData({
             name: playerName,
-            totalQi: gameState.totalQi - listing.price,
+            totalQi: gameState.totalQi,
             realm: REALMS[gameState.realmIdx].name,
             overrideMarketListings: updatedListings
           });
@@ -617,7 +625,7 @@
           }
         }, 500);
         return () => clearInterval(timer);
-      }, [myTribulation, gameState.realmIdx, playerName, gameState.totalQi, gameState.qi]);
+      }, [myTribulation, gameState.realmIdx, playerName]);
 
       const handleBreakthrough = async () => {
         const nextRealm = REALMS[gameState.realmIdx + 1];
