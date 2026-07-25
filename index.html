@@ -296,6 +296,7 @@
     .tier-epic      { color: #c084fc; text-shadow: 0 0 8px rgba(192,132,252,0.5); }
     .tier-legendary { color: #f5c842; text-shadow: 0 0 10px rgba(245,200,66,0.6); }
     .tier-mythic    { color: #fb7185; text-shadow: 0 0 12px rgba(251,113,133,0.8); animation: thunderBolt 1.5s infinite; }
+    .tier-divine    { color: #fef9c3; text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 22px rgba(245,200,66,0.7), 0 0 34px rgba(192,132,252,0.6); animation: thunderBolt 1.2s infinite; }
 
     /* ─── HP BAR ─── */
     .hp-bar-track {
@@ -385,6 +386,19 @@
       background-clip: text;
       animation: goldShimmer 3s linear infinite;
       filter: drop-shadow(0 0 8px rgba(245,200,66,0.5));
+    }
+
+    /* ─── TITLE BADGE ─── */
+    .title-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: 'Cinzel', serif; font-weight: 700;
+      font-size: 11px;
+      background: linear-gradient(to right, #00e5cc, #67e8f9, #00e5cc, #a5f3fc, #00e5cc);
+      background-size: 200% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: goldShimmer 3s linear infinite;
+      filter: drop-shadow(0 0 6px rgba(0,229,204,0.45));
     }
 
     /* ─── RANK BADGE ─── */
@@ -594,22 +608,87 @@
     ];
 
     const ALL_GEARS = [
-      { id: 'gear_1', name: 'Thiết Kiếm Phàm Phí', tier: 'Phàm Phí', colorClass: 'tier-common', clickBonus: 5, qpsBonus: 0, dropRate: 0.35, desc: 'Kiếm sắt đúc thô sơ của phàm nhân.', icon: '🗡️' },
-      { id: 'gear_2', name: 'Gỗ Đào Bùa Chú', tier: 'Phàm Phí', colorClass: 'tier-common', clickBonus: 3, qpsBonus: 2, dropRate: 0.30, desc: 'Khúc gỗ đào khắc linh văn đơn giản.', icon: '📜' },
-      { id: 'gear_3', name: 'Thanh Cương Bảo Kiếm', tier: 'Hạ Phẩm', colorClass: 'tier-uncommon', clickBonus: 25, qpsBonus: 10, dropRate: 0.18, desc: 'Kiếm đúc bằng thanh cương thạch.', icon: '⚔️' },
-      { id: 'gear_4', name: 'Bách Luyện Đao', tier: 'Hạ Phẩm', colorClass: 'tier-uncommon', clickBonus: 35, qpsBonus: 5, dropRate: 0.15, desc: 'Đao được tôi luyện qua trăm lửa.', icon: '🔪' },
-      { id: 'gear_5', name: 'Phá Thiên Thần Kiếm', tier: 'Trung Phẩm', colorClass: 'tier-rare', clickBonus: 100, qpsBonus: 50, dropRate: 0.08, desc: 'Bảo vật trung cấp phát sáng xanh lam.', icon: '🌊' },
-      { id: 'gear_6', name: 'Áo Giáp Huyền Thiết', tier: 'Trung Phẩm', colorClass: 'tier-rare', clickBonus: 80, qpsBonus: 70, dropRate: 0.07, desc: 'Giáp trụ đúc từ huyền thiết nặng ngàn cân.', icon: '🛡️' },
-      { id: 'gear_7', name: 'Xích Huyết Thương', tier: 'Thượng Phẩm', colorClass: 'tier-epic', clickBonus: 250, qpsBonus: 150, dropRate: 0.03, desc: 'Ngọn giáo nhuốm máu đại yêu thượng cổ.', icon: '🔱' },
-      { id: 'gear_8', name: 'Tử Kim Lô (Thu Nhỏ)', tier: 'Thượng Phẩm', colorClass: 'tier-epic', clickBonus: 200, qpsBonus: 300, dropRate: 0.025, desc: 'Lò luyện đan mô phỏng thượng cổ.', icon: '🏮' },
-      { id: 'gear_9', name: 'Long Lân Kiếm', tier: 'Cực Phẩm', colorClass: 'tier-legendary', clickBonus: 600, qpsBonus: 800, dropRate: 0.01, desc: 'Kiếm khảm vảy của Giao Long.', icon: '🐲' },
-      { id: 'gear_10', name: 'Hỗn Nguyên Phù Đồ Tháp', tier: 'Tiên Thiên', colorClass: 'tier-mythic', clickBonus: 1500, qpsBonus: 2500, dropRate: 0.003, desc: 'Tháp thu nhỏ chứa đạo vận hồng mông.', icon: '🌀' }
+      { id: 'gear_1', name: 'Thiết Kiếm Phàm Phí', tier: 'Phàm Phí', colorClass: 'tier-common', type: 'weapon', clickBonus: 5, qpsBonus: 0, dropRate: 0.35, desc: 'Kiếm sắt đúc thô sơ của phàm nhân.', icon: '🗡️' },
+      { id: 'gear_2', name: 'Gỗ Đào Bùa Chú', tier: 'Phàm Phí', colorClass: 'tier-common', type: 'accessory', clickBonus: 3, qpsBonus: 2, dropRate: 0.30, desc: 'Khúc gỗ đào khắc linh văn đơn giản.', icon: '📜' },
+      { id: 'gear_3', name: 'Thanh Cương Bảo Kiếm', tier: 'Hạ Phẩm', colorClass: 'tier-uncommon', type: 'weapon', clickBonus: 25, qpsBonus: 10, dropRate: 0.18, desc: 'Kiếm đúc bằng thanh cương thạch.', icon: '⚔️' },
+      { id: 'gear_4', name: 'Bách Luyện Đao', tier: 'Hạ Phẩm', colorClass: 'tier-uncommon', type: 'weapon', clickBonus: 35, qpsBonus: 5, dropRate: 0.15, desc: 'Đao được tôi luyện qua trăm lửa.', icon: '🔪' },
+      { id: 'gear_5', name: 'Phá Thiên Thần Kiếm', tier: 'Trung Phẩm', colorClass: 'tier-rare', type: 'weapon', clickBonus: 100, qpsBonus: 50, dropRate: 0.08, desc: 'Bảo vật trung cấp phát sáng xanh lam.', icon: '🌊' },
+      { id: 'gear_6', name: 'Áo Giáp Huyền Thiết', tier: 'Trung Phẩm', colorClass: 'tier-rare', type: 'armor', clickBonus: 80, qpsBonus: 70, dropRate: 0.07, desc: 'Giáp trụ đúc từ huyền thiết nặng ngàn cân.', icon: '🛡️' },
+      { id: 'gear_7', name: 'Xích Huyết Thương', tier: 'Thượng Phẩm', colorClass: 'tier-epic', type: 'weapon', clickBonus: 250, qpsBonus: 150, dropRate: 0.03, desc: 'Ngọn giáo nhuốm máu đại yêu thượng cổ.', icon: '🔱' },
+      { id: 'gear_8', name: 'Tử Kim Lô (Thu Nhỏ)', tier: 'Thượng Phẩm', colorClass: 'tier-epic', type: 'accessory', clickBonus: 200, qpsBonus: 300, dropRate: 0.025, desc: 'Lò luyện đan mô phỏng thượng cổ.', icon: '🏮' },
+      { id: 'gear_9', name: 'Long Lân Kiếm', tier: 'Cực Phẩm', colorClass: 'tier-legendary', type: 'weapon', clickBonus: 600, qpsBonus: 800, dropRate: 0.01, desc: 'Kiếm khảm vảy của Giao Long.', icon: '🐲' },
+      { id: 'gear_10', name: 'Hỗn Nguyên Phù Đồ Tháp', tier: 'Tiên Thiên', colorClass: 'tier-mythic', type: 'accessory', clickBonus: 1500, qpsBonus: 2500, dropRate: 0.003, desc: 'Tháp thu nhỏ chứa đạo vận hồng mông.', icon: '🌀' },
+
+      // ─── BỔ SUNG: PHÀM PHÍ ───
+      { id: 'gear_11', name: 'Đồng Kiếm Han Gỉ', tier: 'Phàm Phí', colorClass: 'tier-common', type: 'weapon', clickBonus: 6, qpsBonus: 0, dropRate: 0.33, desc: 'Thanh kiếm đồng cũ kỹ của một lữ khách vô danh.', icon: '🗡️' },
+      { id: 'gear_12', name: 'Vải Buộc Tay Luyện Khí', tier: 'Phàm Phí', colorClass: 'tier-common', type: 'armor', clickBonus: 2, qpsBonus: 3, dropRate: 0.32, desc: 'Dải vải thô dệt linh văn dẫn khí cơ bản.', icon: '🧤' },
+      { id: 'gear_13', name: 'Ngọc Bội Bình An', tier: 'Phàm Phí', colorClass: 'tier-common', type: 'accessory', clickBonus: 4, qpsBonus: 2, dropRate: 0.30, desc: 'Mảnh ngọc nhỏ khắc chữ "An", trấn an tâm thần.', icon: '📿' },
+
+      // ─── BỔ SUNG: HẠ PHẨM ───
+      { id: 'gear_14', name: 'Huyền Thiết Trọng Chùy', tier: 'Hạ Phẩm', colorClass: 'tier-uncommon', type: 'weapon', clickBonus: 40, qpsBonus: 3, dropRate: 0.16, desc: 'Cây chùy nặng trịch, một đòn đủ vỡ đá tảng.', icon: '🔨' },
+      { id: 'gear_15', name: 'Hộ Tâm Kính', tier: 'Hạ Phẩm', colorClass: 'tier-uncommon', type: 'armor', clickBonus: 15, qpsBonus: 18, dropRate: 0.17, desc: 'Tấm kính đồng nhỏ đeo trước ngực, hộ trụ tâm mạch.', icon: '🪞' },
+      { id: 'gear_16', name: 'Linh Xà Thủ Hoàn', tier: 'Hạ Phẩm', colorClass: 'tier-uncommon', type: 'accessory', clickBonus: 22, qpsBonus: 12, dropRate: 0.16, desc: 'Vòng tay khắc hình linh xà cuộn tròn, ấm áp linh khí.', icon: '💍' },
+
+      // ─── BỔ SUNG: TRUNG PHẨM ───
+      { id: 'gear_17', name: 'Thanh Vân Phi Kiếm', tier: 'Trung Phẩm', colorClass: 'tier-rare', type: 'weapon', clickBonus: 120, qpsBonus: 40, dropRate: 0.075, desc: 'Phi kiếm xanh biếc, xé gió kêu vang như tiếng hạc.', icon: '🌪️' },
+      { id: 'gear_18', name: 'Huyền Vũ Quy Giáp', tier: 'Trung Phẩm', colorClass: 'tier-rare', type: 'armor', clickBonus: 60, qpsBonus: 110, dropRate: 0.07, desc: 'Mai rùa thần cổ đại rèn thành giáp, cứng như bàn thạch.', icon: '🐢' },
+      { id: 'gear_19', name: 'Tam Muội Chân Hỏa Đỉnh', tier: 'Trung Phẩm', colorClass: 'tier-rare', type: 'accessory', clickBonus: 90, qpsBonus: 90, dropRate: 0.07, desc: 'Đỉnh nhỏ nuôi dưỡng chân hỏa tam muội trong người.', icon: '🔥' },
+
+      // ─── BỔ SUNG: THƯỢNG PHẨM ───
+      { id: 'gear_20', name: 'Cửu U Ma Đao', tier: 'Thượng Phẩm', colorClass: 'tier-epic', type: 'weapon', clickBonus: 280, qpsBonus: 130, dropRate: 0.028, desc: 'Ma đao nhuốm khí u minh, tiếng gào thét không dứt.', icon: '🌑' },
+      { id: 'gear_21', name: 'Bát Quái Hộ Thân Giáp', tier: 'Thượng Phẩm', colorClass: 'tier-epic', type: 'armor', clickBonus: 150, qpsBonus: 280, dropRate: 0.026, desc: 'Giáp khắc bát quái, tự sinh trận pháp hộ thể.', icon: '🛡️' },
+      { id: 'gear_22', name: 'Tử Vi Đế Tinh Ấn', tier: 'Thượng Phẩm', colorClass: 'tier-epic', type: 'accessory', clickBonus: 220, qpsBonus: 200, dropRate: 0.027, desc: 'Ấn tín khắc sao Tử Vi, mang theo khí chất đế vương.', icon: '🔯' },
+
+      // ─── BỔ SUNG: CỰC PHẨM ───
+      { id: 'gear_23', name: 'Diệt Thế Ma Kiếm', tier: 'Cực Phẩm', colorClass: 'tier-legendary', type: 'weapon', clickBonus: 700, qpsBonus: 650, dropRate: 0.011, desc: 'Kiếm khí ngút trời, một chém có thể xé toạc hư không.', icon: '⚔️' },
+      { id: 'gear_24', name: 'Hạo Thiên Tỏa Giáp', tier: 'Cực Phẩm', colorClass: 'tier-legendary', type: 'armor', clickBonus: 500, qpsBonus: 900, dropRate: 0.010, desc: 'Giáp trụ khóa chặt thiên uy, đao thương bất nhập.', icon: '🛡️' },
+      { id: 'gear_25', name: 'Vạn Linh Chi Vương Giới', tier: 'Cực Phẩm', colorClass: 'tier-legendary', type: 'accessory', clickBonus: 620, qpsBonus: 760, dropRate: 0.011, desc: 'Nhẫn cổ được vạn linh thú quy phục, oai danh lẫy lừng.', icon: '💠' },
+
+      // ─── BỔ SUNG: TIÊN THIÊN ───
+      { id: 'gear_26', name: 'Hồng Mông Chiến Phủ', tier: 'Tiên Thiên', colorClass: 'tier-mythic', type: 'weapon', clickBonus: 1800, qpsBonus: 2200, dropRate: 0.0028, desc: 'Chiến phủ đúc từ khí hồng mông thuở khai thiên tịch địa.', icon: '🪓' },
+      { id: 'gear_27', name: 'Bất Diệt Kim Thân Giáp', tier: 'Tiên Thiên', colorClass: 'tier-mythic', type: 'armor', clickBonus: 1200, qpsBonus: 3000, dropRate: 0.0025, desc: 'Giáp luyện từ kim thân bất hoại, vạn kiếp không tan.', icon: '🛡️' },
+      { id: 'gear_28', name: 'Thái Cực Luân Hồi Đỉnh', tier: 'Tiên Thiên', colorClass: 'tier-mythic', type: 'accessory', clickBonus: 1600, qpsBonus: 2600, dropRate: 0.0027, desc: 'Đỉnh xoay chuyển âm dương, thu nạp luân hồi vào trong.', icon: '☯️' },
+
+      // ─── BỔ SUNG: HỒNG HOANG (cấp tối thượng — Đạo Tổ Cảnh) ───
+      { id: 'gear_29', name: 'Hỗn Độn Sơ Khai Kiếm', tier: 'Hồng Hoang', colorClass: 'tier-divine', type: 'weapon', clickBonus: 4000, qpsBonus: 6000, dropRate: 0.0006, desc: 'Kiếm sinh ra từ hỗn độn sơ khai, trước cả khi có trời đất.', icon: '🌌' },
+      { id: 'gear_30', name: 'Tam Thiên Đại Đạo Bào', tier: 'Hồng Hoang', colorClass: 'tier-divine', type: 'armor', clickBonus: 2800, qpsBonus: 8000, dropRate: 0.0005, desc: 'Đạo bào dệt từ quy tắc của ba nghìn đại đạo.', icon: '🌠' },
+      { id: 'gear_31', name: 'Vĩnh Hằng Đạo Tổ Ấn', tier: 'Hồng Hoang', colorClass: 'tier-divine', type: 'accessory', clickBonus: 3500, qpsBonus: 7000, dropRate: 0.0004, desc: 'Ấn tín tối cổ của bậc Đạo Tổ, trấn giữ vĩnh hằng bất diệt.', icon: '💎' }
     ];
 
     const MONSTERS = [
       { id: 'yeu_thu', name: 'Yêu Lang Hoang Dã', hp: 100, reward: 50, icon: '🐺', color: '#ef4444' },
       { id: 'quy_tuong', name: 'Quỷ Tướng Ngàn Năm', hp: 500, reward: 300, icon: '💀', color: '#a855f7' },
       { id: 'giao_long', name: 'Giao Long Thượng Cổ', hp: 2500, reward: 1500, icon: '🐉', color: '#f5c842' }
+    ];
+
+    // ─── VẬT PHẨM (ĐAN DƯỢC & LINH PHÙ) ───
+    // type: 'qi' → dùng hồi ngay một lượng Linh Khí. type: 'trib_heal' → chỉ dùng được lúc đang Độ Kiếp, hồi % sinh mệnh Độ Kiếp.
+    // price: null nghĩa là vật phẩm chỉ có thể rớt ra từ Trảm Yêu, không mua được.
+    const ALL_ITEMS = [
+      { id: 'item_1', name: 'Tụ Khí Đan', tier: 'Phàm Phí', colorClass: 'tier-common', type: 'qi', value: 200, price: null, dropRate: 0.25, desc: 'Đan dược sơ cấp, hấp thu tức thời một ít linh khí tản mác.', icon: '💊' },
+      { id: 'item_2', name: 'Bồi Nguyên Đan', tier: 'Hạ Phẩm', colorClass: 'tier-uncommon', type: 'qi', value: 1200, price: null, dropRate: 0.12, desc: 'Bồi bổ căn nguyên, hồi phục lượng linh khí kha khá.', icon: '🧪' },
+      { id: 'item_3', name: 'Đại Hoàn Đan', tier: 'Trung Phẩm', colorClass: 'tier-rare', type: 'qi', value: 6000, price: null, dropRate: 0.05, desc: 'Đan dược trung cấp luyện từ trăm loại linh dược quý hiếm.', icon: '⚗️' },
+      { id: 'item_4', name: 'Cửu Chuyển Kim Đan', tier: 'Thượng Phẩm', colorClass: 'tier-epic', type: 'qi', value: 30000, price: null, dropRate: 0.018, desc: 'Đan dược trải qua chín lần luyện hóa, hiệu quả kinh người.', icon: '🌕' },
+      { id: 'item_5', name: 'Hộ Đạo Linh Phù', tier: 'Hạ Phẩm', colorClass: 'tier-uncommon', type: 'trib_heal', value: 0.20, price: 1500, dropRate: 0.10, desc: 'Linh phù hộ thân, chỉ phát huy tác dụng khi đang Độ Kiếp — hồi 20% sinh mệnh Độ Kiếp.', icon: '🧿' },
+      { id: 'item_6', name: 'Kim Cang Bất Hoại Phù', tier: 'Trung Phẩm', colorClass: 'tier-rare', type: 'trib_heal', value: 0.45, price: 8000, dropRate: 0.035, desc: 'Linh phù thượng cổ, hồi 45% sinh mệnh Độ Kiếp khi kích hoạt.', icon: '🔰' },
+      { id: 'item_7', name: 'Thiên Mệnh Hộ Thân Phù', tier: 'Thượng Phẩm', colorClass: 'tier-epic', type: 'trib_heal', value: 0.80, price: 40000, dropRate: 0.012, desc: 'Linh phù tối thượng mang theo thiên mệnh, hồi 80% sinh mệnh Độ Kiếp.', icon: '🪬' }
+    ];
+
+    // ─── DANH HIỆU — mở khóa khi đạt cảnh giới tương ứng (requiredRealmIdx khớp chỉ số trong REALMS) ───
+    const ALL_TITLES = [
+      { id: 'title_0', name: 'Phàm Trần Lữ Khách', requiredRealmIdx: 0, desc: 'Khởi đầu nan, vạn dặm độc hành trên đường tu tiên.', icon: '🌱' },
+      { id: 'title_1', name: 'Sơ Kiến Thiên Cơ', requiredRealmIdx: 3, desc: 'Thoáng thấy được thiên cơ huyền diệu của trời đất.', icon: '🌾' },
+      { id: 'title_2', name: 'Dẫn Khí Nhập Thể', requiredRealmIdx: 4, desc: 'Linh khí nhập thể, chính thức bước vào con đường tu luyện.', icon: '🌬️' },
+      { id: 'title_3', name: 'Vạn Khí Quy Tông', requiredRealmIdx: 7, desc: 'Vạn khí quy về một mối, luyện khí đã đến độ viên mãn.', icon: '🌀' },
+      { id: 'title_4', name: 'Trúc Cơ Đạo Nhân', requiredRealmIdx: 8, desc: 'Đạo cơ vững chắc như bàn thạch, chính thức là tu sĩ chân chính.', icon: '🪨' },
+      { id: 'title_5', name: 'Bất Động Kim Thân', requiredRealmIdx: 11, desc: 'Thân như kim cương bất hoại, đạo tâm kiên định không lay.', icon: '🗿' },
+      { id: 'title_6', name: 'Kim Đan Chân Nhân', requiredRealmIdx: 12, desc: 'Kim đan sơ thành, chính thức liệt vào hàng chân nhân.', icon: '🟡' },
+      { id: 'title_7', name: 'Đan Quang Chiếu Thế', requiredRealmIdx: 15, desc: 'Đan quang rực rỡ chiếu khắp thế gian, danh chấn một phương.', icon: '✨' },
+      { id: 'title_8', name: 'Nguyên Anh Đại Năng', requiredRealmIdx: 16, desc: 'Nguyên anh xuất khiếu, pháp lực đại tăng, xưng hùng một cõi.', icon: '👶' },
+      { id: 'title_9', name: 'Anh Nhi Xuất Khiếu', requiredRealmIdx: 19, desc: 'Anh nhi viên mãn, thần thông biến ảo khôn lường.', icon: '🌟' },
+      { id: 'title_10', name: 'Hóa Thần Tôn Giả', requiredRealmIdx: 20, desc: 'Hóa Thần thành công, được đời tôn xưng bậc Tôn Giả.', icon: '👑' },
+      { id: 'title_11', name: 'Thần Uy Cái Thế', requiredRealmIdx: 23, desc: 'Thần uy trùm khắp, uy danh áp thế không ai dám chống.', icon: '⚡' },
+      { id: 'title_12', name: 'Đạo Tổ Vĩnh Hằng', requiredRealmIdx: 24, desc: 'Đạo hợp trời đất, vĩnh hằng bất diệt, làm tổ của vạn đạo.', icon: '🌌' }
     ];
 
     const formatNumber = (num) => {
@@ -653,6 +732,8 @@
             const parsed = JSON.parse(savedState);
             if (!parsed.inventory) parsed.inventory = [];
             if (!parsed.logs) parsed.logs = [];
+            if (!parsed.items) parsed.items = {};
+            if (!parsed.equippedTitleId) parsed.equippedTitleId = 'title_0';
             const now = Date.now();
             if (parsed.lastSaveTime) {
               const offlineSeconds = Math.floor((now - parsed.lastSaveTime) / 1000);
@@ -690,6 +771,7 @@
         return {
           qi: 0, totalQi: 0, realmIdx: 0, joinedSectId: 'thanh_van',
           shopCounts: {}, inventory: [], equippedGearId: null,
+          items: {}, equippedTitleId: 'title_0',
           lastSaveTime: Date.now(),
           logs: [{ id: '1', text: '[Đại Đạo]: Chào mừng tu sĩ gia nhập Đại Đạo Tranh Phong!', type: 'breakthrough', time: Date.now() }]
         };
@@ -700,6 +782,7 @@
       }, [gameState]);
 
       const [activeTab, setActiveTab] = React.useState('shop');
+      const [invFilter, setInvFilter] = React.useState('all');
       const [isBlackMarketModalOpen, setIsBlackMarketModalOpen] = React.useState(false);
       const [listingPriceInput, setListingPriceInput] = React.useState({});
       const [currentMonsterIdx, setCurrentMonsterIdx] = React.useState(0);
@@ -1007,10 +1090,20 @@
               droppedItemsLogs.push(gear.name);
             }
           });
+          // ─── Rớt Vật Phẩm (Đan Dược / Linh Phù) — bổ sung, không ảnh hưởng logic rớt trang bị ở trên ───
+          let newItemCounts = { ...gameState.items };
+          ALL_ITEMS.forEach(consumable => {
+            const itemRoll = Math.random();
+            if (itemRoll <= consumable.dropRate) {
+              newItemCounts[consumable.id] = (newItemCounts[consumable.id] || 0) + 1;
+              droppedItemsLogs.push(consumable.name);
+            }
+          });
           let dropLogText = droppedItemsLogs.length > 0 ? ` | Nhận được bảo vật: ${droppedItemsLogs.join(', ')}!` : '';
           setGameState(prev => ({
             ...prev, qi: prev.qi + monster.reward, totalQi: prev.totalQi + monster.reward,
             inventory: newInventoryItems,
+            items: newItemCounts,
             logs: [{ id: Date.now().toString(), text: `[Trảm Yêu]: Tiêu diệt ${monster.name}, đoạt +${monster.reward} Khí${dropLogText}`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
           }));
           setIsDead(true);
@@ -1032,6 +1125,56 @@
             logs: [{ id: Date.now().toString(), text: `[Túi Đồ]: ${willBeEquipped ? 'Đã trang bị' : 'Đã tháo'} pháp bảo ${gearData?.name || 'Vật Phẩm'}!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
           };
         });
+      };
+
+      // ─── VẬT PHẨM: sử dụng đan dược / linh phù ───
+      const useConsumableItem = async (itemId) => {
+        const consumable = ALL_ITEMS.find(i => i.id === itemId);
+        if (!consumable) return;
+        const count = gameState.items[itemId] || 0;
+        if (count <= 0) return;
+        if (consumable.type === 'trib_heal') {
+          if (!myTribulation) { alert('Linh phù hộ thân này chỉ có thể sử dụng trong lúc đang Độ Kiếp!'); return; }
+          const healAmount = Math.floor(myTribulation.maxHp * consumable.value);
+          const newHp = Math.min(myTribulation.maxHp, myTribulation.hp + healAmount);
+          const res = await modifyCloudData('INTERACT_TRIB', { targetName: playerName, newHp });
+          if (res.success) setActiveTribulations(res.record.activeTribulations);
+          setMyTribulation(prev => prev ? { ...prev, hp: newHp } : null);
+          setGameState(prev => ({
+            ...prev,
+            items: { ...prev.items, [itemId]: (prev.items[itemId] || 0) - 1 },
+            logs: [{ id: Date.now().toString(), text: `[Vật Phẩm]: Sử dụng ${consumable.name}, hồi phục +${Math.floor(healAmount)} sinh mệnh Độ Kiếp!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
+          }));
+        } else if (consumable.type === 'qi') {
+          setGameState(prev => ({
+            ...prev, qi: prev.qi + consumable.value, totalQi: prev.totalQi + consumable.value,
+            items: { ...prev.items, [itemId]: (prev.items[itemId] || 0) - 1 },
+            logs: [{ id: Date.now().toString(), text: `[Vật Phẩm]: Sử dụng ${consumable.name}, hấp thu +${formatNumber(consumable.value)} Linh Khí!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
+          }));
+        }
+      };
+
+      // ─── VẬT PHẨM: mua đan dược / linh phù bằng Linh Khí (chỉ áp dụng vật phẩm có price) ───
+      const buyConsumableItem = (itemId) => {
+        const consumable = ALL_ITEMS.find(i => i.id === itemId);
+        if (!consumable || !consumable.price) return;
+        if (gameState.qi < consumable.price) return;
+        setGameState(prev => ({
+          ...prev, qi: prev.qi - consumable.price,
+          items: { ...prev.items, [itemId]: (prev.items[itemId] || 0) + 1 },
+          logs: [{ id: Date.now().toString(), text: `[Đan Phòng]: Mua thành công ${consumable.name}!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
+        }));
+      };
+
+      // ─── DANH HIỆU: trang bị danh hiệu đã mở khóa ───
+      const equipTitle = (titleId) => {
+        const titleData = ALL_TITLES.find(t => t.id === titleId);
+        if (!titleData) return;
+        if (gameState.realmIdx < titleData.requiredRealmIdx) return;
+        setGameState(prev => ({
+          ...prev, equippedTitleId: titleId,
+          logs: [{ id: Date.now().toString(), text: `[Danh Hiệu]: Đã trang bị danh hiệu "${titleData.name}"!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
+        }));
       };
 
       const handleCreateSect = async (e) => {
@@ -1058,6 +1201,7 @@
       const nextRealmObj = REALMS[gameState.realmIdx + 1];
       const progressPercent = nextRealmObj ? Math.min(100, (gameState.qi / nextRealmObj.req) * 100) : 100;
       const isMaxedOut = nextRealmObj && gameState.qi >= nextRealmObj.req;
+      const equippedTitle = ALL_TITLES.find(t => t.id === gameState.equippedTitleId) || ALL_TITLES[0];
 
       const fullLeaderboard = React.useMemo(() => {
         let list = [...cloudLeaderboard];
@@ -1075,8 +1219,10 @@
       const TABS = [
         { id: 'shop',        label: '💊 Đan Phòng' },
         { id: 'inventory',   label: '🎒 Bảo Vật' },
+        { id: 'items',       label: '🧪 Vật Phẩm' },
         { id: 'combat',      label: '⚔️ Trảm Yêu' },
         { id: 'sect',        label: '⛩️ Tông Môn' },
+        { id: 'titles',      label: '🏅 Danh Hiệu' },
         { id: 'leaderboard', label: '📜 Bảng Xếp Hạng' },
         { id: 'logs',        label: '📖 Nhật Ký' }
       ];
@@ -1134,8 +1280,13 @@
 
               {/* Row 2: Realm + Stats */}
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'12px' }}>
-                <div className="realm-badge">
-                  ✦ {REALMS[gameState.realmIdx]?.name || "Phàm Nhân (Sơ Kỳ)"} ✦
+                <div style={{ display:'flex', flexDirection:'column', gap:'4px' }}>
+                  <div className="realm-badge">
+                    ✦ {REALMS[gameState.realmIdx]?.name || "Phàm Nhân (Sơ Kỳ)"} ✦
+                  </div>
+                  <div className="title-badge">
+                    「{equippedTitle?.icon} {equippedTitle?.name}」
+                  </div>
                 </div>
 
                 {/* Stats row */}
@@ -1436,8 +1587,24 @@
                         <span style={{ fontSize:'11px', textAlign:'center', maxWidth:'250px', lineHeight:1.6 }}>Hãy đến mục "Trảm Yêu Thử Luyện" để tiêu diệt yêu thú và nhận bảo vật!</span>
                       </div>
                     ) : (
-                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:'10px', maxHeight:'380px', overflowY:'auto' }} className="no-scrollbar">
-                        {gameState.inventory.map(item => {
+                      <React.Fragment>
+                        <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+                          {[{ id:'all', label:'✦ Tất Cả' }, { id:'weapon', label:'🗡️ Vũ Khí' }, { id:'armor', label:'🛡️ Trang Bị' }, { id:'accessory', label:'💍 Pháp Bảo' }].map(f => (
+                            <button key={f.id} onClick={() => setInvFilter(f.id)}
+                              style={{ padding:'6px 12px', borderRadius:'8px', fontSize:'10px', fontFamily:'Cinzel,serif', fontWeight:700, cursor:'pointer', transition:'all 0.15s',
+                                background: invFilter === f.id ? 'linear-gradient(135deg, rgba(100,40,180,0.5), rgba(60,20,120,0.6))' : 'rgba(20,10,40,0.6)',
+                                border: `1px solid ${invFilter === f.id ? 'rgba(192,132,252,0.5)' : 'rgba(100,60,180,0.25)'}`,
+                                color: invFilter === f.id ? '#f5c842' : 'rgba(180,160,220,0.5)' }}>
+                              {f.label}
+                            </button>
+                          ))}
+                        </div>
+                        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:'10px', maxHeight:'380px', overflowY:'auto' }} className="no-scrollbar">
+                        {gameState.inventory.filter(item => {
+                          if (invFilter === 'all') return true;
+                          const g = ALL_GEARS.find(g => g.id === item.gearId);
+                          return g && g.type === invFilter;
+                        }).map(item => {
                           const gear = ALL_GEARS.find(g => g.id === item.gearId);
                           if (!gear) return null;
                           return (
@@ -1448,7 +1615,7 @@
                                   <span className={gear.colorClass} style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px' }}>{gear.name}</span>
                                   {item.isEquipped && <span style={{ fontSize:'9px', color:'#f5c842', background:'rgba(92,60,10,0.5)', border:'1px solid rgba(245,200,66,0.4)', padding:'1px 6px', borderRadius:'10px' }}>장착중</span>}
                                 </div>
-                                <div style={{ fontSize:'9px', padding:'2px 6px', background:'rgba(0,0,0,0.4)', borderRadius:'6px', color:'rgba(180,160,220,0.6)', display:'inline-block', marginBottom:'5px' }}>{gear.tier}</div>
+                                <div style={{ fontSize:'9px', padding:'2px 6px', background:'rgba(0,0,0,0.4)', borderRadius:'6px', color:'rgba(180,160,220,0.6)', display:'inline-block', marginBottom:'5px' }}>{gear.tier} · {gear.type === 'weapon' ? '🗡️ Vũ Khí' : gear.type === 'armor' ? '🛡️ Trang Bị' : '💍 Pháp Bảo'}</div>
                                 <div style={{ fontSize:'10px', color:'#67e8f9', lineHeight:1.5 }}>
                                   {gear.clickBonus > 0 && <div>⚔️ +{gear.clickBonus} Chiến Lực</div>}
                                   {gear.qpsBonus > 0 && <div>⚡ +{gear.qpsBonus} Qi/s</div>}
@@ -1464,8 +1631,56 @@
                             </div>
                           );
                         })}
-                      </div>
+                        </div>
+                      </React.Fragment>
                     )}
+                  </div>
+                )}
+
+                {/* ─── VẬT PHẨM TAB ─── */}
+                {activeTab === 'items' && (
+                  <div style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
+                    <div>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>🧪 Vật Phẩm & Đan Dược</div>
+                      <div className="ornament-divider" style={{ margin:'8px 0' }}>ĐAN DƯỢC HỘ THÂN & LINH PHÙ</div>
+                      <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Nhận từ Trảm Yêu hoặc mua tại đây. Đan hồi Linh Khí dùng bất cứ lúc nào; Linh Phù hộ thân chỉ dùng được khi đang Độ Kiếp.</div>
+                    </div>
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(210px, 1fr))', gap:'12px' }}>
+                      {ALL_ITEMS.map(consumable => {
+                        const count = gameState.items[consumable.id] || 0;
+                        const canBuy = consumable.price && gameState.qi >= consumable.price;
+                        const canUse = count > 0;
+                        return (
+                          <div key={consumable.id} className="item-card" style={{ display:'flex', flexDirection:'column', justifyContent:'space-between', gap:'10px' }}>
+                            <div>
+                              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+                                <div style={{ fontSize:'26px', marginBottom:'6px' }}>{consumable.icon}</div>
+                                <span style={{ fontSize:'10px', padding:'2px 8px', background:'rgba(76,29,149,0.4)', border:'1px solid rgba(139,92,246,0.4)', borderRadius:'20px', color:'#c084fc', fontWeight:700 }}>×{count}</span>
+                              </div>
+                              <div className={consumable.colorClass} style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px', marginBottom:'3px' }}>{consumable.name}</div>
+                              <div style={{ fontSize:'9px', padding:'2px 6px', background:'rgba(0,0,0,0.4)', borderRadius:'6px', color:'rgba(180,160,220,0.6)', display:'inline-block', marginBottom:'5px' }}>{consumable.tier}</div>
+                              <p style={{ fontSize:'10px', color:'rgba(160,140,200,0.6)', lineHeight:1.5, marginBottom:'4px' }}>{consumable.desc}</p>
+                              <div style={{ fontSize:'10px', color:'#67e8f9' }}>
+                                {consumable.type === 'qi' ? `⚡ Hồi +${formatNumber(consumable.value)} Linh Khí` : `🛡️ Hồi ${Math.floor(consumable.value * 100)}% Sinh Mệnh Độ Kiếp`}
+                              </div>
+                            </div>
+                            <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+                              {consumable.price ? (
+                                <button onClick={() => buyConsumableItem(consumable.id)} disabled={!canBuy} className="btn-gold"
+                                  style={{ width:'100%', padding:'7px', borderRadius:'8px', fontFamily:'Cinzel,serif', fontSize:'10px', fontWeight:700, cursor: canBuy ? 'pointer' : 'not-allowed', opacity: canBuy ? 1 : 0.4 }}>
+                                  {canBuy ? '✦ ' : '🔒 '}Mua — {formatNumber(consumable.price)} Qi
+                                </button>
+                              ) : (
+                                <div style={{ textAlign:'center', fontSize:'9px', color:'rgba(150,140,170,0.5)' }}>Chỉ rớt ra từ Trảm Yêu</div>
+                              )}
+                              <button onClick={() => useConsumableItem(consumable.id)} disabled={!canUse} className="btn-primary" style={{ opacity: canUse ? 1 : 0.4, cursor: canUse ? 'pointer' : 'not-allowed' }}>
+                                Sử Dụng
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
 
@@ -1599,6 +1814,46 @@
                           </form>
                         </div>
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── DANH HIỆU TAB ─── */}
+                {activeTab === 'titles' && (
+                  <div style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
+                    <div>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>🏅 Danh Hiệu Tu Vi</div>
+                      <div className="ornament-divider" style={{ margin:'8px 0' }}>VINH DANH TRÊN CON ĐƯỜNG TU LUYỆN</div>
+                      <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Đột phá cảnh giới để mở khóa danh hiệu mới. Chọn một danh hiệu để trưng bày cạnh đạo hiệu của bạn.</div>
+                    </div>
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:'12px', maxHeight:'420px', overflowY:'auto' }} className="no-scrollbar">
+                      {ALL_TITLES.map(titleData => {
+                        const isUnlocked = gameState.realmIdx >= titleData.requiredRealmIdx;
+                        const isEquipped = gameState.equippedTitleId === titleData.id;
+                        return (
+                          <div key={titleData.id} className={`item-card${isEquipped ? ' equipped' : ''}`} style={{ display:'flex', flexDirection:'column', justifyContent:'space-between', gap:'10px', opacity: isUnlocked ? 1 : 0.5 }}>
+                            <div>
+                              <div style={{ fontSize:'22px', marginBottom:'6px' }}>{isUnlocked ? titleData.icon : '🔒'}</div>
+                              <div style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color: isUnlocked ? '#f5c842' : 'rgba(200,180,230,0.5)', marginBottom:'4px' }}>{titleData.name}</div>
+                              <div style={{ fontSize:'10px', color:'rgba(160,140,200,0.6)', lineHeight:1.5, marginBottom:'6px' }}>{titleData.desc}</div>
+                              <div style={{ fontSize:'9px', color:'#67e8f9' }}>Yêu cầu: {REALMS[titleData.requiredRealmIdx]?.name}</div>
+                            </div>
+                            {isUnlocked ? (
+                              <button onClick={() => equipTitle(titleData.id)}
+                                style={{ width:'100%', padding:'7px', borderRadius:'8px', fontFamily:'Cinzel,serif', fontSize:'10px', fontWeight:700, cursor:'pointer', transition:'all 0.15s',
+                                  background: isEquipped ? 'linear-gradient(135deg, rgba(92,60,10,0.6), rgba(55,35,5,0.7))' : 'linear-gradient(135deg, rgba(60,20,110,0.5), rgba(35,12,70,0.6))',
+                                  border: `1px solid ${isEquipped ? 'rgba(245,200,66,0.5)' : 'rgba(139,92,246,0.4)'}`,
+                                  color: isEquipped ? '#f5c842' : '#c084fc' }}>
+                                {isEquipped ? '✦ Đang Sử Dụng' : '⬆ Trang Bị Danh Hiệu'}
+                              </button>
+                            ) : (
+                              <div style={{ width:'100%', padding:'7px', borderRadius:'8px', textAlign:'center', fontSize:'10px', color:'rgba(150,140,170,0.5)', background:'rgba(40,40,60,0.4)', border:'1px solid rgba(80,80,100,0.3)' }}>
+                                🔒 Chưa Mở Khóa
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
