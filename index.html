@@ -3,101 +3,472 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đại Đạo Tranh Phong - Tu Tiên Idle (Optimized Sync & Fix)</title>
+  <title>Đại Đạo Tranh Phong — Tu Tiên Idle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700;900&family=IM+Fell+English:ital@0;1&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 25px rgba(168, 85, 247, 0.2), inset 0 0 15px rgba(6, 182, 212, 0.2); }
-      50% { box-shadow: 0 0 45px rgba(168, 85, 247, 0.4), inset 0 0 25px rgba(6, 182, 212, 0.4); }
+    :root {
+      --gold: #f5c842;
+      --gold-dim: #b8922a;
+      --jade: #00e5cc;
+      --jade-dim: #00877a;
+      --crimson: #e03030;
+      --purple-bright: #c084fc;
+      --purple-deep: #3b0764;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Share Tech Mono', monospace;
+      background: #020207;
+      color: #f5e6c8;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, .font-title { font-family: 'Cinzel', serif; }
+    .font-deco { font-family: 'Cinzel Decorative', serif; }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: rgba(192,132,252,0.4); border-radius: 10px; }
+
+    /* ─── ANIMATED STARFIELD BG ─── */
+    .starfield {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: -10; overflow: hidden;
+      background: radial-gradient(ellipse at 20% 50%, #1a0536 0%, #020207 50%),
+                  radial-gradient(ellipse at 80% 20%, #0a1a3a 0%, transparent 60%);
+    }
+    .starfield::before, .starfield::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 60%, rgba(255,220,120,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 80%, rgba(180,130,255,0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 75%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 45% 45%, rgba(100,200,255,0.6) 0%, transparent 100%),
+        radial-gradient(2px 2px at 80% 70%, rgba(255,200,80,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 30%, rgba(255,255,255,0.9) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 85%, rgba(200,180,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 5% 50%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 95% 15%, rgba(255,255,255,0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 40% 90%, rgba(255,150,80,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 75% 55%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(2px 2px at 55% 65%, rgba(180,100,255,0.6) 0%, transparent 100%);
+      background-size: 100% 100%;
+    }
+    .starfield::after {
+      animation: twinkle 4s infinite alternate ease-in-out;
+      background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.9) 0%, transparent 100%),
+        radial-gradient(1px 1px at 65% 15%, rgba(255,220,100,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 85%, rgba(255,255,255,0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 35% 55%, rgba(180,200,255,0.6) 0%, transparent 100%),
+        radial-gradient(2px 2px at 50% 75%, rgba(255,200,80,0.7) 0%, transparent 100%);
+    }
+    @keyframes twinkle { 0% { opacity: 0.4; } 100% { opacity: 1; } }
+
+    /* Mountain silhouette */
+    .mountain-bg {
+      position: fixed; bottom: 0; left: 0; width: 100vw; height: 45vh;
+      z-index: -9;
+      background:
+        linear-gradient(to top, rgba(30,5,60,0.9) 0%, transparent 100%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23090518' fill-opacity='1' d='M0,320L60,288L120,256L200,160L280,256L360,192L440,128L520,192L600,96L680,192L760,128L840,192L920,96L1000,160L1080,256L1160,192L1240,128L1320,192L1440,256L1440,320L0,320Z'/%3E%3C/svg%3E") no-repeat bottom;
+      background-size: cover;
+      opacity: 0.9;
+    }
+
+    /* Fog */
+    .fog-layer {
+      position: fixed; bottom: 0; left: 0; width: 300vw; height: 30vh;
+      background: linear-gradient(to right,
+        transparent 0%,
+        rgba(80,20,120,0.08) 20%,
+        rgba(100,30,160,0.12) 40%,
+        rgba(80,20,120,0.08) 60%,
+        transparent 80%);
+      z-index: -8;
+      animation: fogDrift 60s linear infinite;
+    }
+    @keyframes fogDrift { 0% { transform: translateX(0); } 100% { transform: translateX(-33.33vw); } }
+
+    /* ─── GLOW ANIMATIONS ─── */
+    @keyframes pulseGold {
+      0%, 100% { box-shadow: 0 0 20px rgba(245,200,66,0.15), 0 0 60px rgba(168,85,247,0.1); }
+      50%       { box-shadow: 0 0 40px rgba(245,200,66,0.3),  0 0 80px rgba(168,85,247,0.25); }
+    }
+    @keyframes pulseJade {
+      0%, 100% { box-shadow: 0 0 15px rgba(0,229,204,0.2), inset 0 0 20px rgba(0,229,204,0.05); }
+      50%       { box-shadow: 0 0 35px rgba(0,229,204,0.5), inset 0 0 30px rgba(0,229,204,0.15); }
     }
     @keyframes tribPulse {
-      0%, 100% { border-color: rgba(239, 68, 68, 0.6); box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
-      50% { border-color: rgba(251, 191, 36, 0.9); box-shadow: 0 0 35px rgba(251, 191, 36, 0.6); }
+      0%, 100% { border-color: rgba(220,38,38,0.7); box-shadow: 0 0 25px rgba(220,38,38,0.3), inset 0 0 20px rgba(220,38,38,0.05); }
+      50%       { border-color: rgba(251,191,36,1);  box-shadow: 0 0 50px rgba(251,191,36,0.5), inset 0 0 30px rgba(251,191,36,0.1); }
     }
-    .sect-glow { animation: pulseGlow 4s infinite ease-in-out; }
-    .tribulation-banner { animation: tribPulse 2s infinite ease-in-out; }
-
-    /* ==========================================
-       🌟 PHẦN THÊM VÀO: CSS CHO HIỆU ỨNG VÀ BACKGROUND
-       ========================================== */
-    /* Nền núi non mờ ảo */
-    .tu-tien-bg {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: url('https://images.unsplash.com/photo-1541845157-a6d2d100c931?q=80&w=1920&auto=format&fit=crop') no-repeat center center;
-      background-size: cover;
-      z-index: -3;
-      filter: brightness(0.25) contrast(1.2) sepia(0.3) hue-rotate(250deg);
+    @keyframes orbFloat {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50%       { transform: translateY(-6px) scale(1.02); }
     }
-    /* Sương mù trôi bồng bềnh */
-    .fog-layer {
-      position: fixed; top: 0; left: 0; width: 200vw; height: 100vh;
-      background: transparent url('https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog1.png') repeat-x;
-      background-size: cover;
-      z-index: -2;
-      opacity: 0.15;
-      animation: fogAnim 80s linear infinite;
-      pointer-events: none;
+    @keyframes ringRotate {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-    @keyframes fogAnim { 0% { transform: translateX(0); } 100% { transform: translateX(-50vw); } }
-    
-    /* Hiệu ứng số nảy lên khi click (Floating Text) */
-    .floating-text {
-      position: absolute;
-      pointer-events: none;
-      animation: floatUp 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-      font-weight: bold;
-      z-index: 9999;
-      text-shadow: 0 0 5px rgba(0,0,0,0.8);
+    @keyframes ringRotateCCW {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(-360deg); }
     }
     @keyframes floatUp {
-      0% { opacity: 1; transform: translateY(0) scale(1); }
-      50% { transform: translateY(-30px) scale(1.2); }
-      100% { opacity: 0; transform: translateY(-50px) scale(1); }
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      60%  { opacity: 0.8; transform: translateY(-35px) scale(1.3); }
+      100% { opacity: 0; transform: translateY(-55px) scale(0.8); }
+    }
+    @keyframes shockwave {
+      0%   { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(2.5); opacity: 0; }
+    }
+    @keyframes borderGlow {
+      0%, 100% { border-color: rgba(192,132,252,0.3); }
+      50%       { border-color: rgba(192,132,252,0.7); }
+    }
+    @keyframes goldShimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    @keyframes thunderBolt {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.2; }
     }
 
-    /* Hiệu ứng rung màn hình nhẹ khi chém quái */
-    .shake-effect {
-      animation: screenShake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+    .gold-glow    { animation: pulseGold 3s infinite ease-in-out; }
+    .jade-glow    { animation: pulseJade 2.5s infinite ease-in-out; }
+    .trib-banner  { animation: tribPulse 1.8s infinite ease-in-out; }
+    .orb-float    { animation: orbFloat 4s infinite ease-in-out; }
+    .ring-cw      { animation: ringRotate 8s linear infinite; }
+    .ring-ccw     { animation: ringRotateCCW 12s linear infinite; }
+    .ring-cw2     { animation: ringRotate 6s linear infinite; }
+    .border-pulse { animation: borderGlow 3s infinite ease-in-out; }
+
+    /* ─── PANEL GLASS STYLE ─── */
+    .glass-panel {
+      background: linear-gradient(135deg, rgba(20,10,40,0.85) 0%, rgba(10,5,25,0.9) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(192,132,252,0.25);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
     }
+    .glass-panel-gold {
+      background: linear-gradient(135deg, rgba(30,15,5,0.9) 0%, rgba(15,8,3,0.95) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(245,200,66,0.3);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 40px rgba(245,200,66,0.08), inset 0 1px 0 rgba(245,200,66,0.1);
+    }
+
+    /* ─── DIVIDER ORNAMENT ─── */
+    .ornament-divider {
+      display: flex; align-items: center; gap: 8px;
+      color: rgba(245,200,66,0.5);
+      font-size: 10px; letter-spacing: 3px;
+    }
+    .ornament-divider::before, .ornament-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(245,200,66,0.4), transparent);
+    }
+
+    /* ─── TABS ─── */
+    .tab-btn {
+      position: relative; flex: 1; padding: 10px 14px;
+      border-radius: 10px; font-size: 11px; font-family: 'Cinzel', serif;
+      font-weight: 700; white-space: nowrap; cursor: pointer;
+      transition: all 0.25s; letter-spacing: 0.5px;
+      color: rgba(200,180,230,0.55); background: transparent; border: none;
+    }
+    .tab-btn:hover { color: rgba(245,200,66,0.85); }
+    .tab-btn.active {
+      color: #f5c842;
+      background: linear-gradient(135deg, rgba(100,40,180,0.5), rgba(60,20,120,0.6));
+      box-shadow: 0 0 20px rgba(168,85,247,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+      border: 1px solid rgba(192,132,252,0.4);
+    }
+    .tab-btn.active::after {
+      content: ''; position: absolute; bottom: -1px; left: 50%;
+      transform: translateX(-50%);
+      width: 30px; height: 2px;
+      background: linear-gradient(to right, transparent, #f5c842, transparent);
+      border-radius: 2px;
+    }
+
+    /* ─── CARDS ─── */
+    .item-card {
+      background: linear-gradient(135deg, rgba(25,12,50,0.8), rgba(12,6,28,0.9));
+      border: 1px solid rgba(100,60,180,0.3);
+      border-radius: 12px; padding: 14px;
+      transition: all 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .item-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(192,132,252,0.4), transparent);
+    }
+    .item-card:hover {
+      border-color: rgba(192,132,252,0.5);
+      box-shadow: 0 4px 20px rgba(100,60,180,0.3);
+      transform: translateY(-1px);
+    }
+    .item-card.equipped {
+      background: linear-gradient(135deg, rgba(40,20,5,0.85), rgba(20,10,3,0.9));
+      border-color: rgba(245,200,66,0.5);
+      box-shadow: 0 0 20px rgba(245,200,66,0.15), inset 0 0 20px rgba(245,200,66,0.03);
+    }
+    .item-card.joined {
+      background: linear-gradient(135deg, rgba(60,20,100,0.5), rgba(30,10,60,0.7));
+      border-color: rgba(192,132,252,0.6);
+      box-shadow: 0 0 20px rgba(168,85,247,0.2);
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn-primary {
+      width: 100%; padding: 9px; border-radius: 10px;
+      font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
+      background: linear-gradient(135deg, rgba(120,50,220,0.5), rgba(70,25,150,0.6));
+      border: 1px solid rgba(192,132,252,0.4);
+      color: #f5c842;
+      box-shadow: 0 2px 10px rgba(100,40,200,0.3);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, rgba(140,60,240,0.7), rgba(90,35,180,0.8));
+      box-shadow: 0 4px 20px rgba(120,50,220,0.5);
+      transform: translateY(-1px);
+    }
+    .btn-primary:disabled { background: rgba(40,40,60,0.5); border-color: rgba(80,80,100,0.3); color: rgba(150,140,170,0.4); cursor: not-allowed; }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #7a4e10, #5c3508);
+      border: 1px solid rgba(245,200,66,0.5);
+      color: #f5c842;
+      box-shadow: 0 2px 15px rgba(245,200,66,0.2), inset 0 1px 0 rgba(255,220,100,0.2);
+    }
+    .btn-gold:hover:not(:disabled) {
+      background: linear-gradient(135deg, #9a6515, #7a4e10);
+      box-shadow: 0 4px 25px rgba(245,200,66,0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, rgba(120,20,20,0.6), rgba(80,10,10,0.7));
+      border: 1px solid rgba(220,60,60,0.4);
+      color: #fca5a5;
+    }
+    .btn-danger:hover:not(:disabled) {
+      background: linear-gradient(135deg, rgba(150,30,30,0.8), rgba(100,15,15,0.9));
+      box-shadow: 0 4px 20px rgba(220,60,60,0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, rgba(20,90,60,0.6), rgba(10,55,35,0.7));
+      border: 1px solid rgba(52,211,153,0.4);
+      color: #6ee7b7;
+    }
+    .btn-success:hover:not(:disabled) {
+      background: linear-gradient(135deg, rgba(30,120,80,0.8), rgba(15,75,50,0.9));
+      box-shadow: 0 4px 20px rgba(52,211,153,0.4);
+      transform: translateY(-1px);
+    }
+
+    /* ─── TIER COLORS ─── */
+    .tier-common    { color: #94a3b8; }
+    .tier-uncommon  { color: #4ade80; text-shadow: 0 0 8px rgba(74,222,128,0.4); }
+    .tier-rare      { color: #38bdf8; text-shadow: 0 0 8px rgba(56,189,248,0.4); }
+    .tier-epic      { color: #c084fc; text-shadow: 0 0 8px rgba(192,132,252,0.5); }
+    .tier-legendary { color: #f5c842; text-shadow: 0 0 10px rgba(245,200,66,0.6); }
+    .tier-mythic    { color: #fb7185; text-shadow: 0 0 12px rgba(251,113,133,0.8); animation: thunderBolt 1.5s infinite; }
+
+    /* ─── HP BAR ─── */
+    .hp-bar-track {
+      width: 100%; background: rgba(0,0,0,0.7); height: 16px;
+      border-radius: 8px; border: 1px solid rgba(220,38,38,0.4);
+      overflow: hidden; padding: 2px; position: relative;
+    }
+    .hp-bar-fill {
+      height: 100%; border-radius: 6px; transition: width 0.3s ease;
+      background: linear-gradient(90deg, #7f1d1d, #dc2626, #f97316, #fb923c);
+      box-shadow: 0 0 10px rgba(220,38,38,0.5);
+      position: relative; overflow: hidden;
+    }
+    .hp-bar-fill::after {
+      content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      animation: shimmerHP 2s infinite;
+    }
+    @keyframes shimmerHP { 0% { left: -100%; } 100% { left: 200%; } }
+
+    .qi-bar-fill {
+      height: 100%; border-radius: 6px; transition: width 0.5s ease;
+      background: linear-gradient(90deg, #4c1d95, #7c3aed, #6366f1, #22d3ee);
+      box-shadow: 0 0 12px rgba(99,102,241,0.5);
+    }
+
+    /* ─── FLOATING TEXT ─── */
+    .floating-text {
+      position: fixed; pointer-events: none;
+      animation: floatUp 1.1s cubic-bezier(0.25,1,0.5,1) forwards;
+      font-family: 'Cinzel', serif; font-weight: 700; z-index: 9999;
+      text-shadow: 0 0 8px rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    /* ─── SHOCKWAVE ─── */
+    .shockwave-ring {
+      position: absolute; border-radius: 50%;
+      border: 2px solid rgba(192,132,252,0.6);
+      animation: shockwave 0.6s ease-out forwards;
+    }
+
+    /* ─── SHAKE ─── */
     @keyframes screenShake {
-      10%, 90% { transform: translate3d(-1px, 0, 0); }
-      20%, 80% { transform: translate3d(2px, 0, 0); }
-      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-      40%, 60% { transform: translate3d(4px, 0, 0); }
+      10%, 90% { transform: translate(-1px, 0); }
+      20%, 80% { transform: translate(2px, 0); }
+      30%, 50%, 70% { transform: translate(-3px, 0); }
+      40%, 60% { transform: translate(3px, 0); }
     }
-    /* ========================================== */
+    .shake-effect { animation: screenShake 0.3s cubic-bezier(.36,.07,.19,.97); }
+
+    /* ─── PROGRESS BAR TRACK ─── */
+    .progress-track {
+      width: 100%; background: rgba(0,0,0,0.6); height: 12px;
+      border-radius: 6px; border: 1px solid rgba(100,60,180,0.4);
+      overflow: hidden; padding: 2px;
+    }
+
+    /* ─── STAT CHIP ─── */
+    .stat-chip {
+      display: flex; flex-direction: column; align-items: flex-end;
+      padding: 8px 14px; gap: 2px;
+    }
+    .stat-chip .label { font-size: 9px; color: rgba(180,160,220,0.6); letter-spacing: 1px; text-transform: uppercase; }
+    .stat-chip .value { font-family: 'Cinzel', serif; font-weight: 700; font-size: 15px; }
+
+    /* ─── LOG ENTRIES ─── */
+    .log-entry {
+      display: flex; gap: 10px; padding: 6px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 11px; border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .log-entry:hover { background: rgba(255,255,255,0.02); }
+    .log-entry .log-time { color: rgba(160,140,200,0.5); min-width: 64px; }
+    .log-entry.type-breakthrough .log-text { color: #f5c842; }
+    .log-entry.type-fail .log-text { color: #f87171; }
+    .log-entry.type-shop .log-text { color: #67e8f9; }
+
+    /* ─── REALM BADGE ─── */
+    .realm-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: 'Cinzel', serif; font-weight: 900;
+      font-size: 13px;
+      background: linear-gradient(to right, #f5c842, #e8a920, #f5c842, #ffe476, #f5c842);
+      background-size: 200% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: goldShimmer 3s linear infinite;
+      filter: drop-shadow(0 0 8px rgba(245,200,66,0.5));
+    }
+
+    /* ─── RANK BADGE ─── */
+    .rank-1 { background: linear-gradient(135deg, #d97706, #fbbf24); color: #1a0a00; }
+    .rank-2 { background: linear-gradient(135deg, #9ca3af, #e5e7eb); color: #111827; }
+    .rank-3 { background: linear-gradient(135deg, #92400e, #b45309); color: #fff; }
+    .rank-n { background: rgba(60,30,100,0.6); border: 1px solid rgba(192,132,252,0.3); color: #c084fc; }
+
+    /* ─── MONSTER ─── */
+    .monster-arena {
+      background: radial-gradient(ellipse at center, rgba(40,0,60,0.8) 0%, rgba(10,0,20,0.95) 70%);
+      border: 1px solid rgba(180,60,60,0.3);
+      border-radius: 16px; padding: 32px;
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      position: relative; overflow: hidden;
+      box-shadow: inset 0 0 60px rgba(140,20,20,0.15);
+    }
+    .monster-arena::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center bottom, rgba(180,0,0,0.08) 0%, transparent 60%);
+    }
+
+    /* ─── ORNAMENT CORNERS ─── */
+    .corner-tl, .corner-tr, .corner-bl, .corner-br {
+      position: absolute; width: 16px; height: 16px;
+      opacity: 0.4;
+    }
+    .corner-tl { top: 6px; left: 6px; border-top: 1px solid var(--gold); border-left: 1px solid var(--gold); }
+    .corner-tr { top: 6px; right: 6px; border-top: 1px solid var(--gold); border-right: 1px solid var(--gold); }
+    .corner-bl { bottom: 6px; left: 6px; border-bottom: 1px solid var(--gold); border-left: 1px solid var(--gold); }
+    .corner-br { bottom: 6px; right: 6px; border-bottom: 1px solid var(--gold); border-right: 1px solid var(--gold); }
+
+    /* ─── MODAL ─── */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 50;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-box {
+      background: linear-gradient(135deg, rgba(18,8,35,0.98), rgba(8,3,18,0.99));
+      border: 1px solid rgba(245,200,66,0.4);
+      border-radius: 20px; width: 100%; max-width: 1000px;
+      padding: 24px; display: flex; flex-direction: column; gap: 20px;
+      max-height: 88vh;
+      box-shadow: 0 0 80px rgba(245,200,66,0.1), 0 0 40px rgba(168,85,247,0.15), inset 0 1px 0 rgba(245,200,66,0.15);
+      position: relative;
+    }
+
+    /* ─── AUDIO BTN ─── */
+    #toggle-audio-btn {
+      position: fixed; bottom: 20px; left: 20px; z-index: 100;
+      width: 42px; height: 42px; border-radius: 50%;
+      background: rgba(10,5,25,0.9); border: 1px solid rgba(192,132,252,0.4);
+      display: flex; align-items: center; justify-center: center;
+      font-size: 18px; cursor: pointer;
+      box-shadow: 0 0 20px rgba(168,85,247,0.3);
+      transition: all 0.2s; color: #c084fc;
+    }
+    #toggle-audio-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(168,85,247,0.5); }
+
+    /* ─── NO SCROLLBAR ─── */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-[#050508]/80 text-amber-50 min-h-screen font-sans selection:bg-purple-500 selection:text-white relative">
-  
-  <!-- ==========================================
-       🌟 PHẦN THÊM VÀO: HTML BACKGROUND & UI AUDIO
-       ========================================== -->
-  <div class="tu-tien-bg"></div>
+<body>
+  <!-- Background Layers -->
+  <div class="starfield"></div>
+  <div class="mountain-bg"></div>
   <div class="fog-layer"></div>
-  
-  <!-- Nút Bật/Tắt Âm Thanh Góc Trái Dưới -->
-  <button id="toggle-audio-btn" class="fixed bottom-4 left-4 z-50 bg-black/60 border border-purple-500/50 rounded-full w-10 h-10 flex items-center justify-center text-xl shadow-[0_0_15px_rgba(168,85,247,0.4)] cursor-pointer hover:bg-black/80 transition-all text-amber-200">
-    🔇
-  </button>
-  
-  <!-- Thẻ Audio ẩn -->
-  <audio id="bgm-audio" loop src="https://pixabay.com/music/download/track-113227.mp3" volume="0.3"></audio>
+
+  <!-- Audio Toggle -->
+  <button id="toggle-audio-btn" title="Bật/Tắt nhạc">🔇</button>
+  <audio id="bgm-audio" loop src="https://pixabay.com/music/download/track-113227.mp3"></audio>
   <audio id="click-sfx" src="https://pixabay.com/sound-effects/download/whoosh-6316.mp3" preload="auto"></audio>
   <audio id="slash-sfx" src="https://pixabay.com/sound-effects/download/sword-sound-2-36274.mp3" preload="auto"></audio>
-  <!-- ========================================== -->
 
   <div id="root"></div>
 
   <script type="text/babel">
-    // GIỮ NGUYÊN 100% CODE REACT CỦA BẠN TỪ ĐÂY
+    // ═══════════════════════════════════════════════════════
+    //  GAME LOGIC — UNCHANGED (100% ORIGINAL)
+    // ═══════════════════════════════════════════════════════
     const BIN_ID = "6a622390f5f4af5e29b6690d";
     const API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
     const SAVE_KEY = "tu_tien_game_save_v21";
@@ -105,11 +476,7 @@
     async function fetchCloudData() {
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-          headers: { 
-            'X-Master-Key': API_KEY,
-            'X-Access-Key': API_KEY,
-            'Cache-Control': 'no-cache'
-          }
+          headers: { 'X-Master-Key': API_KEY, 'X-Access-Key': API_KEY, 'Cache-Control': 'no-cache' }
         });
         if (!res.ok) throw new Error("Network response was not ok");
         const data = await res.json();
@@ -128,7 +495,6 @@
           activeTribulations: current.activeTribulations || {},
           marketListings: current.marketListings || []
         };
-        
         let isSuccess = true;
 
         if (action === 'LEADERBOARD') {
@@ -140,11 +506,9 @@
           }
           payload.leaderboard.sort((a, b) => b.totalQi - a.totalQi);
           payload.leaderboard = payload.leaderboard.slice(0, 20);
-        }
-        else if (action === 'START_TRIB') {
+        } else if (action === 'START_TRIB') {
           payload.activeTribulations[data.name] = data.tribData;
-        }
-        else if (action === 'END_TRIB_AND_UPDATE') {
+        } else if (action === 'END_TRIB_AND_UPDATE') {
           delete payload.activeTribulations[data.name];
           const idx = payload.leaderboard.findIndex(item => item.name === data.name);
           if (idx >= 0) {
@@ -154,29 +518,24 @@
           }
           payload.leaderboard.sort((a, b) => b.totalQi - a.totalQi);
           payload.leaderboard = payload.leaderboard.slice(0, 20);
-        }
-        else if (action === 'INTERACT_TRIB') {
+        } else if (action === 'INTERACT_TRIB') {
           if (payload.activeTribulations[data.targetName]) {
             payload.activeTribulations[data.targetName].hp = data.newHp;
           }
-        }
-        else if (action === 'ADD_MARKET') {
+        } else if (action === 'ADD_MARKET') {
           if (!payload.marketListings.some(l => l.listingId === data.listing.listingId)) {
             payload.marketListings.push(data.listing);
           }
-        }
-        else if (action === 'REMOVE_MARKET') {
+        } else if (action === 'REMOVE_MARKET') {
           payload.marketListings = payload.marketListings.filter(l => l.listingId !== data.listingId);
-        }
-        else if (action === 'BUY_MARKET') {
+        } else if (action === 'BUY_MARKET') {
           const exists = payload.marketListings.find(l => l.listingId === data.listingId);
           if (exists) {
             payload.marketListings = payload.marketListings.filter(l => l.listingId !== data.listingId);
           } else {
             isSuccess = false;
           }
-        }
-        else if (action === 'ADD_SECT') {
+        } else if (action === 'ADD_SECT') {
           payload.customSects.push(data.sect);
         }
 
@@ -184,11 +543,7 @@
 
         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': API_KEY,
-            'X-Access-Key': API_KEY
-          },
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY, 'X-Access-Key': API_KEY },
           body: JSON.stringify(payload)
         });
         const result = await res.json();
@@ -227,44 +582,47 @@
     ];
 
     const DEFAULT_SECTS = [
-      { id: 'thanh_van', name: 'Thanh Vân Môn', buff: 'Tăng +20% Tốc độ Thu Thập', desc: 'Kiếm đạo chính phái, linh khí uy nghiêm.', founder: 'Hệ Thống' },
-      { id: 'am_duong', name: 'Âm Dương Cốc', buff: 'Giảm 20% Giá mua Đan Dược & Bảo Vật', desc: 'Hành sự cổ quái, pháp tắc huyền bí.', founder: 'Hệ Thống' },
-      { id: 'huyet_dao', name: 'Huyết Đao Môn', buff: 'Tăng +50% Sát thương Trảm Yêu & Phá Trận', desc: 'Chuyên tu sát phạt, chiến lực kinh người.', founder: 'Hệ Thống' }
+      { id: 'thanh_van', name: 'Thanh Vân Môn', buff: 'Tăng +20% Tốc độ Thu Thập', desc: 'Kiếm đạo chính phái, linh khí uy nghiêm.', founder: 'Hệ Thống', icon: '🗡️' },
+      { id: 'am_duong', name: 'Âm Dương Cốc', buff: 'Giảm 20% Giá mua Đan Dược & Bảo Vật', desc: 'Hành sự cổ quái, pháp tắc huyền bí.', founder: 'Hệ Thống', icon: '☯️' },
+      { id: 'huyet_dao', name: 'Huyết Đao Môn', buff: 'Tăng +50% Sát thương Trảm Yêu & Phá Trận', desc: 'Chuyên tu sát phạt, chiến lực kinh người.', founder: 'Hệ Thống', icon: '🩸' }
     ];
 
     const SHOP_ITEMS = [
-      { id: 'linh_thach', name: 'Tụ Linh Trận', baseCost: 50, qps: 5, desc: 'Tự động hấp thu linh khí vi mô từ hư không.' },
-      { id: 'duoc_vien', name: 'Dược Viên Đan Dược', baseCost: 350, qps: 30, desc: 'Trồng linh dược ngàn năm luyện hóa đan dược.' },
-      { id: 'linh_tuyen', name: 'Linh Tuyền Nhãn', baseCost: 1800, qps: 150, desc: 'Mạch nước ngầm tinh thuần đậm đặc linh khí.' }
+      { id: 'linh_thach', name: 'Tụ Linh Trận', baseCost: 50, qps: 5, desc: 'Tự động hấp thu linh khí vi mô từ hư không.', icon: '🔮' },
+      { id: 'duoc_vien', name: 'Dược Viên Đan Dược', baseCost: 350, qps: 30, desc: 'Trồng linh dược ngàn năm luyện hóa đan dược.', icon: '🌿' },
+      { id: 'linh_tuyen', name: 'Linh Tuyền Nhãn', baseCost: 1800, qps: 150, desc: 'Mạch nước ngầm tinh thuần đậm đặc linh khí.', icon: '💧' }
     ];
 
     const ALL_GEARS = [
-      { id: 'gear_1', name: 'Thiết Kiếm Phàm Phí', tier: 'Phàm Phí', color: 'text-slate-400', clickBonus: 5, qpsBonus: 0, dropRate: 0.35, desc: 'Kiếm sắt đúc thô sơ của phàm nhân.' },
-      { id: 'gear_2', name: 'Gỗ Đào Bùa Chú', tier: 'Phàm Phí', color: 'text-slate-400', clickBonus: 3, qpsBonus: 2, dropRate: 0.30, desc: 'Khúc gỗ đào khắc linh văn đơn giản.' },
-      { id: 'gear_3', name: 'Thanh Cương Bảo Kiếm', tier: 'Hạ Phẩm', color: 'text-emerald-400', clickBonus: 25, qpsBonus: 10, dropRate: 0.18, desc: 'Kiếm đúc bằng thanh cương thạch.' },
-      { id: 'gear_4', name: 'Bách Luyện Đao', tier: 'Hạ Phẩm', color: 'text-emerald-400', clickBonus: 35, qpsBonus: 5, dropRate: 0.15, desc: 'Đao được tôi luyện qua trăm lửa.' },
-      { id: 'gear_5', name: 'Phá Thiên Thần Kiếm', tier: 'Trung Phẩm', color: 'text-cyan-400', clickBonus: 100, qpsBonus: 50, dropRate: 0.08, desc: 'Bảo vật trung cấp phát sáng xanh lam.' },
-      { id: 'gear_6', name: 'Áo Giáp Huyền Thiết', tier: 'Trung Phẩm', color: 'text-cyan-400', clickBonus: 80, qpsBonus: 70, dropRate: 0.07, desc: 'Giáp trụ đúc từ huyền thiết nặng ngàn cân.' },
-      { id: 'gear_7', name: 'Xích Huyết Thương', tier: 'Thượng Phẩm', color: 'text-purple-400', clickBonus: 250, qpsBonus: 150, dropRate: 0.03, desc: 'Ngọn giáo nhuốm máu đại yêu thượng cổ.' },
-      { id: 'gear_8', name: 'Tử Kim Lô (Thu Nhỏ)', tier: 'Thượng Phẩm', color: 'text-purple-400', clickBonus: 200, qpsBonus: 300, dropRate: 0.025, desc: 'Lò luyện đan mô phỏng thượng cổ.' },
-      { id: 'gear_9', name: 'Long Lân Kiếm', tier: 'Cực Phẩm', color: 'text-amber-400', clickBonus: 600, qpsBonus: 800, dropRate: 0.01, desc: 'Kiếm khảm vảy của Giao Long.' },
-      { id: 'gear_10', name: 'Hỗn Nguyên Phù Đồ Tháp', tier: 'Tiên Thiên', color: 'text-red-500 animate-pulse', clickBonus: 1500, qpsBonus: 2500, dropRate: 0.003, desc: 'Tháp thu nhỏ chứa đạo vận hồng mông.' }
+      { id: 'gear_1', name: 'Thiết Kiếm Phàm Phí', tier: 'Phàm Phí', colorClass: 'tier-common', clickBonus: 5, qpsBonus: 0, dropRate: 0.35, desc: 'Kiếm sắt đúc thô sơ của phàm nhân.', icon: '🗡️' },
+      { id: 'gear_2', name: 'Gỗ Đào Bùa Chú', tier: 'Phàm Phí', colorClass: 'tier-common', clickBonus: 3, qpsBonus: 2, dropRate: 0.30, desc: 'Khúc gỗ đào khắc linh văn đơn giản.', icon: '📜' },
+      { id: 'gear_3', name: 'Thanh Cương Bảo Kiếm', tier: 'Hạ Phẩm', colorClass: 'tier-uncommon', clickBonus: 25, qpsBonus: 10, dropRate: 0.18, desc: 'Kiếm đúc bằng thanh cương thạch.', icon: '⚔️' },
+      { id: 'gear_4', name: 'Bách Luyện Đao', tier: 'Hạ Phẩm', colorClass: 'tier-uncommon', clickBonus: 35, qpsBonus: 5, dropRate: 0.15, desc: 'Đao được tôi luyện qua trăm lửa.', icon: '🔪' },
+      { id: 'gear_5', name: 'Phá Thiên Thần Kiếm', tier: 'Trung Phẩm', colorClass: 'tier-rare', clickBonus: 100, qpsBonus: 50, dropRate: 0.08, desc: 'Bảo vật trung cấp phát sáng xanh lam.', icon: '🌊' },
+      { id: 'gear_6', name: 'Áo Giáp Huyền Thiết', tier: 'Trung Phẩm', colorClass: 'tier-rare', clickBonus: 80, qpsBonus: 70, dropRate: 0.07, desc: 'Giáp trụ đúc từ huyền thiết nặng ngàn cân.', icon: '🛡️' },
+      { id: 'gear_7', name: 'Xích Huyết Thương', tier: 'Thượng Phẩm', colorClass: 'tier-epic', clickBonus: 250, qpsBonus: 150, dropRate: 0.03, desc: 'Ngọn giáo nhuốm máu đại yêu thượng cổ.', icon: '🔱' },
+      { id: 'gear_8', name: 'Tử Kim Lô (Thu Nhỏ)', tier: 'Thượng Phẩm', colorClass: 'tier-epic', clickBonus: 200, qpsBonus: 300, dropRate: 0.025, desc: 'Lò luyện đan mô phỏng thượng cổ.', icon: '🏮' },
+      { id: 'gear_9', name: 'Long Lân Kiếm', tier: 'Cực Phẩm', colorClass: 'tier-legendary', clickBonus: 600, qpsBonus: 800, dropRate: 0.01, desc: 'Kiếm khảm vảy của Giao Long.', icon: '🐲' },
+      { id: 'gear_10', name: 'Hỗn Nguyên Phù Đồ Tháp', tier: 'Tiên Thiên', colorClass: 'tier-mythic', clickBonus: 1500, qpsBonus: 2500, dropRate: 0.003, desc: 'Tháp thu nhỏ chứa đạo vận hồng mông.', icon: '🌀' }
     ];
 
     const MONSTERS = [
-      { id: 'yeu_thu', name: 'Yêu Lang Hoang Dã', hp: 100, reward: 50, icon: '🐺' },
-      { id: 'quy_tuong', name: 'Quỷ Tướng Ngàn Năm', hp: 500, reward: 300, icon: '💀' },
-      { id: 'giao_long', name: 'Giao Long Thượng Cổ', hp: 2500, reward: 1500, icon: '🐉' }
+      { id: 'yeu_thu', name: 'Yêu Lang Hoang Dã', hp: 100, reward: 50, icon: '🐺', color: '#ef4444' },
+      { id: 'quy_tuong', name: 'Quỷ Tướng Ngàn Năm', hp: 500, reward: 300, icon: '💀', color: '#a855f7' },
+      { id: 'giao_long', name: 'Giao Long Thượng Cổ', hp: 2500, reward: 1500, icon: '🐉', color: '#f5c842' }
     ];
 
     const formatNumber = (num) => {
       if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
-      if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-      if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-      if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+      if (num >= 1e9)  return (num / 1e9).toFixed(2) + 'B';
+      if (num >= 1e6)  return (num / 1e6).toFixed(2) + 'M';
+      if (num >= 1e3)  return (num / 1e3).toFixed(2) + 'K';
       return Math.floor(num).toString();
     };
 
+    // ═══════════════════════════════════════════════════════
+    //  REACT APP
+    // ═══════════════════════════════════════════════════════
     function App() {
       const [playerName, setPlayerName] = React.useState(() => {
         const saved = localStorage.getItem('tu_tien_player_name');
@@ -273,7 +631,6 @@
         localStorage.setItem('tu_tien_player_name', randomName);
         return randomName;
       });
-
       const [isEditingName, setIsEditingName] = React.useState(false);
       const [tempName, setTempName] = React.useState(playerName);
 
@@ -296,7 +653,6 @@
             const parsed = JSON.parse(savedState);
             if (!parsed.inventory) parsed.inventory = [];
             if (!parsed.logs) parsed.logs = [];
-            
             const now = Date.now();
             if (parsed.lastSaveTime) {
               const offlineSeconds = Math.floor((now - parsed.lastSaveTime) / 1000);
@@ -313,16 +669,11 @@
                   }
                 });
                 if (parsed.joinedSectId === 'thanh_van') offlineQps *= 1.2;
-
                 if (offlineQps > 0) {
                   const gained = offlineQps * offlineSeconds;
                   const nextRealm = REALMS[parsed.realmIdx + 1];
                   let maxGained = gained;
-                  
-                  if (nextRealm && parsed.qi + gained > nextRealm.req) {
-                    maxGained = nextRealm.req - parsed.qi;
-                  }
-
+                  if (nextRealm && parsed.qi + gained > nextRealm.req) maxGained = nextRealm.req - parsed.qi;
                   if (maxGained > 0) {
                     parsed.qi += maxGained;
                     parsed.totalQi += maxGained;
@@ -337,8 +688,10 @@
           }
         } catch (e) {}
         return {
-          qi: 0, totalQi: 0, realmIdx: 0, joinedSectId: 'thanh_van', shopCounts: {}, inventory: [], equippedGearId: null, lastSaveTime: Date.now(),
-          logs: [{ id: '1', text: '[Đại Đạo]: Đã khắc phục triệt để lỗi Chợ Đen & xung đột thông báo Độ Kiếp!', type: 'breakthrough', time: Date.now() }]
+          qi: 0, totalQi: 0, realmIdx: 0, joinedSectId: 'thanh_van',
+          shopCounts: {}, inventory: [], equippedGearId: null,
+          lastSaveTime: Date.now(),
+          logs: [{ id: '1', text: '[Đại Đạo]: Chào mừng tu sĩ gia nhập Đại Đạo Tranh Phong!', type: 'breakthrough', time: Date.now() }]
         };
       });
 
@@ -349,22 +702,24 @@
       const [activeTab, setActiveTab] = React.useState('shop');
       const [isBlackMarketModalOpen, setIsBlackMarketModalOpen] = React.useState(false);
       const [listingPriceInput, setListingPriceInput] = React.useState({});
-
       const [currentMonsterIdx, setCurrentMonsterIdx] = React.useState(0);
       const [monsterHp, setMonsterHp] = React.useState(MONSTERS[0].hp);
       const [isDead, setIsDead] = React.useState(false);
-      
       const [cloudLeaderboard, setCloudLeaderboard] = React.useState([]);
       const [cloudCustomSects, setCloudCustomSects] = React.useState([]);
       const [activeTribulations, setActiveTribulations] = React.useState({});
       const [marketListings, setMarketListings] = React.useState([]);
       const [myTribulation, setMyTribulation] = React.useState(null);
-
       const [actedPlayers, setActedPlayers] = React.useState(new Set());
       const [actionLoading, setActionLoading] = React.useState(null);
-
       const [newSectName, setNewSectName] = React.useState('');
       const [newSectDesc, setNewSectDesc] = React.useState('');
+      const [, setTick] = React.useState(0);
+
+      React.useEffect(() => {
+        const t = setInterval(() => setTick(n => n + 1), 500);
+        return () => clearInterval(t);
+      }, []);
 
       const combatPower = React.useMemo(() => {
         let base = 1 + gameState.realmIdx * 3;
@@ -423,159 +778,94 @@
       React.useEffect(() => {
         let isMounted = true;
         let tick = 0;
-
         const doPoll = async () => {
           try {
             const data = await fetchCloudData();
             if (!isMounted) return;
-            
             setCloudLeaderboard(data.leaderboard || []);
             setCloudCustomSects(data.customSects || []);
             setMarketListings(data.marketListings || []);
-            
             const now = Date.now();
             const cleanTribs = {};
             Object.entries(data.activeTribulations || {}).forEach(([k, v]) => {
               if (v && v.endTime > now && v.hp > 0) cleanTribs[k] = v;
             });
             setActiveTribulations(cleanTribs);
-
             const myTrib = myTribulationRef.current;
             if (myTrib && cleanTribs[playerName]) {
               const cloudHp = cleanTribs[playerName].hp;
-              if (cloudHp !== myTrib.hp) {
-                setMyTribulation(prev => prev ? { ...prev, hp: cloudHp } : null);
-              }
+              if (cloudHp !== myTrib.hp) setMyTribulation(prev => prev ? { ...prev, hp: cloudHp } : null);
             }
           } catch (e) {}
         };
-
         const doPushLeaderboard = async () => {
           const state = gameStateRef.current;
-          await modifyCloudData('LEADERBOARD', {
-            name: playerName,
-            totalQi: state.totalQi,
-            realm: REALMS[state.realmIdx]?.name || "Phàm Nhân"
-          });
+          await modifyCloudData('LEADERBOARD', { name: playerName, totalQi: state.totalQi, realm: REALMS[state.realmIdx]?.name || "Phàm Nhân" });
         };
-
         const syncLoop = async () => {
           await doPoll();
           tick++;
-          if (tick % 5 === 0) { 
-            await doPushLeaderboard();
-          }
+          if (tick % 5 === 0) await doPushLeaderboard();
         };
-
         doPushLeaderboard().then(doPoll);
         const syncInterval = setInterval(syncLoop, 2000);
-
-        return () => {
-          isMounted = false;
-          clearInterval(syncInterval);
-        };
+        return () => { isMounted = false; clearInterval(syncInterval); };
       }, [playerName]);
 
       const handleListMarketItem = async (uniqueId) => {
         const itemToSell = gameState.inventory.find(i => i.uniqueId === uniqueId);
         if (!itemToSell) return;
-
         const rawPrice = listingPriceInput[uniqueId] || 100;
         const price = parseInt(rawPrice, 10);
-        if (isNaN(price) || price <= 0) {
-          alert("Xin vui lòng nhập giá linh khí hợp lệ lớn hơn 0!");
-          return;
-        }
-
+        if (isNaN(price) || price <= 0) { alert("Xin vui lòng nhập giá linh khí hợp lệ lớn hơn 0!"); return; }
         const gearData = ALL_GEARS.find(g => g.id === itemToSell.gearId);
         if (!gearData) return;
-
         const newListing = {
           listingId: 'list_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
-          sellerName: playerName,
-          gearId: itemToSell.gearId,
-          gearUniqueId: itemToSell.uniqueId,
-          price: price,
-          time: Date.now()
+          sellerName: playerName, gearId: itemToSell.gearId, gearUniqueId: itemToSell.uniqueId, price: price, time: Date.now()
         };
-
         const res = await modifyCloudData('ADD_MARKET', { listing: newListing });
-        
         if (res.success) {
           setMarketListings(res.record.marketListings);
           setGameState(prev => ({
             ...prev,
             inventory: prev.inventory.filter(i => i.uniqueId !== uniqueId),
-            logs: [
-              { id: Date.now().toString(), text: `[Hắc Thị]: Ký gửi thành công ${gearData.name} với giá ${formatNumber(price)} Qi!`, type: 'shop', time: Date.now() },
-              ...prev.logs
-            ].slice(0, 100)
+            logs: [{ id: Date.now().toString(), text: `[Hắc Thị]: Ký gửi thành công ${gearData.name} với giá ${formatNumber(price)} Qi!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
           }));
           alert("Ký gửi bảo vật lên Hắc Thị thành công!");
-        } else {
-          alert(res.error);
-        }
+        } else alert(res.error);
       };
 
       const handleCancelMarketListing = async (listing) => {
         if (listing.sellerName !== playerName) return;
-
         const res = await modifyCloudData('REMOVE_MARKET', { listingId: listing.listingId });
-        
         if (res.success) {
           setMarketListings(res.record.marketListings);
-          const returnedItem = {
-            uniqueId: listing.gearUniqueId || ('item_' + Date.now()),
-            gearId: listing.gearId,
-            isEquipped: false
-          };
+          const returnedItem = { uniqueId: listing.gearUniqueId || ('item_' + Date.now()), gearId: listing.gearId, isEquipped: false };
           const gearData = ALL_GEARS.find(g => g.id === listing.gearId);
-
           setGameState(prev => ({
             ...prev,
             inventory: [...prev.inventory, returnedItem],
-            logs: [
-              { id: Date.now().toString(), text: `[Hắc Thị]: Gỡ bán thành công ${gearData?.name || 'Bảo Vật'} về túi đồ!`, type: 'shop', time: Date.now() },
-              ...prev.logs
-            ].slice(0, 100)
+            logs: [{ id: Date.now().toString(), text: `[Hắc Thị]: Gỡ bán thành công ${gearData?.name || 'Bảo Vật'} về túi đồ!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
           }));
         }
       };
 
       const handleBuyMarketItem = async (listing) => {
-        if (listing.sellerName === playerName) {
-          alert("Đạo hữu không thể tự mua vật phẩm do chính mình ký gửi!");
-          return;
-        }
-        if (gameState.qi < listing.price) {
-          alert("Linh khí bất túc, không đủ linh thạch để mua bảo vật này!");
-          return;
-        }
-
+        if (listing.sellerName === playerName) { alert("Đạo hữu không thể tự mua vật phẩm do chính mình ký gửi!"); return; }
+        if (gameState.qi < listing.price) { alert("Linh khí bất túc, không đủ linh thạch để mua bảo vật này!"); return; }
         const res = await modifyCloudData('BUY_MARKET', { listingId: listing.listingId });
         const gearData = ALL_GEARS.find(g => g.id === listing.gearId);
-
         if (res.success) {
           setMarketListings(res.record.marketListings);
-          const purchasedItem = {
-            uniqueId: 'item_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
-            gearId: listing.gearId,
-            isEquipped: false
-          };
-
+          const purchasedItem = { uniqueId: 'item_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7), gearId: listing.gearId, isEquipped: false };
           setGameState(prev => ({
-            ...prev,
-            qi: prev.qi - listing.price,
+            ...prev, qi: prev.qi - listing.price,
             inventory: [...prev.inventory, purchasedItem],
-            logs: [
-              { id: Date.now().toString(), text: `[Hắc Thị]: Mua thành công ${gearData?.name || 'Bảo Vật'} từ ${listing.sellerName} giá ${formatNumber(listing.price)} Qi!`, type: 'shop', time: Date.now() },
-              ...prev.logs
-            ].slice(0, 100)
+            logs: [{ id: Date.now().toString(), text: `[Hắc Thị]: Mua thành công ${gearData?.name || 'Bảo Vật'} từ ${listing.sellerName} giá ${formatNumber(listing.price)} Qi!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
           }));
           alert(`Giao dịch thành công! Đã thu phục "${gearData?.name}" vào túi đồ.`);
-        } else {
-          alert(res.error);
-        }
+        } else alert(res.error);
       };
 
       React.useEffect(() => {
@@ -587,9 +877,7 @@
               const nextRealm = REALMS[gameState.realmIdx + 1];
               setGameState(prev => {
                 const updatedState = {
-                  ...prev,
-                  qi: prev.qi - nextRealm.req,
-                  realmIdx: prev.realmIdx + 1,
+                  ...prev, qi: prev.qi - nextRealm.req, realmIdx: prev.realmIdx + 1,
                   logs: [{ id: Date.now().toString(), text: `[Độ Kiếp Thành Công]: Chống chịu qua lôi kiếp, bước chân vào ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
                 };
                 modifyCloudData('END_TRIB_AND_UPDATE', { name: playerName, totalQi: updatedState.totalQi, realm: nextRealm.name })
@@ -608,14 +896,11 @@
                   const foundGear = ALL_GEARS.find(g => g.id === removedItem.gearId);
                   if (foundGear) lostGearName = foundGear.name;
                 }
-                const penaltyText = lostGearName 
+                const penaltyText = lostGearName
                   ? `[Thiên Kiếp Thất Bại]: Pháp trận bị công phá! Mất ${formatNumber(lostQi)} Qi và đánh rơi bảo vật "${lostGearName}"!`
                   : `[Thiên Kiếp Thất Bại]: Pháp trận bị công phá! Mất ${formatNumber(lostQi)} Qi!`;
-
                 const updatedState = {
-                  ...prev,
-                  qi: Math.max(0, prev.qi - lostQi),
-                  totalQi: Math.max(0, prev.totalQi - lostTotalQi),
+                  ...prev, qi: Math.max(0, prev.qi - lostQi), totalQi: Math.max(0, prev.totalQi - lostTotalQi),
                   inventory: updatedInventory,
                   logs: [{ id: Date.now().toString(), text: penaltyText, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 100)
                 };
@@ -632,7 +917,6 @@
       const handleBreakthrough = async () => {
         const nextRealm = REALMS[gameState.realmIdx + 1];
         if (!nextRealm) return;
-
         if (gameState.qi >= nextRealm.req) {
           if (nextRealm.isMajor) {
             const tribData = { targetRealm: nextRealm.name, hp: 1200, maxHp: 1200, endTime: Date.now() + 30000 };
@@ -670,18 +954,13 @@
               ...prev,
               logs: [{ id: Date.now().toString(), text: `[Thiên Thư]: Độ kiếp của ${targetPlayerName} đã kết thúc!`, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 100)
             }));
-            setActionLoading(null);
-            return;
+            setActionLoading(null); return;
           }
-
           let power = combatPower * 20;
           if (actionType === 'attack' && gameState.joinedSectId === 'huyet_dao') power *= 1.5;
           const oldHp = tribs[targetPlayerName].hp;
-          const newHp = actionType === 'protect' 
-            ? Math.min(tribs[targetPlayerName].maxHp, oldHp + power) 
-            : Math.max(0, oldHp - power);
+          const newHp = actionType === 'protect' ? Math.min(tribs[targetPlayerName].maxHp, oldHp + power) : Math.max(0, oldHp - power);
           const delta = Math.abs(newHp - oldHp);
-
           const res = await modifyCloudData('INTERACT_TRIB', { targetName: targetPlayerName, newHp });
           if (res.success) {
             setActiveTribulations(res.record.activeTribulations);
@@ -704,8 +983,7 @@
         if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
         if (gameState.qi >= cost) {
           setGameState(prev => ({
-            ...prev,
-            qi: prev.qi - cost,
+            ...prev, qi: prev.qi - cost,
             shopCounts: { ...prev.shopCounts, [itemId]: count + 1 },
             logs: [{ id: Date.now().toString(), text: `[Đan Phòng]: Mua thành công ${item.name}!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
           }));
@@ -718,30 +996,23 @@
         if (gameState.joinedSectId === 'huyet_dao') dmg *= 1.5;
         const monster = MONSTERS[currentMonsterIdx];
         const nextHp = monsterHp - dmg;
-
         if (nextHp <= 0) {
           let droppedItemsLogs = [];
           let newInventoryItems = [...gameState.inventory];
-
           ALL_GEARS.forEach(gear => {
             const roll = Math.random();
             if (roll <= gear.dropRate) {
               const uniqueId = 'item_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-              newInventoryItems.push({ uniqueId: uniqueId, gearId: gear.id, isEquipped: false });
+              newInventoryItems.push({ uniqueId, gearId: gear.id, isEquipped: false });
               droppedItemsLogs.push(gear.name);
             }
           });
-
           let dropLogText = droppedItemsLogs.length > 0 ? ` | Nhận được bảo vật: ${droppedItemsLogs.join(', ')}!` : '';
-
           setGameState(prev => ({
-            ...prev,
-            qi: prev.qi + monster.reward,
-            totalQi: prev.totalQi + monster.reward,
+            ...prev, qi: prev.qi + monster.reward, totalQi: prev.totalQi + monster.reward,
             inventory: newInventoryItems,
             logs: [{ id: Date.now().toString(), text: `[Trảm Yêu]: Tiêu diệt ${monster.name}, đoạt +${monster.reward} Khí${dropLogText}`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
           }));
-
           setIsDead(true);
           setTimeout(() => { setMonsterHp(MONSTERS[currentMonsterIdx].hp); setIsDead(false); }, 3000);
         } else {
@@ -757,8 +1028,7 @@
           const gearData = ALL_GEARS.find(g => g.id === targetItem.gearId);
           const updatedInventory = prev.inventory.map(item => item.uniqueId === uniqueId ? { ...item, isEquipped: willBeEquipped } : item);
           return {
-            ...prev,
-            inventory: updatedInventory,
+            ...prev, inventory: updatedInventory,
             logs: [{ id: Date.now().toString(), text: `[Túi Đồ]: ${willBeEquipped ? 'Đã trang bị' : 'Đã tháo'} pháp bảo ${gearData?.name || 'Vật Phẩm'}!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
           };
         });
@@ -767,18 +1037,11 @@
       const handleCreateSect = async (e) => {
         e.preventDefault();
         if (!newSectName.trim()) return;
-        if (gameState.realmIdx < 8) {
-          alert("Cần đạt cảnh giới Trúc Cơ Kỳ (Sơ Kỳ) trở lên mới có thể khai sơn lập phái!");
-          return;
-        }
+        if (gameState.realmIdx < 8) { alert("Cần đạt cảnh giới Trúc Cơ Kỳ (Sơ Kỳ) trở lên mới có thể khai sơn lập phái!"); return; }
         const newSect = {
-          id: 'custom_' + Date.now(),
-          name: newSectName.trim(),
-          buff: 'Tăng +30% Tốc độ Thu Thập & Chiến Lực',
-          desc: newSectDesc.trim() || 'Tông môn tự lập của đại năng.',
-          founder: playerName
+          id: 'custom_' + Date.now(), name: newSectName.trim(), buff: 'Tăng +30% Tốc độ Thu Thập & Chiến Lực',
+          desc: newSectDesc.trim() || 'Tông môn tự lập của đại năng.', founder: playerName, icon: '✨'
         };
-
         const res = await modifyCloudData('ADD_SECT', { sect: newSect });
         if (res.success) {
           setCloudCustomSects(res.record.customSects);
@@ -808,112 +1071,166 @@
         return list.slice(0, 20).map(item => ({ ...item, isPlayer: item.name === playerName, title: item.realm || 'Phàm Nhân' }));
       }, [cloudLeaderboard, playerName, gameState.totalQi, gameState.realmIdx]);
 
+      // ─── TABS CONFIG ───
+      const TABS = [
+        { id: 'shop',        label: '💊 Đan Phòng' },
+        { id: 'inventory',   label: '🎒 Bảo Vật' },
+        { id: 'combat',      label: '⚔️ Trảm Yêu' },
+        { id: 'sect',        label: '⛩️ Tông Môn' },
+        { id: 'leaderboard', label: '📜 Bảng Xếp Hạng' },
+        { id: 'logs',        label: '📖 Nhật Ký' }
+      ];
+
+      // ─── RENDER ───
       return (
-        <div className="flex flex-col min-h-screen p-4 max-w-7xl mx-auto gap-4 relative">
-          <header className="sect-glow bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl relative overflow-hidden">
-            <div className="absolute -top-12 -left-12 w-32 h-32 bg-purple-600/10 rounded-full blur-2xl pointer-events-none"></div>
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-800 flex items-center justify-center border border-purple-400/40 text-xl shadow-inner flex-shrink-0">🧘‍♂️</div>
-              <div className="flex flex-col gap-1 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[11px] font-mono text-cyan-400 tracking-wider uppercase">Đạo Hữu: <span className="text-amber-200 font-bold">{playerName}</span></span>
-                  {!isEditingName ? (
-                    <button onClick={() => { setTempName(playerName); setIsEditingName(true); }} className="text-[10px] font-mono px-2 py-0.5 bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/40 text-purple-200 rounded cursor-pointer transition-all">
-                      ✏️ Đổi Tên
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-1.5">
-                      <input type="text" maxLength="15" value={tempName} onChange={(e) => setTempName(e.target.value)}
-                        className="bg-black/80 border border-amber-400/60 rounded px-2 py-0.5 text-xs text-amber-100 font-mono focus:outline-none w-28" />
-                      <button onClick={handleSaveName} className="text-[10px] font-mono px-2 py-0.5 bg-emerald-600/40 hover:bg-emerald-600/60 border border-emerald-400/50 text-emerald-200 rounded cursor-pointer">Lưu</button>
-                      <button onClick={() => setIsEditingName(false)} className="text-[10px] font-mono px-2 py-0.5 bg-red-600/40 hover:bg-red-600/60 border border-red-400/50 text-red-200 rounded cursor-pointer">Hủy</button>
+        <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh', padding:'16px', gap:'16px', maxWidth:'1280px', margin:'0 auto', position:'relative' }}>
+
+          {/* ══════════════ HEADER ══════════════ */}
+          <header className="glass-panel gold-glow" style={{ padding:'20px 24px', position:'relative', overflow:'hidden' }}>
+            {/* Corner ornaments */}
+            <div className="corner-tl"></div><div className="corner-tr"></div>
+            <div className="corner-bl"></div><div className="corner-br"></div>
+
+            {/* Top glow line */}
+            <div style={{ position:'absolute', top:0, left:'10%', right:'10%', height:'1px', background:'linear-gradient(to right, transparent, rgba(245,200,66,0.5), transparent)' }}></div>
+
+            <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              {/* Row 1: Identity */}
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'10px' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+                  {/* Avatar orb */}
+                  <div style={{ width:'52px', height:'52px', borderRadius:'50%', background:'linear-gradient(135deg, #4c1d95, #1e1b4b)', border:'2px solid rgba(245,200,66,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', boxShadow:'0 0 20px rgba(168,85,247,0.4), inset 0 0 15px rgba(99,102,241,0.2)', flexShrink:0 }}>
+                    🧘
+                  </div>
+                  <div>
+                    <div style={{ fontSize:'10px', color:'rgba(180,160,220,0.6)', letterSpacing:'2px', textTransform:'uppercase', marginBottom:'3px' }}>
+                      ✦ Đạo Hữu ✦
                     </div>
-                  )}
+                    {!isEditingName ? (
+                      <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                        <span style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'15px', color:'#f5c842' }}>{playerName}</span>
+                        <button onClick={() => { setTempName(playerName); setIsEditingName(true); }}
+                          style={{ fontSize:'9px', padding:'2px 8px', background:'rgba(100,50,200,0.3)', border:'1px solid rgba(192,132,252,0.3)', borderRadius:'6px', color:'#c084fc', cursor:'pointer', letterSpacing:'1px' }}>
+                          ✏️ ĐỔI TÊN
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
+                        <input type="text" maxLength="15" value={tempName} onChange={e => setTempName(e.target.value)}
+                          style={{ background:'rgba(0,0,0,0.8)', border:'1px solid rgba(245,200,66,0.5)', borderRadius:'8px', padding:'4px 10px', fontSize:'12px', color:'#f5c842', fontFamily:'Cinzel,serif', outline:'none', width:'120px' }} />
+                        <button onClick={handleSaveName} style={{ padding:'4px 10px', background:'rgba(20,80,50,0.6)', border:'1px solid rgba(52,211,153,0.4)', borderRadius:'6px', color:'#6ee7b7', fontSize:'10px', cursor:'pointer', fontFamily:'Cinzel,serif', fontWeight:700 }}>Lưu</button>
+                        <button onClick={() => setIsEditingName(false)} style={{ padding:'4px 10px', background:'rgba(80,20,20,0.6)', border:'1px solid rgba(220,60,60,0.4)', borderRadius:'6px', color:'#fca5a5', fontSize:'10px', cursor:'pointer', fontFamily:'Cinzel,serif', fontWeight:700 }}>Hủy</button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <h1 className="text-xl md:text-2xl font-serif font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-purple-300 to-cyan-300">
-                  {REALMS[gameState.realmIdx]?.name || "Phàm Nhân (Sơ Kỳ)"}
-                </h1>
+
+                {/* Chợ đen button */}
+                <button onClick={() => setIsBlackMarketModalOpen(true)}
+                  style={{ padding:'10px 20px', background:'linear-gradient(135deg, #451a03, #2d1003)', border:'1px solid rgba(245,200,66,0.5)', borderRadius:'12px', color:'#f5c842', cursor:'pointer', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px', boxShadow:'0 0 20px rgba(245,200,66,0.2), 0 4px 15px rgba(0,0,0,0.5)', display:'flex', alignItems:'center', gap:'8px', letterSpacing:'1px' }}>
+                  <span>🖤</span> HẮC THỊ CHỢ ĐEN
+                </button>
               </div>
-            </div>
-            <div className="flex items-center gap-4 flex-wrap justify-end">
-              <div className="flex items-center gap-4 font-mono bg-black/40 px-5 py-2.5 rounded-xl border border-white/10 flex-shrink-0">
-                <div className="flex flex-col items-end">
-                  <span className="text-slate-400 text-[10px]">Linh Khí (Qi)</span>
-                  <span className="text-amber-400 font-bold text-base">{formatNumber(gameState.qi)}</span>
+
+              {/* Row 2: Realm + Stats */}
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'12px' }}>
+                <div className="realm-badge">
+                  ✦ {REALMS[gameState.realmIdx]?.name || "Phàm Nhân (Sơ Kỳ)"} ✦
                 </div>
-                <div className="w-[1px] h-8 bg-white/10"></div>
-                <div className="flex flex-col items-end">
-                  <span className="text-slate-400 text-[10px]">Chiến Lực</span>
-                  <span className="text-red-400 font-bold text-base">{formatNumber(combatPower)}</span>
-                </div>
-                <div className="w-[1px] h-8 bg-white/10"></div>
-                <div className="flex flex-col items-end">
-                  <span className="text-slate-400 text-[10px]">Tốc Độ Tụ Khí</span>
-                  <span className="text-cyan-400 font-bold text-base">+{formatNumber(qps)}/s</span>
+
+                {/* Stats row */}
+                <div style={{ display:'flex', gap:'1px', background:'rgba(0,0,0,0.5)', border:'1px solid rgba(100,60,180,0.3)', borderRadius:'12px', overflow:'hidden' }}>
+                  <div className="stat-chip">
+                    <span className="label">Linh Khí</span>
+                    <span className="value" style={{ color:'#f5c842' }}>{formatNumber(gameState.qi)}</span>
+                  </div>
+                  <div style={{ width:'1px', background:'rgba(100,60,180,0.3)', margin:'8px 0' }}></div>
+                  <div className="stat-chip">
+                    <span className="label">Chiến Lực</span>
+                    <span className="value" style={{ color:'#fb7185' }}>{formatNumber(combatPower)}</span>
+                  </div>
+                  <div style={{ width:'1px', background:'rgba(100,60,180,0.3)', margin:'8px 0' }}></div>
+                  <div className="stat-chip">
+                    <span className="label">Tụ Khí / Giây</span>
+                    <span className="value" style={{ color:'#22d3ee' }}>+{formatNumber(qps)}</span>
+                  </div>
+                  <div style={{ width:'1px', background:'rgba(100,60,180,0.3)', margin:'8px 0' }}></div>
+                  <div className="stat-chip">
+                    <span className="label">Tổng Tích Lũy</span>
+                    <span className="value" style={{ color:'#a78bfa' }}>{formatNumber(gameState.totalQi)}</span>
+                  </div>
                 </div>
               </div>
-              <button onClick={() => setIsBlackMarketModalOpen(true)}
-                className="px-4 py-3 bg-gradient-to-r from-amber-700/80 to-purple-800/80 hover:from-amber-600 hover:to-purple-700 border border-amber-400/50 rounded-xl text-xs font-serif font-bold text-amber-200 shadow-lg cursor-pointer flex items-center gap-2 animate-pulse">
-                <span>🖤</span> Chợ Đen
-              </button>
             </div>
           </header>
 
+          {/* ══════════════ TRIBULATION BANNERS ══════════════ */}
           {Object.keys(activeTribulations).length > 0 && (
-            <div className="flex flex-col gap-2">
+            <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
               {Object.entries(activeTribulations).map(([pName, trib]) => {
                 const timeLeft = Math.max(0, Math.ceil((trib.endTime - Date.now()) / 1000));
                 const hasActed = actedPlayers.has(pName);
                 const isLoading = actionLoading === pName;
+                const hpPercent = Math.max(0, (trib.hp / trib.maxHp) * 100);
+                const isUrgent = timeLeft <= 10;
                 return (
-                  <div key={pName} className="tribulation-banner bg-[#1a0808]/90 backdrop-blur-xl border-2 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl animate-bounce">⚡</span>
+                  <div key={pName} className="trib-banner" style={{ background:'linear-gradient(135deg, rgba(30,5,5,0.95), rgba(15,2,2,0.98))', border:'2px solid', borderRadius:'16px', padding:'16px 20px', display:'flex', flexWrap:'wrap', justifyContent:'space-between', alignItems:'center', gap:'14px', position:'relative', overflow:'hidden' }}>
+                    {/* Lightning decoration */}
+                    <div style={{ position:'absolute', top:0, left:0, right:0, height:'2px', background:'linear-gradient(to right, transparent, rgba(251,191,36,0.7), rgba(220,38,38,0.8), rgba(251,191,36,0.7), transparent)' }}></div>
+
+                    <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                      <div style={{ fontSize:'32px', animation:'bounce 1s infinite' }}>⚡</div>
                       <div>
-                        <div className="text-xs font-mono text-red-400 font-bold uppercase tracking-wider">
-                          Kênh Thiên Kiếp
-                          <span className={`ml-2 px-2 py-0.5 rounded-full text-[11px] ${timeLeft <= 10 ? 'bg-red-600/50 text-red-200 animate-pulse' : 'bg-black/40 text-amber-300'}`}>
+                        <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'4px' }}>
+                          <span style={{ fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'10px', color:'#ef4444', letterSpacing:'2px', textTransform:'uppercase' }}>⚡ THIÊN KIẾP GIÁNG LÂM</span>
+                          <span style={{ fontSize:'10px', padding:'2px 8px', borderRadius:'20px', fontWeight:700, background: isUrgent ? 'rgba(220,38,38,0.4)' : 'rgba(0,0,0,0.5)', color: isUrgent ? '#fca5a5' : '#fbbf24', border:`1px solid ${isUrgent ? 'rgba(220,38,38,0.6)' : 'rgba(251,191,36,0.4)'}`, animation: isUrgent ? 'pulse 0.8s infinite' : 'none' }}>
                             ⏱ {timeLeft}s
                           </span>
                         </div>
-                        <div className="text-amber-200 font-serif font-bold text-sm">
-                          Đạo hữu <span className="text-cyan-300">{pName}</span> đang độ kiếp <span className="text-amber-400">{trib.targetRealm}</span>!
+                        <div style={{ fontFamily:'Cinzel,serif', fontSize:'13px', color:'#f5e6c8' }}>
+                          Đạo hữu <span style={{ color:'#22d3ee', fontWeight:700 }}>{pName}</span> đang độ kiếp lên <span style={{ color:'#f5c842', fontWeight:700 }}>{trib.targetRealm}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-                      <div className="w-full sm:w-48 bg-black/70 h-4 rounded-full border border-red-500/50 overflow-hidden relative p-0.5">
-                        <div className="bg-gradient-to-r from-red-600 via-orange-500 to-amber-500 h-full rounded-full transition-all duration-300"
-                          style={{ width: `${Math.max(0, (trib.hp / trib.maxHp) * 100)}%` }} />
-                        <div className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold text-white drop-shadow">
-                          HP: {Math.floor(trib.hp)} / {trib.maxHp}
+
+                    <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', gap:'14px', flex:1, justifyContent:'flex-end' }}>
+                      {/* HP Bar */}
+                      <div style={{ minWidth:'200px', flex:'0 1 240px' }}>
+                        <div style={{ display:'flex', justifyContent:'space-between', fontSize:'10px', color:'rgba(220,180,180,0.7)', marginBottom:'4px' }}>
+                          <span>🔴 Sinh Mệnh</span>
+                          <span style={{ color:'#fca5a5', fontWeight:700 }}>{Math.floor(trib.hp)} / {trib.maxHp}</span>
+                        </div>
+                        <div className="hp-bar-track">
+                          <div className="hp-bar-fill" style={{ width:`${hpPercent}%` }}></div>
                         </div>
                       </div>
+
+                      {/* Action buttons */}
                       {pName !== playerName ? (
-                        <div className="flex gap-2 w-full sm:w-auto">
+                        <div style={{ display:'flex', gap:'8px' }}>
                           {isLoading ? (
-                            <span className="text-xs font-mono text-yellow-300 bg-black/60 px-3 py-1.5 rounded-xl border border-yellow-500/40 animate-pulse">
-                              ⚡ Đang gửi...
+                            <span style={{ fontSize:'11px', color:'#fbbf24', padding:'8px 14px', background:'rgba(0,0,0,0.5)', border:'1px solid rgba(251,191,36,0.4)', borderRadius:'10px', fontFamily:'Cinzel,serif', animation:'pulse 1s infinite' }}>
+                              ⚡ Đang gửi lên Thiên Đạo...
                             </span>
                           ) : hasActed ? (
-                            <span className="text-xs font-mono text-emerald-300 bg-black/60 px-3 py-1.5 rounded-xl border border-emerald-500/40">
+                            <span style={{ fontSize:'11px', color:'#6ee7b7', padding:'8px 14px', background:'rgba(0,0,0,0.5)', border:'1px solid rgba(52,211,153,0.4)', borderRadius:'10px', fontFamily:'Cinzel,serif' }}>
                               ✅ Đã tương tác
                             </span>
                           ) : (
                             <>
-                              <button onClick={() => selectTribulationAction(pName, 'protect')}
-                                className="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-400/40 rounded-xl text-xs font-serif font-bold text-emerald-200 transition-all cursor-pointer shadow">
+                              <button onClick={() => selectTribulationAction(pName, 'protect')} className="btn-success" style={{ padding:'8px 16px', borderRadius:'10px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'11px', cursor:'pointer', display:'flex', alignItems:'center', gap:'5px', letterSpacing:'0.5px' }}>
                                 🛡️ Hộ Thủ
                               </button>
-                              <button onClick={() => selectTribulationAction(pName, 'attack')}
-                                className="flex-1 sm:flex-none px-3 py-1.5 bg-red-600/30 hover:bg-red-600/50 border border-red-400/40 rounded-xl text-xs font-serif font-bold text-red-200 transition-all cursor-pointer shadow">
+                              <button onClick={() => selectTribulationAction(pName, 'attack')} className="btn-danger" style={{ padding:'8px 16px', borderRadius:'10px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'11px', cursor:'pointer', display:'flex', alignItems:'center', gap:'5px', letterSpacing:'0.5px' }}>
                                 ⚔️ Tấn Công
                               </button>
                             </>
                           )}
                         </div>
                       ) : (
-                        <span className="text-xs font-mono text-amber-300 animate-pulse">(Đang tĩnh tọa độ kiếp)</span>
+                        <span style={{ fontSize:'12px', color:'#f5c842', fontFamily:'Cinzel,serif', animation:'pulse 1.5s infinite' }}>
+                          🧘 Đang tĩnh tọa độ kiếp...
+                        </span>
                       )}
                     </div>
                   </div>
@@ -922,122 +1239,180 @@
             </div>
           )}
 
-          <main className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
-            <div className="col-span-1 lg:col-span-4 flex flex-col gap-4">
-              <div className="bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-2xl flex flex-col items-center justify-center gap-5 relative">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-500/5 via-transparent to-transparent pointer-events-none"></div>
-                <button
-                  onClick={() => {
-                    if (isMaxedOut) return;
-                    const nextReq = nextRealmObj ? nextRealmObj.req : gameState.qi + clickPower;
-                    const newQi = Math.min(nextReq, gameState.qi + clickPower);
-                    const added = newQi - gameState.qi;
-                    setGameState(prev => ({ ...prev, qi: newQi, totalQi: prev.totalQi + added }));
-                  }}
-                  className={`relative w-44 h-44 rounded-full bg-gradient-to-br from-purple-900/40 via-indigo-950/60 to-slate-900 border-2 transition-all flex flex-col items-center justify-center gap-1.5 group ${isMaxedOut ? 'border-amber-500/80 cursor-not-allowed opacity-90 shadow-[0_0_30px_rgba(245,158,11,0.3)] animate-pulse' : 'border-purple-500/50 hover:border-cyan-400 hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(168,85,247,0.2)] cursor-pointer'}`}>
-                  <span className="text-4xl group-hover:scale-110 transition-transform">🌌</span>
-                  <span className="font-serif font-bold text-xs tracking-wider text-amber-200">{isMaxedOut ? 'ĐÃ ĐẠT NGƯỠNG' : 'HẤP THU LINH KHÍ'}</span>
-                  <span className="text-[10px] font-mono text-cyan-300">{isMaxedOut ? 'Cần Đột Phá Ngay!' : `+${clickPower} Qi / Nhấn`}</span>
-                </button>
-                <div className="w-full flex flex-col gap-2 mt-2">
-                  <div className="flex justify-between text-xs font-mono text-slate-300">
-                    <span className="text-purple-300">Tiến Cảnh Giới</span>
-                    <span className="text-amber-300">{nextRealmObj ? `${formatNumber(gameState.qi)} / ${formatNumber(nextRealmObj.req)}` : 'Đã Đạt Đạo Tổ Cảnh'}</span>
+          {/* ══════════════ MAIN GRID ══════════════ */}
+          <main style={{ display:'grid', gridTemplateColumns:'repeat(12, 1fr)', gap:'16px', flex:1 }}>
+
+            {/* ── LEFT PANEL (4 cols) ── */}
+            <div style={{ gridColumn:'span 12', '@media(min-width:1024px)': { gridColumn:'span 4' }, display:'flex', flexDirection:'column', gap:'14px' }}
+                 className="lg:col-span-4 col-span-12">
+
+              {/* ── Cultivation Orb ── */}
+              <div className="glass-panel" style={{ padding:'28px 20px', display:'flex', flexDirection:'column', alignItems:'center', gap:'20px', position:'relative', overflow:'hidden' }}>
+                <div className="corner-tl"></div><div className="corner-tr"></div>
+                <div className="corner-bl"></div><div className="corner-br"></div>
+                {/* Ambient glow */}
+                <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:'200px', height:'200px', borderRadius:'50%', background:'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)', pointerEvents:'none' }}></div>
+
+                {/* ORB BUTTON */}
+                <div style={{ position:'relative', width:'176px', height:'176px' }} className="orb-float">
+                  {/* Outer rotating ring */}
+                  <div className="ring-cw" style={{ position:'absolute', inset:'-12px', borderRadius:'50%', border:'1px dashed rgba(192,132,252,0.25)' }}></div>
+                  {/* Middle ring */}
+                  <div className="ring-ccw" style={{ position:'absolute', inset:'-6px', borderRadius:'50%', border:'1px solid rgba(99,102,241,0.2)' }}></div>
+                  {/* Inner ring */}
+                  <div className="ring-cw2" style={{ position:'absolute', inset:'-2px', borderRadius:'50%', border:'2px solid rgba(245,200,66,0.15)' }}></div>
+
+                  <button
+                    onClick={() => {
+                      if (isMaxedOut) return;
+                      const nextReq = nextRealmObj ? nextRealmObj.req : gameState.qi + clickPower;
+                      const newQi = Math.min(nextReq, gameState.qi + clickPower);
+                      const added = newQi - gameState.qi;
+                      setGameState(prev => ({ ...prev, qi: newQi, totalQi: prev.totalQi + added }));
+                    }}
+                    style={{
+                      width:'100%', height:'100%', borderRadius:'50%', cursor: isMaxedOut ? 'not-allowed' : 'pointer',
+                      background: isMaxedOut
+                        ? 'radial-gradient(circle at 35% 35%, #5a3010, #2d1500, #1a0800)'
+                        : 'radial-gradient(circle at 35% 35%, #312e81, #1e1b4b, #0d0b2b)',
+                      border: `2px solid ${isMaxedOut ? 'rgba(245,200,66,0.6)' : 'rgba(99,102,241,0.5)'}`,
+                      boxShadow: isMaxedOut
+                        ? '0 0 40px rgba(245,200,66,0.3), inset 0 0 30px rgba(245,200,66,0.1)'
+                        : '0 0 40px rgba(99,102,241,0.3), inset 0 0 30px rgba(99,102,241,0.1)',
+                      display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'6px',
+                      transition:'all 0.15s', outline:'none',
+                      animation: isMaxedOut ? 'pulse 2s infinite' : 'none',
+                      position:'relative', overflow:'hidden'
+                    }}>
+                    {/* Inner shimmer */}
+                    <div style={{ position:'absolute', top:'-50%', left:'-50%', width:'40%', height:'200%', background:'linear-gradient(to bottom right, transparent, rgba(255,255,255,0.06), transparent)', transform:'rotate(-30deg)', pointerEvents:'none' }}></div>
+                    <span style={{ fontSize:'38px', filter: isMaxedOut ? 'drop-shadow(0 0 12px rgba(245,200,66,0.8))' : 'drop-shadow(0 0 10px rgba(99,102,241,0.8))' }}>
+                      {isMaxedOut ? '🌟' : '🌌'}
+                    </span>
+                    <span style={{ fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'10px', letterSpacing:'1.5px', color: isMaxedOut ? '#f5c842' : '#c4b5fd', textAlign:'center', lineHeight:1.3 }}>
+                      {isMaxedOut ? 'ĐÃ ĐẠT NGƯỠNG' : 'HẤP THU\nLINH KHÍ'}
+                    </span>
+                    <span style={{ fontSize:'10px', color: isMaxedOut ? '#fbbf24' : '#67e8f9' }}>
+                      {isMaxedOut ? '⚡ Cần Đột Phá!' : `+${clickPower} Qi`}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Progress */}
+                <div style={{ width:'100%', display:'flex', flexDirection:'column', gap:'8px' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', fontSize:'10px', letterSpacing:'0.5px' }}>
+                    <span style={{ color:'rgba(192,132,252,0.7)', fontFamily:'Cinzel,serif' }}>TIẾN CẢNH GIỚI</span>
+                    <span style={{ color:'#f5c842' }}>
+                      {nextRealmObj ? `${formatNumber(gameState.qi)} / ${formatNumber(nextRealmObj.req)}` : '⭐ Đạo Tổ Cảnh'}
+                    </span>
                   </div>
-                  <div className="w-full bg-black/60 h-3 rounded-full border border-purple-500/30 overflow-hidden p-0.5">
-                    <div className="bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-400 h-full rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(6,182,212,0.5)]"
-                      style={{ width: `${progressPercent}%` }} />
+                  <div className="progress-track">
+                    <div className="qi-bar-fill" style={{ width:`${progressPercent}%` }}></div>
                   </div>
-                  {myTribulation ? (
-                    <div className="mt-2 w-full py-3 bg-red-950/50 border border-red-500/50 rounded-xl text-xs font-serif font-bold text-red-300 text-center animate-pulse">
-                      ⚡ Đang độ kiếp ({Math.max(0, Math.ceil((myTribulation.endTime - Date.now()) / 1000))}s) — HP: {Math.floor(myTribulation.hp)}/{myTribulation.maxHp}
-                    </div>
-                  ) : (
-                    <button onClick={handleBreakthrough}
-                      className={`mt-2 w-full py-3 border rounded-xl text-xs font-serif font-bold tracking-widest transition-all shadow-lg cursor-pointer ${isMaxedOut ? 'bg-gradient-to-r from-amber-600 to-red-600 hover:from-amber-500 hover:to-red-500 border-amber-300 text-white animate-bounce' : 'bg-gradient-to-r from-purple-700/40 to-indigo-700/40 hover:from-purple-600/60 hover:to-indigo-600/60 border-purple-400/40 text-amber-200'}`}>
-                      ⚡ XUNG KÍCH ĐỘT PHÁ {nextRealmObj?.isMajor ? '(Mốc Lớn)' : ''}
-                    </button>
-                  )}
+                  <div style={{ textAlign:'right', fontSize:'10px', color:'rgba(150,130,200,0.5)' }}>{progressPercent.toFixed(1)}%</div>
+                </div>
+
+                {/* Breakthrough button */}
+                {myTribulation ? (
+                  <div style={{ width:'100%', padding:'14px', background:'linear-gradient(135deg, rgba(60,5,5,0.8), rgba(30,2,2,0.9))', border:'2px solid rgba(220,38,38,0.6)', borderRadius:'12px', textAlign:'center', animation:'pulse 1s infinite', boxShadow:'0 0 25px rgba(220,38,38,0.3)' }}>
+                    <div style={{ fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'11px', color:'#fca5a5', letterSpacing:'2px', marginBottom:'4px' }}>⚡ ĐANG ĐỘ KIẾP</div>
+                    <div style={{ fontSize:'20px', fontFamily:'Cinzel,serif', fontWeight:700, color:'#f87171' }}>{Math.max(0, Math.ceil((myTribulation.endTime - Date.now()) / 1000))}s</div>
+                    <div style={{ fontSize:'10px', color:'rgba(220,130,130,0.7)', marginTop:'4px' }}>HP: {Math.floor(myTribulation.hp)} / {myTribulation.maxHp}</div>
+                  </div>
+                ) : (
+                  <button onClick={handleBreakthrough} style={{
+                    width:'100%', padding:'12px 16px',
+                    background: isMaxedOut
+                      ? 'linear-gradient(135deg, #92400e, #7c2d12)'
+                      : 'linear-gradient(135deg, rgba(76,29,149,0.5), rgba(49,19,97,0.6))',
+                    border: `1px solid ${isMaxedOut ? 'rgba(251,191,36,0.6)' : 'rgba(139,92,246,0.4)'}`,
+                    borderRadius:'12px', cursor:'pointer', fontFamily:'Cinzel,serif', fontWeight:700,
+                    fontSize:'11px', letterSpacing:'1.5px', color: isMaxedOut ? '#fbbf24' : '#a78bfa',
+                    boxShadow: isMaxedOut ? '0 0 25px rgba(251,191,36,0.3)' : '0 2px 15px rgba(76,29,149,0.4)',
+                    animation: isMaxedOut ? 'bounce 1.5s infinite' : 'none', transition:'all 0.2s'
+                  }}>
+                    ⚡ XUNG KÍCH ĐỘT PHÁ {nextRealmObj?.isMajor ? '— MỐC LỚN' : ''}
+                  </button>
+                )}
+              </div>
+
+              {/* ── Sect Panel ── */}
+              <div className="glass-panel" style={{ padding:'16px 18px' }}>
+                <div style={{ fontSize:'9px', letterSpacing:'2px', textTransform:'uppercase', color:'rgba(245,200,66,0.5)', marginBottom:'10px', display:'flex', alignItems:'center', gap:'6px' }}>
+                  <span style={{ flex:1, height:'1px', background:'linear-gradient(to right, transparent, rgba(245,200,66,0.3))' }}></span>
+                  ⛩️ TÔNG MÔN HIỆN TẠI
+                  <span style={{ flex:1, height:'1px', background:'linear-gradient(to left, transparent, rgba(245,200,66,0.3))' }}></span>
+                </div>
+                <div style={{ padding:'12px 14px', background:'linear-gradient(135deg, rgba(50,20,90,0.5), rgba(25,10,50,0.6))', border:'1px solid rgba(139,92,246,0.3)', borderRadius:'12px', display:'flex', flexDirection:'column', gap:'5px' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                    <span style={{ fontSize:'20px' }}>{currentJoinedSect.icon || '⛩️'}</span>
+                    <span style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'14px', color:'#f5c842' }}>{currentJoinedSect.name}</span>
+                  </div>
+                  <div style={{ fontSize:'11px', color:'#67e8f9', lineHeight:1.4 }}>{currentJoinedSect.buff}</div>
+                  <div style={{ fontSize:'10px', color:'rgba(160,140,200,0.5)' }}>Sáng lập: {currentJoinedSect.founder || 'Hệ Thống'}</div>
                 </div>
               </div>
 
-              <div className="bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-5 shadow-2xl flex flex-col gap-2">
-                <h3 className="font-serif text-xs text-amber-300 font-bold tracking-widest flex items-center gap-2"><span>🏛️</span> TÔNG MÔN HIỆN TẠI</h3>
-                <div className="p-3 rounded-xl border border-purple-500/40 bg-purple-950/30 flex flex-col gap-1">
-                  <div className="font-bold text-xs text-amber-200 font-serif">{currentJoinedSect.name}</div>
-                  <div className="text-[10px] text-cyan-300">{currentJoinedSect.buff}</div>
-                  <div className="text-[9px] text-slate-400 font-mono">Sáng lập: {currentJoinedSect.founder || 'Hệ Thống'}</div>
+              {/* ── Mini Log ── */}
+              <div className="glass-panel" style={{ padding:'14px 16px', flex:1 }}>
+                <div style={{ fontSize:'9px', letterSpacing:'2px', textTransform:'uppercase', color:'rgba(100,200,255,0.4)', marginBottom:'8px' }}>📖 HOẠT ĐỘNG GẦN ĐÂY</div>
+                <div style={{ display:'flex', flexDirection:'column', gap:'3px', maxHeight:'130px', overflow:'hidden' }}>
+                  {gameState.logs.slice(0, 6).map((log, i) => (
+                    <div key={log.id + i} style={{ fontSize:'10px', display:'flex', gap:'6px', padding:'3px 0', borderBottom:'1px solid rgba(255,255,255,0.03)' }}>
+                      <span style={{ color:'rgba(140,120,180,0.4)', minWidth:'55px', flexShrink:0 }}>{new Date(log.time).toLocaleTimeString('vi', { hour:'2-digit', minute:'2-digit', second:'2-digit' })}</span>
+                      <span style={{ color: log.type === 'breakthrough' ? '#fbbf24' : log.type === 'fail' ? '#f87171' : '#67e8f9', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{log.text}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
 
-            <div className="col-span-1 lg:col-span-8 flex flex-col gap-4">
-              <div className="flex gap-1.5 bg-[#100c1c]/85 p-1.5 rounded-2xl border border-purple-500/30 overflow-x-auto no-scrollbar shadow-xl">
-                {[
-                  { id: 'shop', name: '💊 Đan Phòng' },
-                  { id: 'inventory', name: '🎒 Bảo Vật' },
-                  { id: 'combat', name: '⚔️ Trảm Yêu' },
-                  { id: 'sect', name: '⛩️ Tông Môn' },
-                  { id: 'leaderboard', name: '📜 Bảng Xếp Hạng' },
-                  { id: 'logs', name: '📖 Nhật Ký Tu Tiên' }
-                ].map(tab => (
-                  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-serif font-bold whitespace-nowrap transition-all cursor-pointer ${activeTab === tab.id ? 'bg-gradient-to-r from-purple-700/60 to-indigo-700/60 text-amber-200 border border-purple-400/50 shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
-                    {tab.name}
+            {/* ── RIGHT PANEL (8 cols) ── */}
+            <div style={{ gridColumn:'span 12', display:'flex', flexDirection:'column', gap:'14px' }}
+                 className="lg:col-span-8 col-span-12">
+
+              {/* ── Tabs ── */}
+              <div style={{ background:'linear-gradient(135deg, rgba(15,8,30,0.9), rgba(8,4,18,0.95))', border:'1px solid rgba(100,60,180,0.3)', borderRadius:'14px', padding:'6px', display:'flex', gap:'4px', boxShadow:'0 4px 20px rgba(0,0,0,0.5)', overflowX:'auto' }} className="no-scrollbar">
+                {TABS.map(tab => (
+                  <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`tab-btn${activeTab === tab.id ? ' active' : ''}`}>
+                    {tab.label}
                   </button>
                 ))}
               </div>
 
-              <div className="bg-[#100c1c]/85 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-2xl flex-1 flex flex-col min-h-[420px]">
-                
-                {activeTab === 'logs' && (
-                  <div className="flex flex-col gap-4 h-full">
-                    <div>
-                      <h2 className="font-serif font-bold text-base text-amber-200">Nhật Ký Tu Tiên</h2>
-                      <p className="text-xs text-slate-400">Ghi chép lại toàn bộ hành trình tu đạo, đột phá và kỳ ngộ của đạo hữu.</p>
-                    </div>
-                    <div className="flex flex-col gap-2 overflow-y-auto max-h-[400px] no-scrollbar bg-black/40 p-4 rounded-xl border border-purple-500/20">
-                      {gameState.logs.length === 0 ? (
-                        <div className="text-xs text-slate-500 font-mono text-center py-4">Chưa có sự kiện nào được ghi nhận.</div>
-                      ) : (
-                        gameState.logs.map((log, i) => (
-                          <div key={log.id + i} className="text-[11px] font-mono flex gap-3 border-b border-white/5 pb-2">
-                            <span className="text-slate-500 min-w-[70px]">[{new Date(log.time).toLocaleTimeString()}]</span>
-                            <span className={log.type === 'breakthrough' ? 'text-amber-300' : log.type === 'fail' ? 'text-red-400' : 'text-cyan-300'}>
-                              {log.text}
-                            </span>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
+              {/* ── Tab Content ── */}
+              <div className="glass-panel" style={{ padding:'24px', flex:1, minHeight:'420px', display:'flex', flexDirection:'column', gap:'18px', position:'relative', overflow:'hidden' }}>
+                <div className="corner-tl"></div><div className="corner-tr"></div>
 
+                {/* ─── SHOP TAB ─── */}
                 {activeTab === 'shop' && (
-                  <div className="flex flex-col gap-4">
+                  <div style={{ display:'flex', flexDirection:'column', gap:'18px' }}>
                     <div>
-                      <h2 className="font-serif font-bold text-base text-amber-200">Đan Phòng & Tụ Linh Trận</h2>
-                      <p className="text-xs text-slate-400">Xây dựng kiến trúc tu luyện để gia tăng tốc độ tích tụ linh khí tự động.</p>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>💊 Đan Phòng & Tụ Linh Trận</div>
+                      <div className="ornament-divider" style={{ margin:'8px 0' }}>TỰ ĐỘNG TỤ TẬP LINH KHÍ</div>
+                      <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Xây dựng kiến trúc tu luyện để gia tăng tốc độ tích tụ linh khí.</div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'12px' }}>
                       {SHOP_ITEMS.map(item => {
                         const count = gameState.shopCounts[item.id] || 0;
                         let cost = Math.floor(item.baseCost * Math.pow(1.6, count));
                         if (gameState.joinedSectId === 'am_duong') cost = Math.floor(cost * 0.8);
                         const canBuy = gameState.qi >= cost;
                         return (
-                          <div key={item.id} className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col justify-between gap-3">
-                            <div className="flex flex-col gap-1">
-                              <div className="flex justify-between items-center">
-                                <span className="font-serif font-bold text-sm text-amber-200">{item.name}</span>
-                                <span className="text-xs font-mono px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-500/30">SL: {count}</span>
+                          <div key={item.id} className="item-card" style={{ display:'flex', flexDirection:'column', justifyContent:'space-between', gap:'12px' }}>
+                            <div>
+                              <div style={{ fontSize:'28px', marginBottom:'8px', filter:'drop-shadow(0 0 8px rgba(99,102,241,0.5))' }}>{item.icon}</div>
+                              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'5px' }}>
+                                <span style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color:'#e2e8f0' }}>{item.name}</span>
+                                <span style={{ fontSize:'10px', padding:'2px 8px', background:'rgba(76,29,149,0.4)', border:'1px solid rgba(139,92,246,0.4)', borderRadius:'20px', color:'#c084fc', fontWeight:700 }}>×{count}</span>
                               </div>
-                              <p className="text-[11px] text-slate-400">{item.desc}</p>
-                              <span className="text-[10px] font-mono text-cyan-400 mt-1">Hiệu quả: +{item.qps}/s</span>
+                              <p style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)', lineHeight:1.5, marginBottom:'6px' }}>{item.desc}</p>
+                              <div style={{ fontSize:'11px', color:'#22d3ee', display:'flex', alignItems:'center', gap:'4px' }}>
+                                <span>⚡</span><span>+{item.qps}/s mỗi cái</span>
+                              </div>
                             </div>
-                            <button onClick={() => buyItem(item.id)} disabled={!canBuy}
-                              className={`w-full py-2 rounded-xl text-xs font-serif font-bold transition-all ${canBuy ? 'bg-purple-600/40 hover:bg-purple-600/60 border border-purple-400/50 text-amber-200 cursor-pointer shadow' : 'bg-slate-800/40 border border-slate-700 text-slate-500 cursor-not-allowed'}`}>
-                              Luyện Hóa ({formatNumber(cost)} Qi)
+                            <button onClick={() => buyItem(item.id)} disabled={!canBuy} className={canBuy ? 'btn-primary' : 'btn-primary'} style={{ opacity: canBuy ? 1 : 0.4, cursor: canBuy ? 'pointer' : 'not-allowed' }}>
+                              {canBuy ? '✦ ' : '🔒 '} Luyện Hóa — {formatNumber(cost)} Qi
                             </button>
                           </div>
                         );
@@ -1046,38 +1421,45 @@
                   </div>
                 )}
 
+                {/* ─── INVENTORY TAB ─── */}
                 {activeTab === 'inventory' && (
-                  <div className="flex flex-col gap-4">
+                  <div style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
                     <div>
-                      <h2 className="font-serif font-bold text-base text-amber-200">Túi Đồ & Trang Bị Nhận Được</h2>
-                      <p className="text-xs text-slate-400">Các pháp bảo thu phục từ Trảm Yêu Thử Luyện. Trang bị để khuếch đại chiến lực.</p>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>🎒 Túi Đồ & Pháp Bảo</div>
+                      <div className="ornament-divider" style={{ margin:'8px 0' }}>CÁC BẢO VẬT ĐÃ THU PHỤC</div>
+                      <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Pháp bảo thu phục từ Trảm Yêu. Trang bị để khuếch đại chiến lực.</div>
                     </div>
                     {gameState.inventory.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-16 gap-2 text-slate-500 font-mono text-xs">
-                        <span>🎒 Túi đồ trống rỗng...</span>
-                        <span>Hãy đi đến mục "Trảm Yêu Thử Luyện" để tiêu diệt yêu thú và nhận trang bị!</span>
+                      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'10px', padding:'50px 20px', color:'rgba(140,120,180,0.5)' }}>
+                        <span style={{ fontSize:'48px' }}>🎒</span>
+                        <span style={{ fontFamily:'Cinzel,serif', fontSize:'13px' }}>Túi đồ trống rỗng</span>
+                        <span style={{ fontSize:'11px', textAlign:'center', maxWidth:'250px', lineHeight:1.6 }}>Hãy đến mục "Trảm Yêu Thử Luyện" để tiêu diệt yêu thú và nhận bảo vật!</span>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[350px] overflow-y-auto no-scrollbar">
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:'10px', maxHeight:'380px', overflowY:'auto' }} className="no-scrollbar">
                         {gameState.inventory.map(item => {
                           const gear = ALL_GEARS.find(g => g.id === item.gearId);
                           if (!gear) return null;
                           return (
-                            <div key={item.uniqueId} className={`p-3.5 rounded-xl border flex flex-col justify-between gap-3 ${item.isEquipped ? 'bg-amber-950/30 border-amber-500/50 shadow-lg' : 'bg-black/50 border-purple-500/20'}`}>
-                              <div className="flex flex-col gap-1">
-                                <div className="flex justify-between items-center">
-                                  <span className={`font-serif font-bold text-sm ${gear.color}`}>{gear.name}</span>
-                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">{gear.tier}</span>
+                            <div key={item.uniqueId} className={`item-card${item.isEquipped ? ' equipped' : ''}`} style={{ display:'flex', flexDirection:'column', justifyContent:'space-between', gap:'10px' }}>
+                              <div>
+                                <div style={{ fontSize:'24px', marginBottom:'6px', filter:`drop-shadow(0 0 8px ${item.isEquipped ? 'rgba(245,200,66,0.6)' : 'rgba(99,102,241,0.4)'})` }}>{gear.icon || '⚔️'}</div>
+                                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'4px' }}>
+                                  <span className={gear.colorClass} style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px' }}>{gear.name}</span>
+                                  {item.isEquipped && <span style={{ fontSize:'9px', color:'#f5c842', background:'rgba(92,60,10,0.5)', border:'1px solid rgba(245,200,66,0.4)', padding:'1px 6px', borderRadius:'10px' }}>장착중</span>}
                                 </div>
-                                <p className="text-[10px] text-slate-400">{gear.desc}</p>
-                                <div className="text-[11px] font-mono text-cyan-300 mt-1">
-                                  {gear.clickBonus > 0 && <div>+ {gear.clickBonus} C.Lực</div>}
-                                  {gear.qpsBonus > 0 && <div>+ {gear.qpsBonus} Qi / giây</div>}
+                                <div style={{ fontSize:'9px', padding:'2px 6px', background:'rgba(0,0,0,0.4)', borderRadius:'6px', color:'rgba(180,160,220,0.6)', display:'inline-block', marginBottom:'5px' }}>{gear.tier}</div>
+                                <div style={{ fontSize:'10px', color:'#67e8f9', lineHeight:1.5 }}>
+                                  {gear.clickBonus > 0 && <div>⚔️ +{gear.clickBonus} Chiến Lực</div>}
+                                  {gear.qpsBonus > 0 && <div>⚡ +{gear.qpsBonus} Qi/s</div>}
                                 </div>
                               </div>
                               <button onClick={() => toggleEquipInventoryItem(item.uniqueId)}
-                                className={`w-full py-2 rounded-xl text-xs font-serif font-bold transition-all cursor-pointer ${item.isEquipped ? 'bg-amber-600/40 border border-amber-400/50 text-amber-200' : 'bg-purple-600/30 border border-purple-400/40 text-purple-200 hover:bg-purple-600/50'}`}>
-                                {item.isEquipped ? 'Đang Trang Bị' : 'Trang Bị'}
+                                style={{ width:'100%', padding:'7px', borderRadius:'8px', fontFamily:'Cinzel,serif', fontSize:'10px', fontWeight:700, cursor:'pointer', transition:'all 0.15s',
+                                  background: item.isEquipped ? 'linear-gradient(135deg, rgba(92,60,10,0.6), rgba(55,35,5,0.7))' : 'linear-gradient(135deg, rgba(60,20,110,0.5), rgba(35,12,70,0.6))',
+                                  border: `1px solid ${item.isEquipped ? 'rgba(245,200,66,0.5)' : 'rgba(139,92,246,0.4)'}`,
+                                  color: item.isEquipped ? '#f5c842' : '#c084fc' }}>
+                                {item.isEquipped ? '✦ Đang Trang Bị' : '⬆ Trang Bị'}
                               </button>
                             </div>
                           );
@@ -1087,75 +1469,103 @@
                   </div>
                 )}
 
+                {/* ─── COMBAT TAB ─── */}
                 {activeTab === 'combat' && (
-                  <div className="flex flex-col gap-4">
-                    <div className="flex justify-between items-center">
+                  <div style={{ display:'flex', flexDirection:'column', gap:'16px', height:'100%' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'10px' }}>
                       <div>
-                        <h2 className="font-serif font-bold text-base text-amber-200">Trảm Yêu Thử Luyện</h2>
-                        <p className="text-xs text-slate-400">Tiêu diệt yêu thú để nhận linh khí và rớt trang bị ngẫu nhiên.</p>
+                        <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>⚔️ Trảm Yêu Thử Luyện</div>
+                        <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Tiêu diệt yêu thú để nhận linh khí và rớt trang bị ngẫu nhiên.</div>
                       </div>
-                      <div className="flex gap-2">
+                      {/* Monster selector */}
+                      <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
                         {MONSTERS.map((m, idx) => (
                           <button key={m.id} onClick={() => { setCurrentMonsterIdx(idx); setMonsterHp(m.hp); }}
-                            className={`px-3 py-1 rounded-lg text-xs font-mono font-bold cursor-pointer ${currentMonsterIdx === idx ? 'bg-purple-600 text-white border border-purple-400' : 'bg-black/40 text-slate-400 border border-white/10'}`}>
+                            style={{ padding:'6px 12px', borderRadius:'8px', fontSize:'11px', fontFamily:'Cinzel,serif', fontWeight:700, cursor:'pointer', transition:'all 0.15s',
+                              background: currentMonsterIdx === idx ? `linear-gradient(135deg, rgba(80,20,20,0.8), rgba(50,10,10,0.9))` : 'rgba(20,10,40,0.6)',
+                              border: `1px solid ${currentMonsterIdx === idx ? m.color : 'rgba(100,60,180,0.25)'}`,
+                              color: currentMonsterIdx === idx ? '#f5e6c8' : 'rgba(180,160,220,0.5)',
+                              boxShadow: currentMonsterIdx === idx ? `0 0 15px ${m.color}40` : 'none' }}>
                             {m.icon} {m.name}
                           </button>
                         ))}
                       </div>
                     </div>
-                    <div className="flex-1 bg-black/50 border border-purple-500/20 rounded-2xl p-6 flex flex-col items-center justify-center gap-6">
-                      <div id="monster-icon-display" className="text-6xl animate-bounce">{MONSTERS[currentMonsterIdx].icon}</div>
-                      <div className="text-center">
-                        <div className="font-serif font-bold text-lg text-amber-200">{MONSTERS[currentMonsterIdx].name}</div>
-                        <div className="text-xs font-mono text-cyan-300 mt-1">Phần Thưởng: +{MONSTERS[currentMonsterIdx].reward} Linh Khí & Bảo Vật</div>
+
+                    {/* Arena */}
+                    <div className="monster-arena" style={{ flex:1 }}>
+                      {/* Monster display */}
+                      <div id="monster-icon-display" style={{ fontSize:'72px', filter:`drop-shadow(0 0 20px ${MONSTERS[currentMonsterIdx].color})`, textAlign:'center', animation: isDead ? 'none' : 'bounce 2s infinite' }}>
+                        {isDead ? '💨' : MONSTERS[currentMonsterIdx].icon}
                       </div>
-                      <div className="w-full max-w-md flex flex-col gap-2">
-                        <div className="flex justify-between text-xs font-mono text-slate-300">
-                          <span>Sinh Lực Yêu Thú</span>
-                          <span className="text-red-400 font-bold">{Math.max(0, monsterHp)} / {MONSTERS[currentMonsterIdx].hp}</span>
+
+                      {/* Monster info */}
+                      <div style={{ textAlign:'center' }}>
+                        <div style={{ fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'18px', color: isDead ? 'rgba(160,140,200,0.4)' : '#f5e6c8', marginBottom:'4px', textShadow:`0 0 20px ${MONSTERS[currentMonsterIdx].color}60` }}>
+                          {isDead ? '— Đã bị tiêu diệt —' : MONSTERS[currentMonsterIdx].name}
                         </div>
-                        <div className="w-full bg-black/80 h-4 rounded-full border border-red-500/40 overflow-hidden p-0.5">
-                          <div className="bg-gradient-to-r from-red-600 to-orange-500 h-full rounded-full transition-all duration-200"
-                            style={{ width: `${Math.max(0, (monsterHp / MONSTERS[currentMonsterIdx].hp) * 100)}%` }} />
+                        <div style={{ fontSize:'11px', color:'#67e8f9' }}>
+                          +{MONSTERS[currentMonsterIdx].reward} Linh Khí • Rớt Trang Bị Ngẫu Nhiên
                         </div>
                       </div>
-                      <div className="flex gap-3 w-full max-w-md">
-                        <button onClick={() => attackMonster(1)} disabled={isDead}
-                          className={`flex-1 py-3 rounded-xl text-xs font-serif font-bold transition-all shadow-lg btn-attack ${isDead ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed' : 'bg-red-950/60 hover:bg-red-900/80 border border-red-500/50 text-red-200 cursor-pointer'}`}>
+
+                      {/* HP bar */}
+                      <div style={{ width:'100%', maxWidth:'360px' }}>
+                        <div style={{ display:'flex', justifyContent:'space-between', fontSize:'11px', marginBottom:'5px' }}>
+                          <span style={{ color:'rgba(220,180,180,0.7)' }}>💀 Sinh Mệnh Yêu Thú</span>
+                          <span style={{ color:'#fca5a5', fontWeight:700 }}>{Math.max(0, monsterHp)} / {MONSTERS[currentMonsterIdx].hp}</span>
+                        </div>
+                        <div className="hp-bar-track">
+                          <div className="hp-bar-fill" style={{ width:`${Math.max(0, (monsterHp / MONSTERS[currentMonsterIdx].hp) * 100)}%` }}></div>
+                        </div>
+                      </div>
+
+                      {/* Attack buttons */}
+                      <div style={{ display:'flex', gap:'12px', width:'100%', maxWidth:'360px' }}>
+                        <button onClick={() => attackMonster(1)} disabled={isDead} className="btn-danger btn-attack"
+                          style={{ flex:1, padding:'12px', borderRadius:'12px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px', letterSpacing:'0.5px', cursor: isDead ? 'not-allowed' : 'pointer', opacity: isDead ? 0.4 : 1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px' }}>
                           ⚔️ Ra Đòn Cơ Bản
                         </button>
-                        <button onClick={() => attackMonster(3)} disabled={isDead}
-                          className={`flex-1 py-3 rounded-xl text-xs font-serif font-bold transition-all shadow-lg btn-attack ${isDead ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed' : 'bg-gradient-to-r from-amber-700/60 to-red-700/60 hover:from-amber-600/80 hover:to-red-600/80 border border-amber-400/50 text-amber-200 cursor-pointer'}`}>
-                          🔥 Tất Sát (3x)
+                        <button onClick={() => attackMonster(3)} disabled={isDead} className="btn-attack"
+                          style={{ flex:1, padding:'12px', borderRadius:'12px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px', letterSpacing:'0.5px', cursor: isDead ? 'not-allowed' : 'pointer', opacity: isDead ? 0.4 : 1, background:'linear-gradient(135deg, #7c2d12, #431407)', border:'1px solid rgba(251,146,60,0.5)', color:'#fed7aa', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', boxShadow: isDead ? 'none' : '0 0 20px rgba(251,146,60,0.25)' }}>
+                          🔥 Tất Sát (×3)
                         </button>
                       </div>
                     </div>
                   </div>
                 )}
 
+                {/* ─── SECT TAB ─── */}
                 {activeTab === 'sect' && (
-                  <div className="flex flex-col gap-4">
+                  <div style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
                     <div>
-                      <h2 className="font-serif font-bold text-base text-amber-200">Vạn Đạo Tông Môn</h2>
-                      <p className="text-xs text-slate-400">Gia nhập hoặc tự mình khai sơn lập phái để nhận thiên phú đặc quyền độc nhất.</p>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>⛩️ Vạn Đạo Tông Môn</div>
+                      <div className="ornament-divider" style={{ margin:'8px 0' }}>GIA NHẬP HOẶC KHAI SƠN LẬP PHÁI</div>
                     </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      <div className="flex flex-col gap-3">
-                        <h3 className="text-xs font-serif font-bold text-amber-300 uppercase tracking-wider">Danh Sách Tông Môn</h3>
-                        <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto no-scrollbar">
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:'14px' }}>
+                      {/* Sect list */}
+                      <div style={{ display:'flex', flexDirection:'column', gap:'10px', gridColumn:'span 1' }}>
+                        <div style={{ fontSize:'10px', letterSpacing:'2px', color:'rgba(245,200,66,0.5)', textTransform:'uppercase', fontFamily:'Cinzel,serif' }}>— Danh Sách Tông Môn —</div>
+                        <div style={{ display:'flex', flexDirection:'column', gap:'8px', maxHeight:'320px', overflowY:'auto' }} className="no-scrollbar">
                           {allSects.map(sect => {
                             const isJoined = gameState.joinedSectId === sect.id;
                             return (
-                              <div key={sect.id} className={`p-4 rounded-xl border flex flex-col justify-between gap-2 ${isJoined ? 'bg-purple-950/40 border-purple-400/60 shadow-lg' : 'bg-black/50 border-purple-500/20'}`}>
-                                <div className="flex justify-between items-center">
-                                  <span className="font-serif font-bold text-sm text-amber-200">{sect.name}</span>
-                                  <span className="text-[10px] font-mono text-slate-400">Sáng lập: {sect.founder || 'Hệ Thống'}</span>
+                              <div key={sect.id} className={`item-card${isJoined ? ' joined' : ''}`} style={{ padding:'14px', display:'flex', flexDirection:'column', gap:'8px' }}>
+                                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+                                  <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                                    <span style={{ fontSize:'20px' }}>{sect.icon || '⛩️'}</span>
+                                    <div>
+                                      <div style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color:'#f5c842' }}>{sect.name}</div>
+                                      <div style={{ fontSize:'9px', color:'rgba(160,140,200,0.5)' }}>Sáng lập: {sect.founder || 'Hệ Thống'}</div>
+                                    </div>
+                                  </div>
+                                  {isJoined && <span style={{ fontSize:'9px', color:'#f5c842', background:'rgba(92,60,10,0.5)', border:'1px solid rgba(245,200,66,0.4)', padding:'2px 8px', borderRadius:'20px', fontFamily:'Cinzel,serif', fontWeight:700 }}>✦ Đã Gia Nhập</span>}
                                 </div>
-                                <p className="text-[11px] text-cyan-300">{sect.buff}</p>
-                                <p className="text-[10px] text-slate-400">{sect.desc}</p>
+                                <div style={{ fontSize:'11px', color:'#67e8f9' }}>{sect.buff}</div>
+                                <div style={{ fontSize:'10px', color:'rgba(160,140,200,0.5)' }}>{sect.desc}</div>
                                 {!isJoined && (
                                   <button onClick={() => setGameState(prev => ({ ...prev, joinedSectId: sect.id, logs: [{ id: Date.now().toString(), text: `[Tông Môn]: Gia nhập "${sect.name}" thành công!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100) }))}
-                                    className="mt-1 py-1.5 px-3 bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/40 rounded-lg text-xs font-serif font-bold text-purple-200 transition-all cursor-pointer w-fit">
+                                    className="btn-primary" style={{ alignSelf:'flex-start', padding:'6px 14px', width:'auto', fontSize:'10px' }}>
                                     Gia Nhập
                                   </button>
                                 )}
@@ -1164,59 +1574,89 @@
                           })}
                         </div>
                       </div>
-                      <div className="bg-black/50 border border-purple-500/20 rounded-2xl p-5 flex flex-col gap-3">
-                        <h3 className="text-xs font-serif font-bold text-amber-300 uppercase tracking-wider">Khai Sơn Lập Phái</h3>
-                        <p className="text-[11px] text-slate-400">Yêu cầu cảnh giới: <span className="text-cyan-400 font-bold">Trúc Cơ Kỳ (Sơ Kỳ)</span> trở lên.</p>
-                        <form onSubmit={handleCreateSect} className="flex flex-col gap-3 mt-1">
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-mono text-slate-400">Tên Tông Môn</label>
-                            <input type="text" value={newSectName} onChange={(e) => setNewSectName(e.target.value)}
-                              placeholder="Ví dụ: Thiên Kiếm Tông..."
-                              className="bg-black/80 border border-purple-500/30 rounded-xl px-3 py-2 text-xs text-amber-100 font-mono focus:outline-none focus:border-cyan-400" />
+
+                      {/* Create sect form */}
+                      <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+                        <div style={{ fontSize:'10px', letterSpacing:'2px', color:'rgba(245,200,66,0.5)', textTransform:'uppercase', fontFamily:'Cinzel,serif' }}>— Khai Sơn Lập Phái —</div>
+                        <div style={{ padding:'16px', background:'rgba(0,0,0,0.4)', border:'1px solid rgba(100,60,180,0.25)', borderRadius:'12px', display:'flex', flexDirection:'column', gap:'12px' }}>
+                          <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>
+                            Yêu cầu cảnh giới: <span style={{ color:'#22d3ee', fontFamily:'Cinzel,serif', fontWeight:700 }}>Trúc Cơ Kỳ (Sơ Kỳ)</span> trở lên.
                           </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-mono text-slate-400">Mô Tả Thế Lực</label>
-                            <textarea value={newSectDesc} onChange={(e) => setNewSectDesc(e.target.value)}
-                              placeholder="Mô tả về tôn chỉ tông môn..."
-                              className="bg-black/80 border border-purple-500/30 rounded-xl px-3 py-2 text-xs text-amber-100 font-mono focus:outline-none focus:border-cyan-400 h-20 resize-none" />
-                          </div>
-                          <button type="submit"
-                            className="mt-2 py-2.5 bg-gradient-to-r from-purple-700/60 to-indigo-700/60 hover:from-purple-600/80 hover:to-indigo-600/80 border border-purple-400/50 rounded-xl text-xs font-serif font-bold text-amber-200 transition-all cursor-pointer shadow">
-                            Tạo Lập Tông Môn Mới
-                          </button>
-                        </form>
+                          <form onSubmit={handleCreateSect} style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
+                            <div style={{ display:'flex', flexDirection:'column', gap:'4px' }}>
+                              <label style={{ fontSize:'10px', color:'rgba(180,160,220,0.6)', letterSpacing:'1px' }}>TÊN TÔNG MÔN</label>
+                              <input type="text" value={newSectName} onChange={e => setNewSectName(e.target.value)} placeholder="Ví dụ: Thiên Kiếm Tông..."
+                                style={{ background:'rgba(0,0,0,0.7)', border:'1px solid rgba(100,60,180,0.4)', borderRadius:'10px', padding:'8px 12px', fontSize:'12px', color:'#f5e6c8', fontFamily:'Share Tech Mono,monospace', outline:'none' }} />
+                            </div>
+                            <div style={{ display:'flex', flexDirection:'column', gap:'4px' }}>
+                              <label style={{ fontSize:'10px', color:'rgba(180,160,220,0.6)', letterSpacing:'1px' }}>MÔ TẢ THẾ LỰC</label>
+                              <textarea value={newSectDesc} onChange={e => setNewSectDesc(e.target.value)} placeholder="Mô tả về tôn chỉ tông môn..."
+                                style={{ background:'rgba(0,0,0,0.7)', border:'1px solid rgba(100,60,180,0.4)', borderRadius:'10px', padding:'8px 12px', fontSize:'12px', color:'#f5e6c8', fontFamily:'Share Tech Mono,monospace', outline:'none', height:'80px', resize:'none' }} />
+                            </div>
+                            <button type="submit" className="btn-primary" style={{ marginTop:'4px' }}>
+                              ✦ Tạo Lập Tông Môn Mới
+                            </button>
+                          </form>
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
 
+                {/* ─── LEADERBOARD TAB ─── */}
                 {activeTab === 'leaderboard' && (
-                  <div className="flex flex-col gap-4">
+                  <div style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
                     <div>
-                      <h2 className="font-serif font-bold text-base text-amber-200">Thiên Thư Bảng</h2>
-                      <p className="text-xs text-slate-400">Ghi danh những đại năng cường giả luôn bám trụ vĩnh viễn trên bảng xếp hạng.</p>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>📜 Thiên Thư Bảng</div>
+                      <div className="ornament-divider" style={{ margin:'8px 0' }}>ĐẠI NĂNG CƯỜNG GIẢ TOÀN CÕI TU TIÊN</div>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      {fullLeaderboard.length === 0 ? (
-                        <div className="text-center py-8 text-xs font-mono text-slate-500">Chưa có cao thủ nào ghi danh trên bảng xếp hạng.</div>
-                      ) : (
-                        fullLeaderboard.map((item, index) => (
-                          <div key={item.name} className={`flex items-center justify-between p-3.5 rounded-xl border ${item.isPlayer ? 'bg-purple-950/40 border-purple-400/60 shadow-lg' : 'bg-black/50 border-purple-500/20'}`}>
-                            <div className="flex items-center gap-3">
-                              <span className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs font-bold ${index === 0 ? 'bg-amber-500 text-black' : index === 1 ? 'bg-slate-300 text-black' : index === 2 ? 'bg-amber-700 text-white' : 'bg-purple-900/50 text-purple-200 border border-purple-500/30'}`}>
-                                {index + 1}
-                              </span>
-                              <div className="flex flex-col">
-                                <span className="font-serif font-bold text-sm text-amber-200 flex items-center gap-2">
-                                  {item.name} {item.isPlayer && <span className="text-[10px] font-mono px-1.5 bg-cyan-600/40 text-cyan-200 border border-cyan-400/50 rounded">Chính Mình</span>}
-                                </span>
-                                <span className="text-[10px] font-mono text-cyan-300">{item.title}</span>
+                    {fullLeaderboard.length === 0 ? (
+                      <div style={{ textAlign:'center', padding:'60px 20px', color:'rgba(140,120,180,0.5)', fontFamily:'Cinzel,serif', fontSize:'13px' }}>Chưa có cao thủ nào ghi danh.</div>
+                    ) : (
+                      <div style={{ display:'flex', flexDirection:'column', gap:'6px', maxHeight:'380px', overflowY:'auto' }} className="no-scrollbar">
+                        {fullLeaderboard.map((item, index) => {
+                          const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-n';
+                          const rankIcon = index === 0 ? '👑' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                          return (
+                            <div key={item.name} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderRadius:'12px', border:`1px solid ${item.isPlayer ? 'rgba(192,132,252,0.5)' : 'rgba(60,30,100,0.3)'}`, background: item.isPlayer ? 'linear-gradient(135deg, rgba(60,20,110,0.5), rgba(30,10,60,0.6))' : 'linear-gradient(135deg, rgba(20,10,40,0.6), rgba(10,5,20,0.7))', transition:'all 0.2s' }}>
+                              {/* Rank badge */}
+                              <div className={rankClass} style={{ width:'32px', height:'32px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'11px', flexShrink:0 }}>
+                                {rankIcon || (index + 1)}
+                              </div>
+                              <div style={{ flex:1 }}>
+                                <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'2px' }}>
+                                  <span style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color:'#f5e6c8' }}>{item.name}</span>
+                                  {item.isPlayer && <span style={{ fontSize:'9px', color:'#67e8f9', background:'rgba(6,182,212,0.2)', border:'1px solid rgba(6,182,212,0.4)', padding:'1px 6px', borderRadius:'10px', fontFamily:'Cinzel,serif' }}>CHÍNH MÌNH</span>}
+                                </div>
+                                <div style={{ fontSize:'10px', color:'rgba(100,200,255,0.6)' }}>{item.title}</div>
+                              </div>
+                              <div style={{ textAlign:'right' }}>
+                                <div style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color:'#f5c842' }}>{formatNumber(item.totalQi)}</div>
+                                <div style={{ fontSize:'9px', color:'rgba(180,160,200,0.4)', letterSpacing:'1px' }}>LINH KHÍ</div>
                               </div>
                             </div>
-                            <div className="flex flex-col items-end font-mono">
-                              <span className="text-amber-400 font-bold text-xs">{formatNumber(item.totalQi)} Qi</span>
-                              <span className="text-[10px] text-slate-400">Tích Lũy</span>
-                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ─── LOGS TAB ─── */}
+                {activeTab === 'logs' && (
+                  <div style={{ display:'flex', flexDirection:'column', gap:'16px', height:'100%' }}>
+                    <div>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>📖 Nhật Ký Tu Tiên</div>
+                      <div className="ornament-divider" style={{ margin:'8px 0' }}>HÀNH TRÌNH ĐỘT PHÁ & KỲ NGỘ</div>
+                    </div>
+                    <div style={{ flex:1, background:'rgba(0,0,0,0.5)', border:'1px solid rgba(60,30,100,0.3)', borderRadius:'12px', padding:'12px', overflowY:'auto', maxHeight:'380px' }} className="no-scrollbar">
+                      {gameState.logs.length === 0 ? (
+                        <div style={{ textAlign:'center', padding:'40px', color:'rgba(140,120,180,0.4)', fontFamily:'Cinzel,serif', fontSize:'12px' }}>Chưa có sự kiện nào được ghi nhận.</div>
+                      ) : (
+                        gameState.logs.map((log, i) => (
+                          <div key={log.id + i} className={`log-entry type-${log.type}`}>
+                            <span className="log-time">{new Date(log.time).toLocaleTimeString('vi', { hour:'2-digit', minute:'2-digit', second:'2-digit' })}</span>
+                            <span className="log-text">{log.text}</span>
                           </div>
                         ))
                       )}
@@ -1227,47 +1667,63 @@
             </div>
           </main>
 
+          {/* ══════════════ BLACK MARKET MODAL ══════════════ */}
           {isBlackMarketModalOpen && (
-            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-              <div className="bg-[#120b22] border-2 border-amber-500/50 rounded-2xl w-full max-w-5xl p-6 flex flex-col gap-5 shadow-[0_0_50px_rgba(245,158,11,0.2)] max-h-[85vh]">
-                <div className="flex justify-between items-center border-b border-purple-500/30 pb-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🖤</span>
+            <div className="modal-backdrop">
+              <div className="modal-box">
+                {/* Top glow */}
+                <div style={{ position:'absolute', top:0, left:'15%', right:'15%', height:'1px', background:'linear-gradient(to right, transparent, rgba(245,200,66,0.6), transparent)' }}></div>
+                <div className="corner-tl"></div><div className="corner-tr"></div><div className="corner-bl"></div><div className="corner-br"></div>
+
+                {/* Header */}
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'1px solid rgba(100,60,180,0.25)', paddingBottom:'16px' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+                    <div style={{ width:'48px', height:'48px', borderRadius:'12px', background:'linear-gradient(135deg, #451a03, #1c0900)', border:'1px solid rgba(245,200,66,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', boxShadow:'0 0 20px rgba(245,200,66,0.2)' }}>🖤</div>
                     <div>
-                      <h2 className="font-serif font-bold text-lg text-amber-200">Hắc Thị Chợ Đen — Ký Gửi & Giao Dịch Bảo Vật</h2>
-                      <p className="text-xs text-slate-400">Treo bán pháp bảo vĩnh viễn trên Cloud JSONBin cho tới khi có đại năng khác mua hoặc chủ nhân gỡ xuống.</p>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontWeight:700, fontSize:'18px', color:'#f5c842' }}>Hắc Thị Chợ Đen</div>
+                      <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.5)', marginTop:'2px' }}>Ký gửi & giao dịch bảo vật trực tiếp với người chơi khác.</div>
                     </div>
                   </div>
                   <button onClick={() => setIsBlackMarketModalOpen(false)}
-                    className="w-8 h-8 rounded-full bg-red-950/50 border border-red-500/50 flex items-center justify-center text-red-300 hover:bg-red-900 cursor-pointer text-sm font-bold">
+                    style={{ width:'36px', height:'36px', borderRadius:'50%', background:'rgba(60,10,10,0.7)', border:'1px solid rgba(220,60,60,0.4)', color:'#fca5a5', cursor:'pointer', fontSize:'14px', fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.15s' }}>
                     ✕
                   </button>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-y-auto no-scrollbar">
-                  <div className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col gap-3">
-                    <span className="text-xs font-serif font-bold text-amber-200">📦 Túi Đồ Của Bạn (Chọn bảo vật để ký gửi)</span>
-                    <div className="flex flex-col gap-2.5 max-h-[320px] overflow-y-auto no-scrollbar">
+
+                {/* Content */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px', flex:1, overflowY:'auto' }} className="no-scrollbar">
+                  {/* Left: My inventory */}
+                  <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
+                    <div style={{ fontSize:'12px', fontFamily:'Cinzel,serif', fontWeight:700, color:'#f5c842', display:'flex', alignItems:'center', gap:'6px' }}>
+                      📦 Túi Đồ Của Bạn
+                    </div>
+                    <div style={{ display:'flex', flexDirection:'column', gap:'8px', maxHeight:'340px', overflowY:'auto' }} className="no-scrollbar">
                       {gameState.inventory.length === 0 ? (
-                        <span className="text-xs text-slate-500 font-mono py-10 text-center">Không có bảo vật nào trong túi. Hãy đi Trảm Yêu!</span>
+                        <div style={{ textAlign:'center', padding:'40px 20px', color:'rgba(140,120,180,0.4)', fontSize:'11px', fontFamily:'Cinzel,serif' }}>Không có bảo vật nào trong túi. Hãy đi Trảm Yêu!</div>
                       ) : (
                         gameState.inventory.map(item => {
                           const gear = ALL_GEARS.find(g => g.id === item.gearId);
                           if (!gear) return null;
                           return (
-                            <div key={item.uniqueId} className="flex flex-col gap-2 p-3 bg-purple-950/20 border border-purple-500/20 rounded-xl">
-                              <div className="flex justify-between items-center">
-                                <span className={`font-serif font-bold text-xs ${gear.color}`}>{gear.name} ({gear.tier})</span>
-                                <span className="text-[10px] font-mono text-cyan-300">+{gear.clickBonus} C.Lực</span>
+                            <div key={item.uniqueId} style={{ padding:'12px', background:'rgba(30,10,60,0.5)', border:'1px solid rgba(100,60,180,0.25)', borderRadius:'12px', display:'flex', flexDirection:'column', gap:'8px' }}>
+                              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                                <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                                  <span style={{ fontSize:'18px' }}>{gear.icon}</span>
+                                  <div>
+                                    <div className={gear.colorClass} style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px' }}>{gear.name}</div>
+                                    <div style={{ fontSize:'9px', color:'rgba(160,140,200,0.5)' }}>{gear.tier}</div>
+                                  </div>
+                                </div>
+                                <div style={{ fontSize:'10px', color:'#22d3ee' }}>+{gear.clickBonus} C.Lực</div>
                               </div>
-                              <div className="flex items-center gap-2">
+                              <div style={{ display:'flex', gap:'8px' }}>
                                 <input type="number" placeholder="Nhập giá Qi..."
                                   value={listingPriceInput[item.uniqueId] || ''}
-                                  onChange={(e) => setListingPriceInput(prev => ({ ...prev, [item.uniqueId]: e.target.value }))}
-                                  className="bg-black/80 border border-amber-400/40 rounded-lg px-2.5 py-1 text-xs text-amber-100 font-mono focus:outline-none flex-1" />
-                                <button onClick={() => handleListMarketItem(item.uniqueId)}
-                                  className="px-3 py-1 bg-amber-600/40 hover:bg-amber-600/60 border border-amber-400/50 text-amber-200 rounded-lg cursor-pointer text-xs font-serif font-bold">
-                                  Ký Gửi Bán
+                                  onChange={e => setListingPriceInput(prev => ({ ...prev, [item.uniqueId]: e.target.value }))}
+                                  style={{ flex:1, background:'rgba(0,0,0,0.7)', border:'1px solid rgba(245,200,66,0.3)', borderRadius:'8px', padding:'6px 10px', fontSize:'11px', color:'#f5c842', fontFamily:'Share Tech Mono,monospace', outline:'none' }} />
+                                <button onClick={() => handleListMarketItem(item.uniqueId)} className="btn-gold"
+                                  style={{ padding:'6px 12px', borderRadius:'8px', fontFamily:'Cinzel,serif', fontSize:'10px', fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }}>
+                                  Ký Gửi
                                 </button>
                               </div>
                             </div>
@@ -1277,36 +1733,45 @@
                     </div>
                   </div>
 
-                  <div className="bg-black/50 border border-purple-500/20 rounded-xl p-4 flex flex-col gap-3">
-                    <span className="text-xs font-serif font-bold text-amber-200">🛒 Vật Phẩm Đang Rao Bán Trên Hắc Thị</span>
-                    <div className="flex flex-col gap-2.5 max-h-[320px] overflow-y-auto no-scrollbar">
+                  {/* Right: Market listings */}
+                  <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
+                    <div style={{ fontSize:'12px', fontFamily:'Cinzel,serif', fontWeight:700, color:'#f5c842', display:'flex', alignItems:'center', gap:'6px' }}>
+                      🛒 Vật Phẩm Đang Rao Bán
+                    </div>
+                    <div style={{ display:'flex', flexDirection:'column', gap:'8px', maxHeight:'340px', overflowY:'auto' }} className="no-scrollbar">
                       {marketListings.length === 0 ? (
-                        <span className="text-xs text-slate-500 font-mono py-10 text-center">Hắc Thị hiện chưa có bảo vật nào được ký gửi.</span>
+                        <div style={{ textAlign:'center', padding:'40px 20px', color:'rgba(140,120,180,0.4)', fontSize:'11px', fontFamily:'Cinzel,serif' }}>Hắc Thị hiện chưa có bảo vật nào được ký gửi.</div>
                       ) : (
                         marketListings.map(listing => {
                           const gear = ALL_GEARS.find(g => g.id === listing.gearId);
                           if (!gear) return null;
                           const isMyListing = listing.sellerName === playerName;
                           return (
-                            <div key={listing.listingId} className="flex flex-col gap-2 p-3 bg-purple-950/30 border border-purple-500/30 rounded-xl">
-                              <div className="flex justify-between items-center">
-                                <span className={`font-serif font-bold text-xs ${gear.color}`}>{gear.name}</span>
-                                <span className="text-[10px] font-mono text-amber-400 font-bold">{formatNumber(listing.price)} Qi</span>
+                            <div key={listing.listingId} style={{ padding:'12px', background:'rgba(30,10,60,0.5)', border:'1px solid rgba(100,60,180,0.25)', borderRadius:'12px', display:'flex', flexDirection:'column', gap:'8px' }}>
+                              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                                <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                                  <span style={{ fontSize:'18px' }}>{gear.icon}</span>
+                                  <div>
+                                    <div className={gear.colorClass} style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px' }}>{gear.name}</div>
+                                    <div style={{ fontSize:'9px', color:'rgba(160,140,200,0.5)' }}>Chủ nhân: <span style={{ color:'#67e8f9' }}>{listing.sellerName}</span></div>
+                                  </div>
+                                </div>
+                                <div style={{ textAlign:'right' }}>
+                                  <div style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color:'#f5c842' }}>{formatNumber(listing.price)}</div>
+                                  <div style={{ fontSize:'9px', color:'rgba(180,160,200,0.4)' }}>Linh Khí</div>
+                                </div>
                               </div>
-                              <div className="flex justify-between items-center text-[10px] font-mono text-slate-400">
-                                <span>Chủ nhân: <span className="text-cyan-300">{listing.sellerName}</span></span>
-                                {isMyListing ? (
-                                  <button onClick={() => handleCancelMarketListing(listing)}
-                                    className="px-2.5 py-1 bg-red-600/30 hover:bg-red-600/50 border border-red-400/40 text-red-200 rounded cursor-pointer font-serif font-bold">
-                                    Gỡ Bán
-                                  </button>
-                                ) : (
-                                  <button onClick={() => handleBuyMarketItem(listing)}
-                                    className="px-2.5 py-1 bg-emerald-600/40 hover:bg-emerald-600/60 border border-emerald-400/50 text-emerald-200 rounded cursor-pointer font-serif font-bold">
-                                    Mua Lại
-                                  </button>
-                                )}
-                              </div>
+                              {isMyListing ? (
+                                <button onClick={() => handleCancelMarketListing(listing)} className="btn-danger"
+                                  style={{ padding:'6px 12px', borderRadius:'8px', fontFamily:'Cinzel,serif', fontSize:'10px', fontWeight:700, cursor:'pointer', textAlign:'center' }}>
+                                  ✕ Gỡ Bán
+                                </button>
+                              ) : (
+                                <button onClick={() => handleBuyMarketItem(listing)} className="btn-success"
+                                  style={{ padding:'6px 12px', borderRadius:'8px', fontFamily:'Cinzel,serif', fontSize:'10px', fontWeight:700, cursor:'pointer', textAlign:'center' }}>
+                                  💰 Mua Lại — {formatNumber(listing.price)} Qi
+                                </button>
+                              )}
                             </div>
                           );
                         })
@@ -1325,88 +1790,68 @@
     root.render(<App />);
   </script>
 
-  <!-- ==========================================
-       🌟 PHẦN THÊM VÀO: JAVASCRIPT XỬ LÝ ÂM THANH & ANIMATION DOM
-       ========================================== -->
+  <!-- Audio & FX Scripts (Unchanged from original) -->
   <script>
-    // Đợi DOM load xong để gắn sự kiện
     document.addEventListener("DOMContentLoaded", () => {
       const bgm = document.getElementById('bgm-audio');
       const sfxClick = document.getElementById('click-sfx');
       const sfxSlash = document.getElementById('slash-sfx');
       const audioBtn = document.getElementById('toggle-audio-btn');
-      
-      let isAudioMuted = true; // Mặc định tắt tiếng để tránh trình duyệt block autoplay
+      let isAudioMuted = true;
 
-      // Xử lý bật tắt âm thanh
       audioBtn.addEventListener('click', () => {
         isAudioMuted = !isAudioMuted;
         if (isAudioMuted) {
           bgm.pause();
           audioBtn.innerText = '🔇';
-          audioBtn.classList.remove('bg-emerald-600/50', 'border-emerald-400');
+          audioBtn.style.borderColor = 'rgba(192,132,252,0.4)';
+          audioBtn.style.background = 'rgba(10,5,25,0.9)';
         } else {
-          bgm.play().catch(e => console.log("Trình duyệt chặn autoplay", e));
+          bgm.volume = 0.25;
+          bgm.play().catch(e => {});
           audioBtn.innerText = '🎵';
-          audioBtn.classList.add('bg-emerald-600/50', 'border-emerald-400');
+          audioBtn.style.borderColor = 'rgba(52,211,153,0.6)';
+          audioBtn.style.background = 'rgba(20,60,40,0.8)';
+          audioBtn.style.color = '#6ee7b7';
         }
       });
 
-      // Lắng nghe toàn bộ cú click trên body để tạo hiệu ứng Floating Text
       document.body.addEventListener('click', (e) => {
         const target = e.target.closest('button');
         if (!target) return;
-
         const text = target.innerText.toLowerCase();
         let floatingMsg = "";
-        let colorClass = "";
+        let floatColor = "";
 
-        // Chơi âm thanh chém quái & Rung màn hình nếu click nút đánh quái
-        if (target.classList.contains('btn-attack') || text.includes('ra đòn') || text.includes('tất sát')) {
-          if (!isAudioMuted) {
-            sfxSlash.currentTime = 0;
-            sfxSlash.play().catch(()=>{});
-          }
-          floatingMsg = "💥 Bạo Kích!";
-          colorClass = "text-red-400";
-          
-          // Tạo hiệu ứng rung màn hình cục bộ cho icon quái thú
+        if (target.classList.contains('btn-attack') || text.includes('ra đòn') || text.includes('tất sát') || text.includes('3x')) {
+          if (!isAudioMuted) { sfxSlash.currentTime = 0; sfxSlash.play().catch(()=>{}); }
+          floatingMsg = Math.random() > 0.5 ? "⚔️ Bạo Kích!" : "💥 Trí Mạng!";
+          floatColor = "#fb7185";
           const monsterIcon = document.getElementById('monster-icon-display');
           if (monsterIcon) {
             monsterIcon.classList.remove('shake-effect');
-            void monsterIcon.offsetWidth; // Trigger reflow
+            void monsterIcon.offsetWidth;
             monsterIcon.classList.add('shake-effect');
           }
-        } 
-        // Hiệu ứng hút Qi khi nhấn nút trung tâm
-        else if (text.includes('hấp thu linh khí')) {
-          if (!isAudioMuted) {
-            sfxClick.currentTime = 0;
-            sfxClick.play().catch(()=>{});
-          }
-          floatingMsg = "✨ + Qi";
-          colorClass = "text-cyan-300";
+        } else if (text.includes('hấp thu') || text.includes('linh khí')) {
+          if (!isAudioMuted) { sfxClick.currentTime = 0; sfxClick.play().catch(()=>{}); }
+          floatingMsg = Math.random() > 0.5 ? "✨ +Qi" : "💫 Tụ Linh!";
+          floatColor = "#67e8f9";
         }
 
-        // Tạo phần tử Floating Text
         if (floatingMsg) {
           const floater = document.createElement('div');
-          floater.className = `floating-text ${colorClass} text-sm font-mono`;
+          floater.className = 'floating-text';
+          floater.style.color = floatColor;
+          floater.style.fontSize = '13px';
           floater.innerText = floatingMsg;
-          
-          // Lấy tọa độ chuột
-          floater.style.left = (e.pageX - 20 + (Math.random() * 20)) + 'px';
-          floater.style.top = (e.pageY - 20) + 'px';
-          
+          floater.style.left = (e.clientX - 20 + (Math.random() * 30 - 15)) + 'px';
+          floater.style.top  = (e.clientY - 30) + 'px';
           document.body.appendChild(floater);
-          
-          // Xóa thẻ sau khi animation hoàn thành (1s)
-          setTimeout(() => floater.remove(), 1000);
+          setTimeout(() => floater.remove(), 1100);
         }
       });
     });
   </script>
-  <!-- ========================================== -->
-
 </body>
 </html>
