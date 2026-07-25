@@ -49,61 +49,69 @@
       }
     }
 
-    async function updateCloudData(myEntry) {
+    // Giao thức đồng bộ an toàn: Chỉ chỉnh sửa những phần cần thiết thay vì lưu đè toàn bộ
+    async function modifyCloudData(action, data) {
       try {
         const current = await fetchCloudData();
-        let list = current.leaderboard || [];
-
-        const idx = list.findIndex(item => item.name === myEntry.name);
-        
-        if (idx >= 0) {
-          list[idx] = {
-            ...list[idx],
-            totalQi: myEntry.totalQi,
-            realm: myEntry.realm,
-            lastOnline: Date.now()
-          };
-        } else {
-          list.push({
-            name: myEntry.name,
-            totalQi: myEntry.totalQi,
-            realm: myEntry.realm,
-            lastOnline: Date.now()
-          });
-        }
-
-        list.sort((a, b) => b.totalQi - a.totalQi);
-        list = list.slice(0, 20);
-
-        let sects = current.customSects || [];
-        if (myEntry.newSect && !sects.some(s => s.id === myEntry.newSect.id)) {
-          sects.push(myEntry.newSect);
-        }
-
-        let tribs = current.activeTribulations || {};
-        if (myEntry.myTribulation !== undefined) {
-          if (myEntry.myTribulation === null) {
-            delete tribs[myEntry.name];
-          } else {
-            tribs[myEntry.name] = myEntry.myTribulation;
-          }
-        }
-
-        let listings = current.marketListings || [];
-        if (myEntry.overrideMarketListings !== undefined) {
-          listings = myEntry.overrideMarketListings;
-        } else if (myEntry.newListing) {
-          if (!listings.some(l => l.listingId === myEntry.newListing.listingId)) {
-            listings.push(myEntry.newListing);
-          }
-        }
-
-        const payload = {
-          leaderboard: list,
-          customSects: sects,
-          activeTribulations: tribs,
-          marketListings: listings
+        let payload = {
+          leaderboard: current.leaderboard || [],
+          customSects: current.customSects || [],
+          activeTribulations: current.activeTribulations || {},
+          marketListings: current.marketListings || []
         };
+        
+        let isSuccess = true;
+
+        if (action === 'LEADERBOARD') {
+          const idx = payload.leaderboard.findIndex(item => item.name === data.name);
+          if (idx >= 0) {
+            payload.leaderboard[idx] = { ...payload.leaderboard[idx], totalQi: data.totalQi, realm: data.realm, lastOnline: Date.now() };
+          } else {
+            payload.leaderboard.push({ name: data.name, totalQi: data.totalQi, realm: data.realm, lastOnline: Date.now() });
+          }
+          payload.leaderboard.sort((a, b) => b.totalQi - a.totalQi);
+          payload.leaderboard = payload.leaderboard.slice(0, 20);
+        }
+        else if (action === 'START_TRIB') {
+          payload.activeTribulations[data.name] = data.tribData;
+        }
+        else if (action === 'END_TRIB_AND_UPDATE') {
+          delete payload.activeTribulations[data.name];
+          const idx = payload.leaderboard.findIndex(item => item.name === data.name);
+          if (idx >= 0) {
+            payload.leaderboard[idx] = { ...payload.leaderboard[idx], totalQi: data.totalQi, realm: data.realm, lastOnline: Date.now() };
+          } else {
+            payload.leaderboard.push({ name: data.name, totalQi: data.totalQi, realm: data.realm, lastOnline: Date.now() });
+          }
+          payload.leaderboard.sort((a, b) => b.totalQi - a.totalQi);
+          payload.leaderboard = payload.leaderboard.slice(0, 20);
+        }
+        else if (action === 'INTERACT_TRIB') {
+          if (payload.activeTribulations[data.targetName]) {
+            payload.activeTribulations[data.targetName].hp = data.newHp;
+          }
+        }
+        else if (action === 'ADD_MARKET') {
+          if (!payload.marketListings.some(l => l.listingId === data.listing.listingId)) {
+            payload.marketListings.push(data.listing);
+          }
+        }
+        else if (action === 'REMOVE_MARKET') {
+          payload.marketListings = payload.marketListings.filter(l => l.listingId !== data.listingId);
+        }
+        else if (action === 'BUY_MARKET') {
+          const exists = payload.marketListings.find(l => l.listingId === data.listingId);
+          if (exists) {
+            payload.marketListings = payload.marketListings.filter(l => l.listingId !== data.listingId);
+          } else {
+            isSuccess = false;
+          }
+        }
+        else if (action === 'ADD_SECT') {
+          payload.customSects.push(data.sect);
+        }
+
+        if (!isSuccess) return { success: false, error: "Thao tác thất bại hoặc dữ liệu đã bị thay đổi bởi người khác!" };
 
         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: 'PUT',
@@ -115,9 +123,9 @@
           body: JSON.stringify(payload)
         });
         const result = await res.json();
-        return result.record || payload;
+        return { success: true, record: result.record || payload };
       } catch (e) {
-        return null;
+        return { success: false, error: "Lỗi kết nối máy chủ!" };
       }
     }
 
@@ -214,13 +222,12 @@
 
       const [gameState, setGameState] = React.useState(() => {
         try {
-          const savedState = localStorage.getItem(SAVE_KEY) || localStorage.getItem('tu_tien_game_save_v20');
+          const savedState = localStorage.getItem(SAVE_KEY);
           if (savedState) {
             const parsed = JSON.parse(savedState);
             if (!parsed.inventory) parsed.inventory = [];
             if (!parsed.logs) parsed.logs = [];
             
-            // Tính toán bế quan (Offline Progress)
             const now = Date.now();
             if (parsed.lastSaveTime) {
               const offlineSeconds = Math.floor((now - parsed.lastSaveTime) / 1000);
@@ -261,15 +268,8 @@
           }
         } catch (e) {}
         return {
-          qi: 0,
-          totalQi: 0,
-          realmIdx: 0,
-          joinedSectId: 'thanh_van',
-          shopCounts: {},
-          inventory: [],
-          equippedGearId: null,
-          lastSaveTime: Date.now(),
-          logs: [{ id: '1', text: '[Đại Đạo]: Đã sửa triệt để độ trễ hiển thị thông báo độ kiếp và tính năng Bế Quan!', type: 'breakthrough', time: Date.now() }]
+          qi: 0, totalQi: 0, realmIdx: 0, joinedSectId: 'thanh_van', shopCounts: {}, inventory: [], equippedGearId: null, lastSaveTime: Date.now(),
+          logs: [{ id: '1', text: '[Đại Đạo]: Đã khắc phục triệt để lỗi Chợ Đen & xung đột thông báo Độ Kiếp!', type: 'breakthrough', time: Date.now() }]
         };
       });
 
@@ -296,12 +296,6 @@
 
       const [newSectName, setNewSectName] = React.useState('');
       const [newSectDesc, setNewSectDesc] = React.useState('');
-
-      const [, setTick] = React.useState(0);
-      React.useEffect(() => {
-        const timer = setInterval(() => setTick(t => t + 1), 1000);
-        return () => clearInterval(timer);
-      }, []);
 
       const combatPower = React.useMemo(() => {
         let base = 1 + gameState.realmIdx * 3;
@@ -341,26 +335,18 @@
               if (added <= 0) return { ...prev, lastSaveTime: Date.now() };
               return { ...prev, qi: prev.qi + added, totalQi: prev.totalQi + added, lastSaveTime: Date.now() };
             }
-
             if (prev.qi >= nextRealmObj.req) return { ...prev, lastSaveTime: Date.now() };
-
             const added = qps;
             if (added <= 0) return { ...prev, lastSaveTime: Date.now() };
             const newQi = Math.min(nextRealmObj.req, prev.qi + added);
             const actualAdded = newQi - prev.qi;
-
-            return {
-              ...prev,
-              qi: newQi,
-              totalQi: prev.totalQi + actualAdded,
-              lastSaveTime: Date.now()
-            };
+            return { ...prev, qi: newQi, totalQi: prev.totalQi + actualAdded, lastSaveTime: Date.now() };
           });
         }, 1000);
         return () => clearInterval(interval);
       }, [qps]);
 
-      // Optimized Cloud Sync using refs to prevent interval/effect resetting loop spam
+      // Optimized Sync System
       const gameStateRef = React.useRef(gameState);
       gameStateRef.current = gameState;
       const myTribulationRef = React.useRef(myTribulation);
@@ -368,41 +354,54 @@
 
       React.useEffect(() => {
         let isMounted = true;
-        const doSync = async () => {
-          const state = gameStateRef.current;
-          const trib = myTribulationRef.current;
-          const playerEntry = {
-            name: playerName,
-            totalQi: state.totalQi,
-            realm: REALMS[state.realmIdx].name,
-            myTribulation: trib
-          };
+        let tick = 0;
 
-          const result = await updateCloudData(playerEntry);
-          if (result && isMounted) {
-            if (result.leaderboard) setCloudLeaderboard(result.leaderboard);
-            if (result.customSects) setCloudCustomSects(result.customSects);
-            if (result.marketListings) setMarketListings(result.marketListings);
-            if (result.activeTribulations) {
-              const now = Date.now();
-              const cleanTribs = {};
-              Object.entries(result.activeTribulations).forEach(([k, v]) => {
-                if (v && v.endTime > now && v.hp > 0) cleanTribs[k] = v;
-              });
-              setActiveTribulations(cleanTribs);
+        const doPoll = async () => {
+          try {
+            const data = await fetchCloudData();
+            if (!isMounted) return;
+            
+            setCloudLeaderboard(data.leaderboard || []);
+            setCloudCustomSects(data.customSects || []);
+            setMarketListings(data.marketListings || []);
+            
+            const now = Date.now();
+            const cleanTribs = {};
+            Object.entries(data.activeTribulations || {}).forEach(([k, v]) => {
+              if (v && v.endTime > now && v.hp > 0) cleanTribs[k] = v;
+            });
+            setActiveTribulations(cleanTribs);
 
-              if (trib && cleanTribs[playerName]) {
-                const cloudHp = cleanTribs[playerName].hp;
-                if (cloudHp !== trib.hp) {
-                  setMyTribulation(prev => prev ? { ...prev, hp: cloudHp } : null);
-                }
+            const myTrib = myTribulationRef.current;
+            if (myTrib && cleanTribs[playerName]) {
+              const cloudHp = cleanTribs[playerName].hp;
+              if (cloudHp !== myTrib.hp) {
+                setMyTribulation(prev => prev ? { ...prev, hp: cloudHp } : null);
               }
             }
+          } catch (e) {}
+        };
+
+        const doPushLeaderboard = async () => {
+          const state = gameStateRef.current;
+          await modifyCloudData('LEADERBOARD', {
+            name: playerName,
+            totalQi: state.totalQi,
+            realm: REALMS[state.realmIdx]?.name || "Phàm Nhân"
+          });
+        };
+
+        const syncLoop = async () => {
+          await doPoll();
+          tick++;
+          if (tick % 5 === 0) { // Mỗi 10s cập nhật Bảng Xếp Hạng
+            await doPushLeaderboard();
           }
         };
 
-        doSync();
-        const syncInterval = setInterval(doSync, 2000);
+        doPushLeaderboard().then(doPoll);
+        const syncInterval = setInterval(syncLoop, 2000);
+
         return () => {
           isMounted = false;
           clearInterval(syncInterval);
@@ -423,8 +422,6 @@
         const gearData = ALL_GEARS.find(g => g.id === itemToSell.gearId);
         if (!gearData) return;
 
-        const updatedInventory = gameState.inventory.filter(i => i.uniqueId !== uniqueId);
-
         const newListing = {
           listingId: 'list_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
           sellerName: playerName,
@@ -434,59 +431,36 @@
           time: Date.now()
         };
 
-        try {
-          const currentData = await fetchCloudData();
-          const updatedListings = [...(currentData.marketListings || []), newListing];
-
-          const res = await updateCloudData({
-            name: playerName,
-            totalQi: gameState.totalQi,
-            realm: REALMS[gameState.realmIdx].name,
-            overrideMarketListings: updatedListings
-          });
-
-          if (res && res.marketListings) {
-            setMarketListings(res.marketListings);
-          }
-
+        const res = await modifyCloudData('ADD_MARKET', { listing: newListing });
+        
+        if (res.success) {
+          setMarketListings(res.record.marketListings);
           setGameState(prev => ({
             ...prev,
-            inventory: updatedInventory,
+            inventory: prev.inventory.filter(i => i.uniqueId !== uniqueId),
             logs: [
               { id: Date.now().toString(), text: `[Hắc Thị]: Ký gửi thành công ${gearData.name} với giá ${formatNumber(price)} Qi!`, type: 'shop', time: Date.now() },
               ...prev.logs
             ].slice(0, 100)
           }));
           alert("Ký gửi bảo vật lên Hắc Thị thành công!");
-        } catch (e) {
-          alert("Lỗi kết nối cloud khi ký gửi bảo vật!");
+        } else {
+          alert(res.error);
         }
       };
 
       const handleCancelMarketListing = async (listing) => {
         if (listing.sellerName !== playerName) return;
 
-        try {
-          const currentData = await fetchCloudData();
-          const updatedListings = (currentData.marketListings || []).filter(l => l.listingId !== listing.listingId);
-
-          const res = await updateCloudData({
-            name: playerName,
-            totalQi: gameState.totalQi,
-            realm: REALMS[gameState.realmIdx].name,
-            overrideMarketListings: updatedListings
-          });
-
-          if (res && res.marketListings) {
-            setMarketListings(res.marketListings);
-          }
-
+        const res = await modifyCloudData('REMOVE_MARKET', { listingId: listing.listingId });
+        
+        if (res.success) {
+          setMarketListings(res.record.marketListings);
           const returnedItem = {
             uniqueId: listing.gearUniqueId || ('item_' + Date.now()),
             gearId: listing.gearId,
             isEquipped: false
           };
-
           const gearData = ALL_GEARS.find(g => g.id === listing.gearId);
 
           setGameState(prev => ({
@@ -497,8 +471,6 @@
               ...prev.logs
             ].slice(0, 100)
           }));
-        } catch (e) {
-          alert("Lỗi khi gỡ bán bảo vật!");
         }
       };
 
@@ -507,35 +479,16 @@
           alert("Đạo hữu không thể tự mua vật phẩm do chính mình ký gửi!");
           return;
         }
-
         if (gameState.qi < listing.price) {
           alert("Linh khí bất túc, không đủ linh thạch để mua bảo vật này!");
           return;
         }
 
+        const res = await modifyCloudData('BUY_MARKET', { listingId: listing.listingId });
         const gearData = ALL_GEARS.find(g => g.id === listing.gearId);
 
-        try {
-          const currentData = await fetchCloudData();
-          const targetListing = (currentData.marketListings || []).find(l => l.listingId === listing.listingId);
-          if (!targetListing) {
-            alert("Vật phẩm này đã được người khác mua mất hoặc đã bị chủ nhân gỡ!");
-            return;
-          }
-
-          const updatedListings = (currentData.marketListings || []).filter(l => l.listingId !== listing.listingId);
-
-          const res = await updateCloudData({
-            name: playerName,
-            totalQi: gameState.totalQi,
-            realm: REALMS[gameState.realmIdx].name,
-            overrideMarketListings: updatedListings
-          });
-
-          if (res && res.marketListings) {
-            setMarketListings(res.marketListings);
-          }
-
+        if (res.success) {
+          setMarketListings(res.record.marketListings);
           const purchasedItem = {
             uniqueId: 'item_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
             gearId: listing.gearId,
@@ -551,10 +504,9 @@
               ...prev.logs
             ].slice(0, 100)
           }));
-
           alert(`Giao dịch thành công! Đã thu phục "${gearData?.name}" vào túi đồ.`);
-        } catch (e) {
-          alert("Giao dịch thất bại, xin vui lòng thử lại!");
+        } else {
+          alert(res.error);
         }
       };
 
@@ -570,26 +522,16 @@
                   ...prev,
                   qi: prev.qi - nextRealm.req,
                   realmIdx: prev.realmIdx + 1,
-                  logs: [
-                    { id: Date.now().toString(), text: `[Độ Kiếp Thành Công]: Chống chịu qua lôi kiếp, bước chân vào ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() },
-                    ...prev.logs
-                  ].slice(0, 100)
+                  logs: [{ id: Date.now().toString(), text: `[Độ Kiếp Thành Công]: Chống chịu qua lôi kiếp, bước chân vào ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
                 };
-                updateCloudData({
-                  name: playerName,
-                  totalQi: updatedState.totalQi,
-                  realm: REALMS[updatedState.realmIdx].name,
-                  myTribulation: null
-                }).then(res => {
-                  if (res?.leaderboard) setCloudLeaderboard(res.leaderboard);
-                });
+                modifyCloudData('END_TRIB_AND_UPDATE', { name: playerName, totalQi: updatedState.totalQi, realm: nextRealm.name })
+                  .then(r => r.success && setCloudLeaderboard(r.record.leaderboard));
                 return updatedState;
               });
             } else {
               setGameState(prev => {
                 const lostQi = Math.floor(prev.qi * 0.6);
                 const lostTotalQi = Math.floor(prev.totalQi * 0.6);
-                
                 let updatedInventory = [...prev.inventory];
                 let lostGearName = null;
                 if (updatedInventory.length > 0) {
@@ -598,7 +540,6 @@
                   const foundGear = ALL_GEARS.find(g => g.id === removedItem.gearId);
                   if (foundGear) lostGearName = foundGear.name;
                 }
-
                 const penaltyText = lostGearName 
                   ? `[Thiên Kiếp Thất Bại]: Pháp trận bị công phá! Mất ${formatNumber(lostQi)} Qi và đánh rơi bảo vật "${lostGearName}"!`
                   : `[Thiên Kiếp Thất Bại]: Pháp trận bị công phá! Mất ${formatNumber(lostQi)} Qi!`;
@@ -610,14 +551,7 @@
                   inventory: updatedInventory,
                   logs: [{ id: Date.now().toString(), text: penaltyText, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 100)
                 };
-
-                updateCloudData({
-                  name: playerName,
-                  totalQi: updatedState.totalQi,
-                  realm: REALMS[updatedState.realmIdx].name,
-                  myTribulation: null
-                });
-
+                modifyCloudData('END_TRIB_AND_UPDATE', { name: playerName, totalQi: updatedState.totalQi, realm: REALMS[updatedState.realmIdx].name });
                 return updatedState;
               });
             }
@@ -633,57 +567,27 @@
 
         if (gameState.qi >= nextRealm.req) {
           if (nextRealm.isMajor) {
-            const tribData = {
-              targetRealm: nextRealm.name,
-              hp: 1200,
-              maxHp: 1200,
-              endTime: Date.now() + 30000
-            };
-            
+            const tribData = { targetRealm: nextRealm.name, hp: 1200, maxHp: 1200, endTime: Date.now() + 30000 };
             setMyTribulation(tribData);
             setGameState(prev => ({
               ...prev,
-              logs: [
-                { id: Date.now().toString(), text: `[Thiên Kiếp Giáng Lâm]: Bắt đầu độ kiếp lên ${nextRealm.name}! Cầm cự 30 giây!`, type: 'breakthrough', time: Date.now() },
-                ...prev.logs
-              ].slice(0, 100)
+              logs: [{ id: Date.now().toString(), text: `[Thiên Kiếp Giáng Lâm]: Bắt đầu độ kiếp lên ${nextRealm.name}! Cầm cự 30 giây!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
             }));
-
-            await updateCloudData({
-              name: playerName,
-              totalQi: gameState.totalQi,
-              realm: REALMS[gameState.realmIdx].name,
-              myTribulation: tribData
-            });
-
+            await modifyCloudData('START_TRIB', { name: playerName, tribData });
           } else {
             const nextIdx = gameState.realmIdx + 1;
             const newQi = gameState.qi - nextRealm.req;
             setGameState(prev => ({
-              ...prev,
-              qi: newQi,
-              realmIdx: nextIdx,
-              logs: [
-                { id: Date.now().toString(), text: `[Đột Phá]: Thành công tiến cấp lên ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() },
-                ...prev.logs
-              ].slice(0, 100)
+              ...prev, qi: newQi, realmIdx: nextIdx,
+              logs: [{ id: Date.now().toString(), text: `[Đột Phá]: Thành công tiến cấp lên ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
             }));
-
-            const res = await updateCloudData({
-              name: playerName,
-              totalQi: gameState.totalQi,
-              realm: REALMS[nextIdx].name,
-              myTribulation: null
-            });
-            if (res?.leaderboard) setCloudLeaderboard(res.leaderboard);
+            const res = await modifyCloudData('LEADERBOARD', { name: playerName, totalQi: gameState.totalQi, realm: nextRealm.name });
+            if (res.success) setCloudLeaderboard(res.record.leaderboard);
           }
         } else {
           setGameState(prev => ({
             ...prev,
-            logs: [
-              { id: Date.now().toString(), text: `[Tâm Ma]: Linh khí bất túc, xung kích ${nextRealm.name} thất bại!`, type: 'fail', time: Date.now() },
-              ...prev.logs
-            ].slice(0, 100)
+            logs: [{ id: Date.now().toString(), text: `[Tâm Ma]: Linh khí bất túc, xung kích ${nextRealm.name} thất bại!`, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 100)
           }));
         }
       };
@@ -693,7 +597,6 @@
         try {
           const data = await fetchCloudData();
           let tribs = data.activeTribulations || {};
-
           if (!tribs[targetPlayerName]) {
             setGameState(prev => ({
               ...prev,
@@ -705,41 +608,22 @@
 
           let power = combatPower * 20;
           if (actionType === 'attack' && gameState.joinedSectId === 'huyet_dao') power *= 1.5;
-
           const oldHp = tribs[targetPlayerName].hp;
-          if (actionType === 'protect') {
-            tribs[targetPlayerName].hp = Math.min(tribs[targetPlayerName].maxHp, oldHp + power);
-          } else {
-            tribs[targetPlayerName].hp = Math.max(0, oldHp - power);
+          const newHp = actionType === 'protect' 
+            ? Math.min(tribs[targetPlayerName].maxHp, oldHp + power) 
+            : Math.max(0, oldHp - power);
+          const delta = Math.abs(newHp - oldHp);
+
+          const res = await modifyCloudData('INTERACT_TRIB', { targetName: targetPlayerName, newHp });
+          if (res.success) {
+            setActiveTribulations(res.record.activeTribulations);
+            setActedPlayers(prev => new Set([...prev, targetPlayerName]));
+            const actionText = actionType === 'protect' ? `🛡️ Hộ Thủ (+${Math.floor(delta)} HP)` : `⚔️ Tấn Công (-${Math.floor(delta)} HP)`;
+            setGameState(prev => ({
+              ...prev,
+              logs: [{ id: Date.now().toString(), text: `[Thiên Thư]: Thực thi ${actionText} cho ${targetPlayerName}!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
+            }));
           }
-          const delta = Math.abs(tribs[targetPlayerName].hp - oldHp);
-
-          const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Master-Key': API_KEY,
-              'X-Access-Key': API_KEY
-            },
-            body: JSON.stringify({
-              leaderboard: data.leaderboard || [],
-              customSects: data.customSects || [],
-              activeTribulations: tribs,
-              marketListings: data.marketListings || []
-            })
-          });
-          const updated = await res.json();
-          if (updated?.record?.activeTribulations) {
-            setActiveTribulations(updated.record.activeTribulations);
-          }
-
-          setActedPlayers(prev => new Set([...prev, targetPlayerName]));
-
-          const actionText = actionType === 'protect' ? `🛡️ Hộ Thủ (+${Math.floor(delta)} HP)` : `⚔️ Tấn Công (-${Math.floor(delta)} HP)`;
-          setGameState(prev => ({
-            ...prev,
-            logs: [{ id: Date.now().toString(), text: `[Thiên Thư]: Thực thi ${actionText} cho ${targetPlayerName}!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
-          }));
         } catch (e) {}
         setActionLoading(null);
       };
@@ -775,28 +659,19 @@
             const roll = Math.random();
             if (roll <= gear.dropRate) {
               const uniqueId = 'item_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-              newInventoryItems.push({
-                uniqueId: uniqueId,
-                gearId: gear.id,
-                isEquipped: false
-              });
+              newInventoryItems.push({ uniqueId: uniqueId, gearId: gear.id, isEquipped: false });
               droppedItemsLogs.push(gear.name);
             }
           });
 
-          let dropLogText = droppedItemsLogs.length > 0 
-            ? ` | Nhận được bảo vật: ${droppedItemsLogs.join(', ')}!` 
-            : '';
+          let dropLogText = droppedItemsLogs.length > 0 ? ` | Nhận được bảo vật: ${droppedItemsLogs.join(', ')}!` : '';
 
           setGameState(prev => ({
             ...prev,
             qi: prev.qi + monster.reward,
             totalQi: prev.totalQi + monster.reward,
             inventory: newInventoryItems,
-            logs: [
-              { id: Date.now().toString(), text: `[Trảm Yêu]: Tiêu diệt ${monster.name}, đoạt +${monster.reward} Khí${dropLogText}`, type: 'breakthrough', time: Date.now() },
-              ...prev.logs
-            ].slice(0, 100)
+            logs: [{ id: Date.now().toString(), text: `[Trảm Yêu]: Tiêu diệt ${monster.name}, đoạt +${monster.reward} Khí${dropLogText}`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
           }));
 
           setIsDead(true);
@@ -810,24 +685,13 @@
         setGameState(prev => {
           const targetItem = prev.inventory.find(i => i.uniqueId === uniqueId);
           if (!targetItem) return prev;
-
           const willBeEquipped = !targetItem.isEquipped;
           const gearData = ALL_GEARS.find(g => g.id === targetItem.gearId);
-
-          const updatedInventory = prev.inventory.map(item => {
-            if (item.uniqueId === uniqueId) {
-              return { ...item, isEquipped: willBeEquipped };
-            }
-            return item;
-          });
-
+          const updatedInventory = prev.inventory.map(item => item.uniqueId === uniqueId ? { ...item, isEquipped: willBeEquipped } : item);
           return {
             ...prev,
             inventory: updatedInventory,
-            logs: [
-              { id: Date.now().toString(), text: `[Túi Đồ]: ${willBeEquipped ? 'Đã trang bị' : 'Đã tháo'} pháp bảo ${gearData?.name || 'Vật Phẩm'}!`, type: 'shop', time: Date.now() },
-              ...prev.logs
-            ].slice(0, 100)
+            logs: [{ id: Date.now().toString(), text: `[Túi Đồ]: ${willBeEquipped ? 'Đã trang bị' : 'Đã tháo'} pháp bảo ${gearData?.name || 'Vật Phẩm'}!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
           };
         });
       };
@@ -847,32 +711,15 @@
           founder: playerName
         };
 
-        const currentData = await fetchCloudData();
-        const updatedSects = [...(currentData.customSects || []), newSect];
-        
-        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': API_KEY,
-            'X-Access-Key': API_KEY
-          },
-          body: JSON.stringify({
-            leaderboard: currentData.leaderboard || [],
-            customSects: updatedSects,
-            activeTribulations: currentData.activeTribulations || {},
-            marketListings: currentData.marketListings || []
-          })
-        });
-
-        setCloudCustomSects(updatedSects);
-        setGameState(prev => ({
-          ...prev,
-          joinedSectId: newSect.id,
-          logs: [{ id: Date.now().toString(), text: `[Khai Sơn]: Thành công khai lập tông môn "${newSect.name}"!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
-        }));
-        setNewSectName('');
-        setNewSectDesc('');
+        const res = await modifyCloudData('ADD_SECT', { sect: newSect });
+        if (res.success) {
+          setCloudCustomSects(res.record.customSects);
+          setGameState(prev => ({
+            ...prev, joinedSectId: newSect.id,
+            logs: [{ id: Date.now().toString(), text: `[Khai Sơn]: Thành công khai lập tông môn "${newSect.name}"!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
+          }));
+          setNewSectName(''); setNewSectDesc('');
+        }
       };
 
       const allSects = [...DEFAULT_SECTS, ...cloudCustomSects];
@@ -883,29 +730,14 @@
 
       const fullLeaderboard = React.useMemo(() => {
         let list = [...cloudLeaderboard];
-        const playerEntry = {
-          name: playerName,
-          totalQi: gameState.totalQi,
-          realm: REALMS[gameState.realmIdx].name
-        };
-
         const index = list.findIndex(item => item.name === playerName);
         if (index >= 0) {
-          list[index] = {
-            ...list[index],
-            totalQi: Math.max(list[index].totalQi, gameState.totalQi),
-            realm: REALMS[gameState.realmIdx].name
-          };
+          list[index] = { ...list[index], totalQi: Math.max(list[index].totalQi, gameState.totalQi), realm: REALMS[gameState.realmIdx].name };
         } else {
-          list.push(playerEntry);
+          list.push({ name: playerName, totalQi: gameState.totalQi, realm: REALMS[gameState.realmIdx].name });
         }
-
         list.sort((a, b) => b.totalQi - a.totalQi);
-        return list.slice(0, 20).map(item => ({
-          ...item,
-          isPlayer: item.name === playerName,
-          title: item.realm || 'Phàm Nhân'
-        }));
+        return list.slice(0, 20).map(item => ({ ...item, isPlayer: item.name === playerName, title: item.realm || 'Phàm Nhân' }));
       }, [cloudLeaderboard, playerName, gameState.totalQi, gameState.realmIdx]);
 
       return (
