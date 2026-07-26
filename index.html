@@ -598,7 +598,7 @@
     const DEFAULT_SECTS = [
       { id: 'thanh_van', name: 'Thanh Vân Môn', buff: 'Tăng +20% Tốc độ Thu Thập', desc: 'Kiếm đạo chính phái, linh khí uy nghiêm.', founder: 'Hệ Thống', icon: '🗡️' },
       { id: 'am_duong', name: 'Âm Dương Cốc', buff: 'Giảm 20% Giá mua Đan Dược & Bảo Vật', desc: 'Hành sự cổ quái, pháp tắc huyền bí.', founder: 'Hệ Thống', icon: '☯️' },
-      { id: 'huyet_dao', name: 'Huyết Đao Môn', buff: 'Tăng +50% Sát thương Trảm Yêu & Phá Trận', desc: 'Chuyên tu sát phạt, chiến lực kinh người.', founder: 'Hệ Thống', icon: '🩸' }
+      { id: 'huyet_dao', name: 'Huyết Đao Môn', buff: 'Giảm 30% Hao Tổn Sinh Mệnh trong Bí Cảnh & Tăng +50% Sát thương Phá Trận', desc: 'Chuyên tu sát phạt, chiến lực kinh người.', founder: 'Hệ Thống', icon: '🩸' }
     ];
 
     const SHOP_ITEMS = [
@@ -655,15 +655,21 @@
       { id: 'gear_31', name: 'Vĩnh Hằng Đạo Tổ Ấn', tier: 'Hồng Hoang', colorClass: 'tier-divine', type: 'accessory', clickBonus: 3500, qpsBonus: 7000, dropRate: 0.0004, desc: 'Ấn tín tối cổ của bậc Đạo Tổ, trấn giữ vĩnh hằng bất diệt.', icon: '💎' }
     ];
 
-    const MONSTERS = [
-      { id: 'yeu_thu', name: 'Yêu Lang Hoang Dã', hp: 100, reward: 50, icon: '🐺', color: '#ef4444' },
-      { id: 'quy_tuong', name: 'Quỷ Tướng Ngàn Năm', hp: 500, reward: 300, icon: '💀', color: '#a855f7' },
-      { id: 'giao_long', name: 'Giao Long Thượng Cổ', hp: 2500, reward: 1500, icon: '🐉', color: '#f5c842' }
+    // ─── BÍ CẢNH (thay thế cơ chế đánh quái cũ) ───
+    // decayPerSec hiệu quả = baseDecayPerSec / (1 + combatPower / powerScale) — Chiến Lực càng cao, sinh mệnh tụt càng chậm.
+    // dropRolls: số lần lặp lại bảng rớt đồ ALL_GEARS/ALL_ITEMS khi hoàn thành (bí cảnh khó hơn = nhiều lượt roll hơn).
+    const BI_CANH_LIST = [
+      { id: 'bc_solo_1', name: 'Loạn Thạch Bí Cảnh', type: 'solo', tier: 'Sơ Cấp', duration: 30, maxHp: 100, baseDecayPerSec: 3, powerScale: 8, reward: 400, dropRolls: 1, failPenaltyPercent: 0.10, icon: '🌫️', color: '#94a3b8', desc: 'Bí cảnh sơ khai, thích hợp cho tu sĩ mới nhập môn thử sức.' },
+      { id: 'bc_solo_2', name: 'Huyết Vực Bí Cảnh', type: 'solo', tier: 'Trung Cấp', duration: 40, maxHp: 100, baseDecayPerSec: 6, powerScale: 60, reward: 3000, dropRolls: 1, failPenaltyPercent: 0.15, icon: '🌋', color: '#f87171', desc: 'Vùng đất nhuốm huyết khí yêu ma, hiểm nguy hơn hẳn.' },
+      { id: 'bc_solo_3', name: 'Thâm Uyên Bí Cảnh', type: 'solo', tier: 'Cao Cấp', duration: 50, maxHp: 100, baseDecayPerSec: 9, powerScale: 400, reward: 25000, dropRolls: 2, failPenaltyPercent: 0.20, icon: '🌌', color: '#a855f7', desc: 'Vực sâu không đáy, chỉ cường giả pháp bảo đầy mình mới dám bước vào.' },
+      { id: 'bc_team_1', name: 'Đồng Môn Hợp Kích — Sơ Cấp', type: 'team', tier: 'Sơ Cấp', duration: 35, maxHp: 100, baseDecayPerSec: 4, powerScale: 8, reward: 700, dropRolls: 1, failPenaltyPercent: 0.12, icon: '🛡️', color: '#60a5fa', desc: 'Cùng đồng môn xông pha bí cảnh, rủi ro và phần thưởng đều tăng so với đi solo.' },
+      { id: 'bc_team_2', name: 'Đồng Môn Hợp Kích — Trung Cấp', type: 'team', tier: 'Trung Cấp', duration: 45, maxHp: 100, baseDecayPerSec: 8, powerScale: 60, reward: 5500, dropRolls: 2, failPenaltyPercent: 0.18, icon: '⚔️', color: '#fb923c', desc: 'Trận chiến quy mô lớn, hung hiểm gấp bội bí cảnh solo cùng cấp.' },
+      { id: 'bc_team_3', name: 'Đồng Môn Hợp Kích — Cao Cấp', type: 'team', tier: 'Cao Cấp', duration: 60, maxHp: 100, baseDecayPerSec: 12, powerScale: 400, reward: 45000, dropRolls: 3, failPenaltyPercent: 0.25, icon: '👹', color: '#f43f5e', desc: 'Đại chiến tối nguy hiểm, phần thưởng cực kỳ hậu hĩnh.' }
     ];
 
     // ─── VẬT PHẨM (ĐAN DƯỢC & LINH PHÙ) ───
     // type: 'qi' → dùng hồi ngay một lượng Linh Khí. type: 'trib_heal' → chỉ dùng được lúc đang Độ Kiếp, hồi % sinh mệnh Độ Kiếp.
-    // price: null nghĩa là vật phẩm chỉ có thể rớt ra từ Trảm Yêu, không mua được.
+    // price: null nghĩa là vật phẩm chỉ có thể rớt ra từ Bí Cảnh, không mua được.
     const ALL_ITEMS = [
       { id: 'item_1', name: 'Tụ Khí Đan', tier: 'Phàm Phí', colorClass: 'tier-common', type: 'qi', value: 200, price: null, dropRate: 0.25, desc: 'Đan dược sơ cấp, hấp thu tức thời một ít linh khí tản mác.', icon: '💊' },
       { id: 'item_2', name: 'Bồi Nguyên Đan', tier: 'Hạ Phẩm', colorClass: 'tier-uncommon', type: 'qi', value: 1200, price: null, dropRate: 0.12, desc: 'Bồi bổ căn nguyên, hồi phục lượng linh khí kha khá.', icon: '🧪' },
@@ -785,9 +791,7 @@
       const [invFilter, setInvFilter] = React.useState('all');
       const [isBlackMarketModalOpen, setIsBlackMarketModalOpen] = React.useState(false);
       const [listingPriceInput, setListingPriceInput] = React.useState({});
-      const [currentMonsterIdx, setCurrentMonsterIdx] = React.useState(0);
-      const [monsterHp, setMonsterHp] = React.useState(MONSTERS[0].hp);
-      const [isDead, setIsDead] = React.useState(false);
+      const [biCanhRun, setBiCanhRun] = React.useState(null);
       const [cloudLeaderboard, setCloudLeaderboard] = React.useState([]);
       const [cloudCustomSects, setCloudCustomSects] = React.useState([]);
       const [activeTribulations, setActiveTribulations] = React.useState({});
@@ -1073,45 +1077,84 @@
         }
       };
 
-      const attackMonster = (multiplier = 1) => {
-        if (isDead) return;
-        let dmg = combatPower * multiplier;
-        if (gameState.joinedSectId === 'huyet_dao') dmg *= 1.5;
-        const monster = MONSTERS[currentMonsterIdx];
-        const nextHp = monsterHp - dmg;
-        if (nextHp <= 0) {
-          let droppedItemsLogs = [];
-          let newInventoryItems = [...gameState.inventory];
-          ALL_GEARS.forEach(gear => {
-            const roll = Math.random();
-            if (roll <= gear.dropRate) {
-              const uniqueId = 'item_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-              newInventoryItems.push({ uniqueId, gearId: gear.id, isEquipped: false });
-              droppedItemsLogs.push(gear.name);
-            }
-          });
-          // ─── Rớt Vật Phẩm (Đan Dược / Linh Phù) — bổ sung, không ảnh hưởng logic rớt trang bị ở trên ───
-          let newItemCounts = { ...gameState.items };
-          ALL_ITEMS.forEach(consumable => {
-            const itemRoll = Math.random();
-            if (itemRoll <= consumable.dropRate) {
-              newItemCounts[consumable.id] = (newItemCounts[consumable.id] || 0) + 1;
-              droppedItemsLogs.push(consumable.name);
-            }
-          });
-          let dropLogText = droppedItemsLogs.length > 0 ? ` | Nhận được bảo vật: ${droppedItemsLogs.join(', ')}!` : '';
-          setGameState(prev => ({
-            ...prev, qi: prev.qi + monster.reward, totalQi: prev.totalQi + monster.reward,
-            inventory: newInventoryItems,
-            items: newItemCounts,
-            logs: [{ id: Date.now().toString(), text: `[Trảm Yêu]: Tiêu diệt ${monster.name}, đoạt +${monster.reward} Khí${dropLogText}`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
-          }));
-          setIsDead(true);
-          setTimeout(() => { setMonsterHp(MONSTERS[currentMonsterIdx].hp); setIsDead(false); }, 3000);
-        } else {
-          setMonsterHp(nextHp);
-        }
+      // ─── BÍ CẢNH: tiến vào một bí cảnh (thay thế cơ chế đánh quái cũ) ───
+      const enterBiCanh = (bcId) => {
+        if (biCanhRun) return;
+        const bcDef = BI_CANH_LIST.find(b => b.id === bcId);
+        if (!bcDef) return;
+        let effectiveDecay = bcDef.baseDecayPerSec / (1 + combatPower / bcDef.powerScale);
+        if (gameState.joinedSectId === 'huyet_dao') effectiveDecay *= 0.7;
+        const now = Date.now();
+        setBiCanhRun({ bcId, startTime: now, endTime: now + bcDef.duration * 1000, maxHp: bcDef.maxHp, decayPerSec: effectiveDecay });
+        setGameState(prev => ({
+          ...prev,
+          logs: [{ id: Date.now().toString(), text: `[Bí Cảnh]: Tiến vào ${bcDef.name}, chuẩn bị đối mặt hiểm nguy...`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
+        }));
       };
+
+      // ─── BÍ CẢNH: chủ động rút lui giữa chừng — an toàn, không mất mát nhưng cũng không có phần thưởng ───
+      const leaveBiCanh = () => {
+        if (!biCanhRun) return;
+        setGameState(prev => ({
+          ...prev,
+          logs: [{ id: Date.now().toString(), text: `[Bí Cảnh]: Đã chủ động rút lui an toàn, không nhận được phần thưởng.`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
+        }));
+        setBiCanhRun(null);
+      };
+
+      // ─── BÍ CẢNH: vòng lặp theo dõi sinh mệnh & thời gian, tự động phân giải thành công/thất bại ───
+      React.useEffect(() => {
+        if (!biCanhRun) return;
+        const timer = setInterval(() => {
+          const now = Date.now();
+          const elapsedSec = (now - biCanhRun.startTime) / 1000;
+          const currentHp = biCanhRun.maxHp - biCanhRun.decayPerSec * elapsedSec;
+          const bcDef = BI_CANH_LIST.find(b => b.id === biCanhRun.bcId);
+          if (currentHp <= 0) {
+            setGameState(prev => {
+              const lostQi = Math.floor(prev.qi * (bcDef?.failPenaltyPercent || 0.15));
+              return {
+                ...prev, qi: Math.max(0, prev.qi - lostQi),
+                logs: [{ id: Date.now().toString(), text: `[Bí Cảnh Thất Bại]: Trọng thương trong ${bcDef?.name || 'Bí Cảnh'}, mất mạng và tổn thất ${formatNumber(lostQi)} Qi tu vi!`, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 100)
+              };
+            });
+            setBiCanhRun(null);
+          } else if (now >= biCanhRun.endTime) {
+            setGameState(prev => {
+              let droppedItemsLogs = [];
+              let newInventoryItems = [...prev.inventory];
+              let newItemCounts = { ...prev.items };
+              const rolls = bcDef?.dropRolls || 1;
+              for (let r = 0; r < rolls; r++) {
+                ALL_GEARS.forEach(gear => {
+                  const roll = Math.random();
+                  if (roll <= gear.dropRate) {
+                    const uniqueId = 'item_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7) + '_' + r;
+                    newInventoryItems.push({ uniqueId, gearId: gear.id, isEquipped: false });
+                    droppedItemsLogs.push(gear.name);
+                  }
+                });
+                ALL_ITEMS.forEach(consumable => {
+                  const itemRoll = Math.random();
+                  if (itemRoll <= consumable.dropRate) {
+                    newItemCounts[consumable.id] = (newItemCounts[consumable.id] || 0) + 1;
+                    droppedItemsLogs.push(consumable.name);
+                  }
+                });
+              }
+              const reward = bcDef?.reward || 0;
+              let dropLogText = droppedItemsLogs.length > 0 ? ` | Nhận được bảo vật: ${droppedItemsLogs.join(', ')}!` : '';
+              return {
+                ...prev, qi: prev.qi + reward, totalQi: prev.totalQi + reward,
+                inventory: newInventoryItems, items: newItemCounts,
+                logs: [{ id: Date.now().toString(), text: `[Bí Cảnh Thành Công]: Vượt qua ${bcDef?.name || 'Bí Cảnh'}, đoạt +${formatNumber(reward)} Khí${dropLogText}`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
+              };
+            });
+            setBiCanhRun(null);
+          }
+        }, 300);
+        return () => clearInterval(timer);
+      }, [biCanhRun]);
 
       const toggleEquipInventoryItem = (uniqueId) => {
         setGameState(prev => {
@@ -1203,6 +1246,12 @@
       const isMaxedOut = nextRealmObj && gameState.qi >= nextRealmObj.req;
       const equippedTitle = ALL_TITLES.find(t => t.id === gameState.equippedTitleId) || ALL_TITLES[0];
 
+      // ─── BÍ CẢNH: giá trị hiển thị theo thời gian thực (làm mới nhờ setTick 500ms có sẵn) ───
+      const activeBcDef = biCanhRun ? BI_CANH_LIST.find(b => b.id === biCanhRun.bcId) : null;
+      const bcCurrentHp = biCanhRun ? Math.max(0, biCanhRun.maxHp - biCanhRun.decayPerSec * ((Date.now() - biCanhRun.startTime) / 1000)) : 0;
+      const bcHpPercent = biCanhRun ? Math.max(0, Math.min(100, (bcCurrentHp / biCanhRun.maxHp) * 100)) : 0;
+      const bcTimeLeftSec = biCanhRun ? Math.max(0, Math.ceil((biCanhRun.endTime - Date.now()) / 1000)) : 0;
+
       const fullLeaderboard = React.useMemo(() => {
         let list = [...cloudLeaderboard];
         const index = list.findIndex(item => item.name === playerName);
@@ -1220,7 +1269,7 @@
         { id: 'shop',        label: '💊 Đan Phòng' },
         { id: 'inventory',   label: '🎒 Bảo Vật' },
         { id: 'items',       label: '🧪 Vật Phẩm' },
-        { id: 'combat',      label: '⚔️ Trảm Yêu' },
+        { id: 'combat',      label: '🌀 Bí Cảnh' },
         { id: 'sect',        label: '⛩️ Tông Môn' },
         { id: 'titles',      label: '🏅 Danh Hiệu' },
         { id: 'leaderboard', label: '📜 Bảng Xếp Hạng' },
@@ -1463,6 +1512,23 @@
                   <div style={{ textAlign:'right', fontSize:'10px', color:'rgba(150,130,200,0.5)' }}>{progressPercent.toFixed(1)}%</div>
                 </div>
 
+                {/* Bí Cảnh HP bar — chỉ hiện khi đang trong bí cảnh */}
+                {biCanhRun && (
+                  <div style={{ width:'100%', display:'flex', flexDirection:'column', gap:'6px', padding:'10px', background:'rgba(60,5,5,0.35)', border:'1px solid rgba(220,38,38,0.35)', borderRadius:'10px' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:'10px', letterSpacing:'0.5px' }}>
+                      <span style={{ color:'#fca5a5', fontFamily:'Cinzel,serif' }}>{activeBcDef?.icon} {activeBcDef?.name} — Còn {bcTimeLeftSec}s</span>
+                      <span style={{ color:'#fca5a5', fontWeight:700 }}>{Math.ceil(bcCurrentHp)} / {biCanhRun.maxHp} Sinh Mệnh</span>
+                    </div>
+                    <div className="hp-bar-track">
+                      <div className="hp-bar-fill" style={{ width:`${bcHpPercent}%` }}></div>
+                    </div>
+                    <button onClick={leaveBiCanh}
+                      style={{ alignSelf:'flex-end', padding:'4px 10px', borderRadius:'6px', fontSize:'9px', fontFamily:'Cinzel,serif', fontWeight:700, cursor:'pointer', background:'rgba(40,40,60,0.6)', border:'1px solid rgba(150,140,170,0.3)', color:'rgba(200,180,220,0.7)' }}>
+                      🚪 Rút Lui An Toàn
+                    </button>
+                  </div>
+                )}
+
                 {/* Breakthrough button */}
                 {myTribulation ? (
                   <div style={{ width:'100%', padding:'14px', background:'linear-gradient(135deg, rgba(60,5,5,0.8), rgba(30,2,2,0.9))', border:'2px solid rgba(220,38,38,0.6)', borderRadius:'12px', textAlign:'center', animation:'pulse 1s infinite', boxShadow:'0 0 25px rgba(220,38,38,0.3)' }}>
@@ -1578,13 +1644,13 @@
                     <div>
                       <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>🎒 Túi Đồ & Pháp Bảo</div>
                       <div className="ornament-divider" style={{ margin:'8px 0' }}>CÁC BẢO VẬT ĐÃ THU PHỤC</div>
-                      <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Pháp bảo thu phục từ Trảm Yêu. Trang bị để khuếch đại chiến lực.</div>
+                      <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Pháp bảo thu phục từ Bí Cảnh. Trang bị để khuếch đại chiến lực.</div>
                     </div>
                     {gameState.inventory.length === 0 ? (
                       <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'10px', padding:'50px 20px', color:'rgba(140,120,180,0.5)' }}>
                         <span style={{ fontSize:'48px' }}>🎒</span>
                         <span style={{ fontFamily:'Cinzel,serif', fontSize:'13px' }}>Túi đồ trống rỗng</span>
-                        <span style={{ fontSize:'11px', textAlign:'center', maxWidth:'250px', lineHeight:1.6 }}>Hãy đến mục "Trảm Yêu Thử Luyện" để tiêu diệt yêu thú và nhận bảo vật!</span>
+                        <span style={{ fontSize:'11px', textAlign:'center', maxWidth:'250px', lineHeight:1.6 }}>Hãy đến mục "Bí Cảnh Thám Hiểm" để chinh phục bí cảnh và nhận bảo vật!</span>
                       </div>
                     ) : (
                       <React.Fragment>
@@ -1643,7 +1709,7 @@
                     <div>
                       <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>🧪 Vật Phẩm & Đan Dược</div>
                       <div className="ornament-divider" style={{ margin:'8px 0' }}>ĐAN DƯỢC HỘ THÂN & LINH PHÙ</div>
-                      <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Nhận từ Trảm Yêu hoặc mua tại đây. Đan hồi Linh Khí dùng bất cứ lúc nào; Linh Phù hộ thân chỉ dùng được khi đang Độ Kiếp.</div>
+                      <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Nhận từ Bí Cảnh hoặc mua tại đây. Đan hồi Linh Khí dùng bất cứ lúc nào; Linh Phù hộ thân chỉ dùng được khi đang Độ Kiếp.</div>
                     </div>
                     <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(210px, 1fr))', gap:'12px' }}>
                       {ALL_ITEMS.map(consumable => {
@@ -1671,7 +1737,7 @@
                                   {canBuy ? '✦ ' : '🔒 '}Mua — {formatNumber(consumable.price)} Qi
                                 </button>
                               ) : (
-                                <div style={{ textAlign:'center', fontSize:'9px', color:'rgba(150,140,170,0.5)' }}>Chỉ rớt ra từ Trảm Yêu</div>
+                                <div style={{ textAlign:'center', fontSize:'9px', color:'rgba(150,140,170,0.5)' }}>Chỉ rớt ra từ Bí Cảnh</div>
                               )}
                               <button onClick={() => useConsumableItem(consumable.id)} disabled={!canUse} className="btn-primary" style={{ opacity: canUse ? 1 : 0.4, cursor: canUse ? 'pointer' : 'not-allowed' }}>
                                 Sử Dụng
@@ -1684,69 +1750,78 @@
                   </div>
                 )}
 
-                {/* ─── COMBAT TAB ─── */}
+                {/* ─── COMBAT TAB (BÍ CẢNH) ─── */}
                 {activeTab === 'combat' && (
                   <div style={{ display:'flex', flexDirection:'column', gap:'16px', height:'100%' }}>
-                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'10px' }}>
-                      <div>
-                        <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>⚔️ Trảm Yêu Thử Luyện</div>
-                        <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Tiêu diệt yêu thú để nhận linh khí và rớt trang bị ngẫu nhiên.</div>
+                    <div>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>🌀 Bí Cảnh Thám Hiểm</div>
+                      <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Tiến vào bí cảnh và trụ vững đến hết thời gian để nhận linh khí cùng trang bị. Sinh mệnh sẽ tự động hao tổn theo độ khó — Chiến Lực càng cao thì trụ càng lâu và càng an toàn.</div>
+                    </div>
+
+                    {biCanhRun ? (
+                      /* Đang trong bí cảnh */
+                      <div className="monster-arena" style={{ flex:1 }}>
+                        <div style={{ fontSize:'72px', textAlign:'center', filter:`drop-shadow(0 0 20px ${activeBcDef?.color})`, animation:'bounce 2s infinite' }}>
+                          {activeBcDef?.icon}
+                        </div>
+                        <div style={{ textAlign:'center' }}>
+                          <div style={{ fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'18px', color:'#f5e6c8', marginBottom:'4px', textShadow:`0 0 20px ${activeBcDef?.color}60` }}>
+                            {activeBcDef?.name}
+                          </div>
+                          <div style={{ fontSize:'11px', color:'#67e8f9' }}>
+                            Còn lại {bcTimeLeftSec}s • Vượt qua để nhận +{formatNumber(activeBcDef?.reward || 0)} Linh Khí
+                          </div>
+                        </div>
+
+                        {/* HP bar */}
+                        <div style={{ width:'100%', maxWidth:'360px' }}>
+                          <div style={{ display:'flex', justifyContent:'space-between', fontSize:'11px', marginBottom:'5px' }}>
+                            <span style={{ color:'rgba(220,180,180,0.7)' }}>💔 Sinh Mệnh Của Bạn</span>
+                            <span style={{ color:'#fca5a5', fontWeight:700 }}>{Math.ceil(bcCurrentHp)} / {biCanhRun.maxHp}</span>
+                          </div>
+                          <div className="hp-bar-track">
+                            <div className="hp-bar-fill" style={{ width:`${bcHpPercent}%` }}></div>
+                          </div>
+                        </div>
+
+                        <button onClick={leaveBiCanh} className="btn-danger"
+                          style={{ width:'100%', maxWidth:'360px', padding:'12px', borderRadius:'12px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px', letterSpacing:'0.5px', cursor:'pointer' }}>
+                          🚪 Rút Lui An Toàn (Không Nhận Thưởng)
+                        </button>
                       </div>
-                      {/* Monster selector */}
-                      <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
-                        {MONSTERS.map((m, idx) => (
-                          <button key={m.id} onClick={() => { setCurrentMonsterIdx(idx); setMonsterHp(m.hp); }}
-                            style={{ padding:'6px 12px', borderRadius:'8px', fontSize:'11px', fontFamily:'Cinzel,serif', fontWeight:700, cursor:'pointer', transition:'all 0.15s',
-                              background: currentMonsterIdx === idx ? `linear-gradient(135deg, rgba(80,20,20,0.8), rgba(50,10,10,0.9))` : 'rgba(20,10,40,0.6)',
-                              border: `1px solid ${currentMonsterIdx === idx ? m.color : 'rgba(100,60,180,0.25)'}`,
-                              color: currentMonsterIdx === idx ? '#f5e6c8' : 'rgba(180,160,220,0.5)',
-                              boxShadow: currentMonsterIdx === idx ? `0 0 15px ${m.color}40` : 'none' }}>
-                            {m.icon} {m.name}
-                          </button>
+                    ) : (
+                      /* Danh sách chọn bí cảnh */
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(230px, 1fr))', gap:'12px', maxHeight:'480px', overflowY:'auto' }} className="no-scrollbar">
+                        {BI_CANH_LIST.map(bc => (
+                          <div key={bc.id} className="item-card" style={{ display:'flex', flexDirection:'column', justifyContent:'space-between', gap:'10px', border:`1px solid ${bc.color}55` }}>
+                            <div>
+                              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+                                <div style={{ fontSize:'30px' }}>{bc.icon}</div>
+                                <span style={{ fontSize:'9px', padding:'2px 8px', borderRadius:'20px', fontWeight:700,
+                                  background: bc.type === 'team' ? 'rgba(59,130,246,0.25)' : 'rgba(168,85,247,0.25)',
+                                  border: `1px solid ${bc.type === 'team' ? 'rgba(96,165,250,0.4)' : 'rgba(192,132,252,0.4)'}`,
+                                  color: bc.type === 'team' ? '#93c5fd' : '#d8b4fe' }}>
+                                  {bc.type === 'team' ? '👥 Tổ Đội' : '🧍 Solo'}
+                                </span>
+                              </div>
+                              <div style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color: bc.color, margin:'6px 0 3px' }}>{bc.name}</div>
+                              <div style={{ fontSize:'9px', padding:'2px 6px', background:'rgba(0,0,0,0.4)', borderRadius:'6px', color:'rgba(180,160,220,0.6)', display:'inline-block', marginBottom:'6px' }}>{bc.tier} · {bc.duration}s</div>
+                              <p style={{ fontSize:'10px', color:'rgba(160,140,200,0.6)', lineHeight:1.5, marginBottom:'6px' }}>{bc.desc}</p>
+                              <div style={{ fontSize:'10px', color:'#67e8f9', lineHeight:1.6 }}>
+                                <div>⚡ +{formatNumber(bc.reward)} Linh Khí</div>
+                                <div>🎁 {bc.dropRolls} lượt rớt đồ khi thành công</div>
+                                <div>💔 Mất {Math.floor(bc.failPenaltyPercent * 100)}% Qi hiện có nếu thất bại</div>
+                              </div>
+                            </div>
+                            <button onClick={() => enterBiCanh(bc.id)}
+                              style={{ width:'100%', padding:'10px', borderRadius:'10px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'11px', letterSpacing:'0.5px', cursor:'pointer',
+                                background: `linear-gradient(135deg, ${bc.color}33, ${bc.color}1a)`, border:`1px solid ${bc.color}66`, color: bc.color }}>
+                              ⚔️ Tiến Vào Bí Cảnh
+                            </button>
+                          </div>
                         ))}
                       </div>
-                    </div>
-
-                    {/* Arena */}
-                    <div className="monster-arena" style={{ flex:1 }}>
-                      {/* Monster display */}
-                      <div id="monster-icon-display" style={{ fontSize:'72px', filter:`drop-shadow(0 0 20px ${MONSTERS[currentMonsterIdx].color})`, textAlign:'center', animation: isDead ? 'none' : 'bounce 2s infinite' }}>
-                        {isDead ? '💨' : MONSTERS[currentMonsterIdx].icon}
-                      </div>
-
-                      {/* Monster info */}
-                      <div style={{ textAlign:'center' }}>
-                        <div style={{ fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'18px', color: isDead ? 'rgba(160,140,200,0.4)' : '#f5e6c8', marginBottom:'4px', textShadow:`0 0 20px ${MONSTERS[currentMonsterIdx].color}60` }}>
-                          {isDead ? '— Đã bị tiêu diệt —' : MONSTERS[currentMonsterIdx].name}
-                        </div>
-                        <div style={{ fontSize:'11px', color:'#67e8f9' }}>
-                          +{MONSTERS[currentMonsterIdx].reward} Linh Khí • Rớt Trang Bị Ngẫu Nhiên
-                        </div>
-                      </div>
-
-                      {/* HP bar */}
-                      <div style={{ width:'100%', maxWidth:'360px' }}>
-                        <div style={{ display:'flex', justifyContent:'space-between', fontSize:'11px', marginBottom:'5px' }}>
-                          <span style={{ color:'rgba(220,180,180,0.7)' }}>💀 Sinh Mệnh Yêu Thú</span>
-                          <span style={{ color:'#fca5a5', fontWeight:700 }}>{Math.max(0, monsterHp)} / {MONSTERS[currentMonsterIdx].hp}</span>
-                        </div>
-                        <div className="hp-bar-track">
-                          <div className="hp-bar-fill" style={{ width:`${Math.max(0, (monsterHp / MONSTERS[currentMonsterIdx].hp) * 100)}%` }}></div>
-                        </div>
-                      </div>
-
-                      {/* Attack buttons */}
-                      <div style={{ display:'flex', gap:'12px', width:'100%', maxWidth:'360px' }}>
-                        <button onClick={() => attackMonster(1)} disabled={isDead} className="btn-danger btn-attack"
-                          style={{ flex:1, padding:'12px', borderRadius:'12px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px', letterSpacing:'0.5px', cursor: isDead ? 'not-allowed' : 'pointer', opacity: isDead ? 0.4 : 1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px' }}>
-                          ⚔️ Ra Đòn Cơ Bản
-                        </button>
-                        <button onClick={() => attackMonster(3)} disabled={isDead} className="btn-attack"
-                          style={{ flex:1, padding:'12px', borderRadius:'12px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px', letterSpacing:'0.5px', cursor: isDead ? 'not-allowed' : 'pointer', opacity: isDead ? 0.4 : 1, background:'linear-gradient(135deg, #7c2d12, #431407)', border:'1px solid rgba(251,146,60,0.5)', color:'#fed7aa', display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', boxShadow: isDead ? 'none' : '0 0 20px rgba(251,146,60,0.25)' }}>
-                          🔥 Tất Sát (×3)
-                        </button>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 )}
 
@@ -1954,7 +2029,7 @@
                     </div>
                     <div style={{ display:'flex', flexDirection:'column', gap:'8px', maxHeight:'340px', overflowY:'auto' }} className="no-scrollbar">
                       {gameState.inventory.length === 0 ? (
-                        <div style={{ textAlign:'center', padding:'40px 20px', color:'rgba(140,120,180,0.4)', fontSize:'11px', fontFamily:'Cinzel,serif' }}>Không có bảo vật nào trong túi. Hãy đi Trảm Yêu!</div>
+                        <div style={{ textAlign:'center', padding:'40px 20px', color:'rgba(140,120,180,0.4)', fontSize:'11px', fontFamily:'Cinzel,serif' }}>Không có bảo vật nào trong túi. Hãy đi Bí Cảnh!</div>
                       ) : (
                         gameState.inventory.map(item => {
                           const gear = ALL_GEARS.find(g => g.id === item.gearId);
