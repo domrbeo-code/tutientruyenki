@@ -463,6 +463,94 @@
     /* ─── NO SCROLLBAR ─── */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* ─── RESPONSIVE LAYOUT ─── */
+    .app-shell { width: 100%; }
+    .main-grid { grid-template-columns: repeat(12, minmax(0, 1fr)) !important; align-items: start; }
+    .left-panel { grid-column: span 4 !important; min-width: 0; }
+    .right-panel { grid-column: span 8 !important; min-width: 0; }
+    .header-row { min-width: 0; }
+    .header-row-top,
+    .header-row-bottom { width: 100%; }
+    .stats-panel { display: flex; min-width: 0; }
+    .tab-strip { min-width: 0; }
+    .tab-content { min-height: 420px; min-width: 0; }
+    .shop-grid,
+    .inventory-grid,
+    .items-grid,
+    .titles-grid,
+    .solo-grid,
+    .team-grid,
+    .sect-grid,
+    .market-grid,
+    .modal-two-col {
+      display: grid !important;
+      min-width: 0;
+    }
+    .combat-subtabs { display: flex; gap: 6px; }
+    .orb-shell { width: 176px; height: 176px; }
+
+    @media (max-width: 1024px) {
+      .app-shell { padding: 12px !important; gap: 12px !important; }
+      .main-grid { grid-template-columns: 1fr !important; }
+      .left-panel,
+      .right-panel { grid-column: span 12 !important; }
+      .tab-content { min-height: auto !important; padding: 18px !important; }
+      .shop-grid,
+      .inventory-grid,
+      .items-grid,
+      .titles-grid,
+      .solo-grid,
+      .team-grid,
+      .sect-grid,
+      .market-grid,
+      .modal-two-col {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .app-shell { padding: 10px !important; gap: 10px !important; }
+      .app-header { padding: 16px 14px !important; }
+      .header-row-top,
+      .header-row-bottom { flex-direction: column !important; align-items: stretch !important; }
+      .header-row-top > div:first-child { width: 100%; }
+      .header-row-top > button,
+      .black-market-btn { width: 100% !important; justify-content: center !important; }
+      .header-row-bottom { gap: 10px !important; }
+      .stats-panel {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        width: 100% !important;
+      }
+      .stat-chip { align-items: flex-start !important; padding: 10px 12px !important; }
+      .tab-strip { padding: 4px !important; gap: 6px !important; }
+      .tab-btn { padding: 10px 12px !important; font-size: 10px !important; flex: 0 0 auto; }
+      .tab-content { padding: 14px !important; gap: 14px !important; }
+      .section-title { font-size: 14px !important; }
+      .section-desc { font-size: 10px !important; line-height: 1.55 !important; }
+      .shop-grid,
+      .inventory-grid,
+      .items-grid,
+      .titles-grid,
+      .solo-grid,
+      .team-grid,
+      .sect-grid,
+      .market-grid,
+      .modal-two-col {
+        grid-template-columns: 1fr !important;
+      }
+      .item-card { padding: 12px !important; border-radius: 14px !important; }
+      .combat-subtabs { flex-wrap: wrap !important; }
+      .orb-shell { width: 150px !important; height: 150px !important; }
+      .monster-arena { padding: 16px !important; }
+      .monster-icon { font-size: 54px !important; }
+      .modal-backdrop { padding: 10px !important; }
+      .modal-box { padding: 16px !important; max-height: 92vh !important; border-radius: 18px !important; }
+      .log-entry { flex-direction: column !important; gap: 2px !important; }
+      .log-entry .log-time { min-width: 0 !important; }
+    }
+
   </style>
 </head>
 <body>
@@ -494,9 +582,9 @@
         });
         if (!res.ok) throw new Error("Network response was not ok");
         const data = await res.json();
-        return data.record || { leaderboard: [], customSects: [], activeTribulations: {}, marketListings: [] };
+        return data.record || { leaderboard: [], customSects: [], activeTribulations: {}, marketListings: [], teamInstances: {} };
       } catch (e) {
-        return { leaderboard: [], customSects: [], activeTribulations: {}, marketListings: [] };
+        return { leaderboard: [], customSects: [], activeTribulations: {}, marketListings: [], teamInstances: {} };
       }
     }
 
@@ -507,9 +595,22 @@
           leaderboard: current.leaderboard || [],
           customSects: current.customSects || [],
           activeTribulations: current.activeTribulations || {},
-          marketListings: current.marketListings || []
+          marketListings: current.marketListings || [],
+          teamInstances: current.teamInstances || {}
         };
         let isSuccess = true;
+
+        // ─── Dọn dẹp phòng Bí Cảnh Tổ Đội cũ/bỏ hoang, tránh dữ liệu cloud phình to vô hạn ───
+        {
+          const now = Date.now();
+          Object.keys(payload.teamInstances).forEach(lobId => {
+            const lob = payload.teamInstances[lobId];
+            const stale = (lob.status === 'waiting' && now - lob.createdAt > 3 * 60 * 1000) ||
+                          (lob.status === 'finished' && now - (lob.finishedAt || lob.createdAt) > 2 * 60 * 1000) ||
+                          (lob.status === 'active' && lob.endTime && now - lob.endTime > 3 * 60 * 1000);
+            if (stale) delete payload.teamInstances[lobId];
+          });
+        }
 
         if (action === 'LEADERBOARD') {
           const idx = payload.leaderboard.findIndex(item => item.name === data.name);
@@ -551,6 +652,43 @@
           }
         } else if (action === 'ADD_SECT') {
           payload.customSects.push(data.sect);
+        } else if (action === 'CREATE_TEAM_LOBBY') {
+          payload.teamInstances[data.lobbyId] = {
+            id: data.lobbyId, bcId: data.bcId, hostName: data.hostName, status: 'waiting',
+            createdAt: Date.now(), startTime: null, endTime: null, finishedAt: null,
+            members: [{ name: data.hostName, joinedAt: Date.now(), decayPerSec: data.decayPerSec, status: 'alive' }]
+          };
+        } else if (action === 'JOIN_TEAM_LOBBY') {
+          const lob = payload.teamInstances[data.lobbyId];
+          if (!lob || lob.status !== 'waiting' || lob.members.length >= 4) {
+            isSuccess = false;
+          } else if (!lob.members.some(m => m.name === data.memberName)) {
+            lob.members.push({ name: data.memberName, joinedAt: Date.now(), decayPerSec: data.decayPerSec, status: 'alive' });
+          }
+        } else if (action === 'LEAVE_TEAM_LOBBY') {
+          const lob = payload.teamInstances[data.lobbyId];
+          if (lob && lob.status === 'waiting') {
+            lob.members = lob.members.filter(m => m.name !== data.memberName);
+            if (lob.members.length === 0) delete payload.teamInstances[data.lobbyId];
+            else if (lob.hostName === data.memberName) lob.hostName = lob.members[0].name;
+          }
+        } else if (action === 'START_TEAM_LOBBY') {
+          const lob = payload.teamInstances[data.lobbyId];
+          if (lob && lob.status === 'waiting' && lob.members.length >= 2) {
+            const now = Date.now();
+            lob.status = 'active';
+            lob.startTime = now;
+            lob.endTime = now + data.duration * 1000;
+          } else {
+            isSuccess = false;
+          }
+        } else if (action === 'FINISH_TEAM_MEMBER') {
+          const lob = payload.teamInstances[data.lobbyId];
+          if (lob) {
+            const m = lob.members.find(mm => mm.name === data.memberName);
+            if (m && m.status === 'alive') m.status = data.outcome;
+            if (lob.members.every(mm => mm.status !== 'alive')) { lob.status = 'finished'; lob.finishedAt = Date.now(); }
+          }
         }
 
         if (!isSuccess) return { success: false, error: "Thao tác thất bại hoặc dữ liệu đã bị thay đổi bởi người khác!" };
@@ -666,6 +804,19 @@
       { id: 'bc_team_2', name: 'Đồng Môn Hợp Kích — Trung Cấp', type: 'team', tier: 'Trung Cấp', duration: 45, maxHp: 100, baseDecayPerSec: 8, powerScale: 60, reward: 5500, dropRolls: 2, failPenaltyPercent: 0.18, icon: '⚔️', color: '#fb923c', desc: 'Trận chiến quy mô lớn, hung hiểm gấp bội bí cảnh solo cùng cấp.' },
       { id: 'bc_team_3', name: 'Đồng Môn Hợp Kích — Cao Cấp', type: 'team', tier: 'Cao Cấp', duration: 60, maxHp: 100, baseDecayPerSec: 12, powerScale: 400, reward: 45000, dropRolls: 3, failPenaltyPercent: 0.25, icon: '👹', color: '#f43f5e', desc: 'Đại chiến tối nguy hiểm, phần thưởng cực kỳ hậu hĩnh.' }
     ];
+
+    // ─── BÍ CẢNH TỔ ĐỘI: mỗi thành viên tự tính chỉ số của bản thân, server chỉ lưu trạng thái dùng chung ───
+    // Càng đông thành viên trong phòng, hao tổn sinh mệnh của TẤT CẢ càng giảm (tối đa giảm 30% ở 4 người).
+    function teamGroupMultiplier(memberCount) {
+      return Math.max(0.7, 1 - 0.1 * (memberCount - 1));
+    }
+    // Tính sinh mệnh hiện tại của một thành viên bất kỳ trong phòng, chỉ dựa vào dữ liệu đã đồng bộ từ cloud (startTime + decayPerSec riêng của người đó).
+    function computeMemberHp(lobby, member, maxHp) {
+      if (!lobby || !lobby.startTime) return maxHp;
+      const mult = teamGroupMultiplier(lobby.members.length);
+      const elapsedSec = (Date.now() - lobby.startTime) / 1000;
+      return Math.max(0, maxHp - member.decayPerSec * mult * elapsedSec);
+    }
 
     // ─── VẬT PHẨM (ĐAN DƯỢC & LINH PHÙ) ───
     // type: 'qi' → dùng hồi ngay một lượng Linh Khí. type: 'trib_heal' → chỉ dùng được lúc đang Độ Kiếp, hồi % sinh mệnh Độ Kiếp.
@@ -789,9 +940,12 @@
 
       const [activeTab, setActiveTab] = React.useState('shop');
       const [invFilter, setInvFilter] = React.useState('all');
+      const [combatSubTab, setCombatSubTab] = React.useState('solo');
       const [isBlackMarketModalOpen, setIsBlackMarketModalOpen] = React.useState(false);
       const [listingPriceInput, setListingPriceInput] = React.useState({});
       const [biCanhRun, setBiCanhRun] = React.useState(null);
+      const [cloudTeamInstances, setCloudTeamInstances] = React.useState({});
+      const [myTeamRun, setMyTeamRun] = React.useState(null);
       const [cloudLeaderboard, setCloudLeaderboard] = React.useState([]);
       const [cloudCustomSects, setCloudCustomSects] = React.useState([]);
       const [activeTribulations, setActiveTribulations] = React.useState({});
@@ -861,6 +1015,10 @@
       gameStateRef.current = gameState;
       const myTribulationRef = React.useRef(myTribulation);
       myTribulationRef.current = myTribulation;
+      const myTeamRunRef = React.useRef(myTeamRun);
+      myTeamRunRef.current = myTeamRun;
+      const cloudTeamInstancesRef = React.useRef(cloudTeamInstances);
+      cloudTeamInstancesRef.current = cloudTeamInstances;
 
       React.useEffect(() => {
         let isMounted = true;
@@ -882,6 +1040,13 @@
             if (myTrib && cleanTribs[playerName]) {
               const cloudHp = cleanTribs[playerName].hp;
               if (cloudHp !== myTrib.hp) setMyTribulation(prev => prev ? { ...prev, hp: cloudHp } : null);
+            }
+            // ─── Bí Cảnh Tổ Đội: đồng bộ danh sách phòng, tự rời nếu phòng của mình đã bị dọn dẹp ───
+            const teamInstances = data.teamInstances || {};
+            setCloudTeamInstances(teamInstances);
+            const myRun = myTeamRunRef.current;
+            if (myRun && !teamInstances[myRun.lobbyId]) {
+              setMyTeamRun(null);
             }
           } catch (e) {}
         };
@@ -1079,7 +1244,7 @@
 
       // ─── BÍ CẢNH: tiến vào một bí cảnh (thay thế cơ chế đánh quái cũ) ───
       const enterBiCanh = (bcId) => {
-        if (biCanhRun) return;
+        if (biCanhRun || myTeamRun) return;
         const bcDef = BI_CANH_LIST.find(b => b.id === bcId);
         if (!bcDef) return;
         let effectiveDecay = bcDef.baseDecayPerSec / (1 + combatPower / bcDef.powerScale);
@@ -1155,6 +1320,134 @@
         }, 300);
         return () => clearInterval(timer);
       }, [biCanhRun]);
+
+      // ─── BÍ CẢNH TỔ ĐỘI: tạo phòng mới ───
+      const createTeamLobby = async (bcId) => {
+        if (biCanhRun || myTeamRun) return;
+        const bcDef = BI_CANH_LIST.find(b => b.id === bcId);
+        if (!bcDef) return;
+        let decayPerSec = bcDef.baseDecayPerSec / (1 + combatPower / bcDef.powerScale);
+        if (gameState.joinedSectId === 'huyet_dao') decayPerSec *= 0.7;
+        const lobbyId = 'lobby_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+        const res = await modifyCloudData('CREATE_TEAM_LOBBY', { lobbyId, bcId, hostName: playerName, decayPerSec });
+        if (res.success) {
+          setCloudTeamInstances(res.record.teamInstances);
+          setMyTeamRun({ lobbyId });
+        } else {
+          alert(res.error || 'Không thể tạo phòng, vui lòng thử lại!');
+        }
+      };
+
+      // ─── BÍ CẢNH TỔ ĐỘI: tham gia phòng đang chờ của người khác ───
+      const joinTeamLobby = async (lobbyId) => {
+        if (biCanhRun || myTeamRun) return;
+        const lob = cloudTeamInstances[lobbyId];
+        if (!lob) return;
+        const bcDef = BI_CANH_LIST.find(b => b.id === lob.bcId);
+        if (!bcDef) return;
+        let decayPerSec = bcDef.baseDecayPerSec / (1 + combatPower / bcDef.powerScale);
+        if (gameState.joinedSectId === 'huyet_dao') decayPerSec *= 0.7;
+        const res = await modifyCloudData('JOIN_TEAM_LOBBY', { lobbyId, memberName: playerName, decayPerSec });
+        if (res.success) {
+          setCloudTeamInstances(res.record.teamInstances);
+          setMyTeamRun({ lobbyId });
+        } else {
+          alert(res.error || 'Phòng đã đầy hoặc đã bắt đầu, không thể tham gia!');
+        }
+      };
+
+      // ─── BÍ CẢNH TỔ ĐỘI: rời phòng chờ, hoặc đóng màn hình kết quả sau khi đã phân giải ───
+      const leaveTeamLobby = async () => {
+        if (!myTeamRun) return;
+        const lobbyId = myTeamRun.lobbyId;
+        const lob = cloudTeamInstances[lobbyId];
+        setMyTeamRun(null);
+        if (lob && lob.status === 'waiting') {
+          const res = await modifyCloudData('LEAVE_TEAM_LOBBY', { lobbyId, memberName: playerName });
+          if (res.success) setCloudTeamInstances(res.record.teamInstances);
+        }
+      };
+
+      // ─── BÍ CẢNH TỔ ĐỘI: bắt đầu trận đấu chung, cần tối thiểu 2 thành viên ───
+      const startTeamLobby = async () => {
+        if (!myTeamRun) return;
+        const lob = cloudTeamInstances[myTeamRun.lobbyId];
+        if (!lob) return;
+        const bcDef = BI_CANH_LIST.find(b => b.id === lob.bcId);
+        if (!bcDef) return;
+        if (lob.members.length < 2) { alert('Cần tối thiểu 2 người trong phòng mới có thể bắt đầu!'); return; }
+        const res = await modifyCloudData('START_TEAM_LOBBY', { lobbyId: myTeamRun.lobbyId, duration: bcDef.duration });
+        if (res.success) {
+          setCloudTeamInstances(res.record.teamInstances);
+        } else {
+          alert(res.error || 'Không thể bắt đầu, vui lòng thử lại!');
+        }
+      };
+
+      // ─── BÍ CẢNH TỔ ĐỘI: vòng lặp theo dõi sinh mệnh CỦA RIÊNG MÌNH & tự động phân giải, báo cáo kết quả lên cloud để đồng đội thấy ───
+      React.useEffect(() => {
+        if (!myTeamRun) return;
+        let hasResolved = false;
+        const timer = setInterval(() => {
+          if (hasResolved) return;
+          const lob = cloudTeamInstancesRef.current[myTeamRun.lobbyId];
+          if (!lob || lob.status !== 'active') return;
+          const me = lob.members.find(m => m.name === playerName);
+          if (!me || me.status !== 'alive') return;
+          const bcDef = BI_CANH_LIST.find(b => b.id === lob.bcId);
+          if (!bcDef) return;
+          const myHp = computeMemberHp(lob, me, bcDef.maxHp);
+          const now = Date.now();
+          if (myHp <= 0) {
+            hasResolved = true;
+            setGameState(prev => {
+              const lostQi = Math.floor(prev.qi * (bcDef.failPenaltyPercent || 0.15));
+              return {
+                ...prev, qi: Math.max(0, prev.qi - lostQi),
+                logs: [{ id: Date.now().toString(), text: `[Bí Cảnh Tổ Đội Thất Bại]: Trọng thương trong ${bcDef.name}, mất mạng và tổn thất ${formatNumber(lostQi)} Qi tu vi!`, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 100)
+              };
+            });
+            modifyCloudData('FINISH_TEAM_MEMBER', { lobbyId: myTeamRun.lobbyId, memberName: playerName, outcome: 'dead' })
+              .then(res => { if (res.success) setCloudTeamInstances(res.record.teamInstances); });
+          } else if (now >= lob.endTime) {
+            hasResolved = true;
+            setGameState(prev => {
+              let droppedItemsLogs = [];
+              let newInventoryItems = [...prev.inventory];
+              let newItemCounts = { ...prev.items };
+              const rolls = bcDef.dropRolls || 1;
+              for (let r = 0; r < rolls; r++) {
+                ALL_GEARS.forEach(gear => {
+                  const roll = Math.random();
+                  if (roll <= gear.dropRate) {
+                    const uniqueId = 'item_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7) + '_' + r;
+                    newInventoryItems.push({ uniqueId, gearId: gear.id, isEquipped: false });
+                    droppedItemsLogs.push(gear.name);
+                  }
+                });
+                ALL_ITEMS.forEach(consumable => {
+                  const itemRoll = Math.random();
+                  if (itemRoll <= consumable.dropRate) {
+                    newItemCounts[consumable.id] = (newItemCounts[consumable.id] || 0) + 1;
+                    droppedItemsLogs.push(consumable.name);
+                  }
+                });
+              }
+              const groupBonus = 1 + 0.15 * (lob.members.length - 1);
+              const reward = Math.floor((bcDef.reward || 0) * groupBonus);
+              let dropLogText = droppedItemsLogs.length > 0 ? ` | Nhận được bảo vật: ${droppedItemsLogs.join(', ')}!` : '';
+              return {
+                ...prev, qi: prev.qi + reward, totalQi: prev.totalQi + reward,
+                inventory: newInventoryItems, items: newItemCounts,
+                logs: [{ id: Date.now().toString(), text: `[Bí Cảnh Tổ Đội Thành Công]: Cùng ${lob.members.length} đồng đội vượt qua ${bcDef.name}, đoạt +${formatNumber(reward)} Khí${dropLogText}`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
+              };
+            });
+            modifyCloudData('FINISH_TEAM_MEMBER', { lobbyId: myTeamRun.lobbyId, memberName: playerName, outcome: 'success' })
+              .then(res => { if (res.success) setCloudTeamInstances(res.record.teamInstances); });
+          }
+        }, 300);
+        return () => clearInterval(timer);
+      }, [myTeamRun, playerName]);
 
       const toggleEquipInventoryItem = (uniqueId) => {
         setGameState(prev => {
@@ -1252,6 +1545,23 @@
       const bcHpPercent = biCanhRun ? Math.max(0, Math.min(100, (bcCurrentHp / biCanhRun.maxHp) * 100)) : 0;
       const bcTimeLeftSec = biCanhRun ? Math.max(0, Math.ceil((biCanhRun.endTime - Date.now()) / 1000)) : 0;
 
+      // ─── BÍ CẢNH TỔ ĐỘI: giá trị hiển thị dẫn xuất từ dữ liệu cloud đã đồng bộ ───
+      const myLobby = myTeamRun ? cloudTeamInstances[myTeamRun.lobbyId] : null;
+      const myTeamBcDef = myLobby ? BI_CANH_LIST.find(b => b.id === myLobby.bcId) : null;
+      const myLobbyMe = myLobby ? myLobby.members.find(m => m.name === playerName) : null;
+      const myTeamHp = (myLobby && myLobbyMe && myTeamBcDef) ? computeMemberHp(myLobby, myLobbyMe, myTeamBcDef.maxHp) : (myTeamBcDef ? myTeamBcDef.maxHp : 0);
+      const myTeamHpPercent = myTeamBcDef ? Math.max(0, Math.min(100, (myTeamHp / myTeamBcDef.maxHp) * 100)) : 0;
+      const myTeamTimeLeftSec = (myLobby && myLobby.endTime) ? Math.max(0, Math.ceil((myLobby.endTime - Date.now()) / 1000)) : 0;
+      const openTeamLobbies = Object.values(cloudTeamInstances).filter(l => l.status === 'waiting' && l.members.length < 4 && !(myTeamRun && l.id === myTeamRun.lobbyId));
+
+      // ─── HP bar dùng chung ở đầu trang: hiển thị khi đang trong bí cảnh solo HOẶC trận Tổ Đội đang diễn ra ───
+      const inAnyBiCanh = !!biCanhRun || !!(myLobby && myLobby.status === 'active');
+      const headerBcLabel = biCanhRun ? activeBcDef : myTeamBcDef;
+      const headerBcHp = biCanhRun ? bcCurrentHp : myTeamHp;
+      const headerBcMaxHp = biCanhRun ? biCanhRun.maxHp : (myTeamBcDef ? myTeamBcDef.maxHp : 100);
+      const headerBcPercent = biCanhRun ? bcHpPercent : myTeamHpPercent;
+      const headerBcTimeLeft = biCanhRun ? bcTimeLeftSec : myTeamTimeLeftSec;
+
       const fullLeaderboard = React.useMemo(() => {
         let list = [...cloudLeaderboard];
         const index = list.findIndex(item => item.name === playerName);
@@ -1278,10 +1588,10 @@
 
       // ─── RENDER ───
       return (
-        <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh', padding:'16px', gap:'16px', maxWidth:'1280px', margin:'0 auto', position:'relative' }}>
+        <div className="app-shell" style={{ display:'flex', flexDirection:'column', minHeight:'100vh', padding:'16px', gap:'16px', maxWidth:'1280px', margin:'0 auto', position:'relative' }}>
 
           {/* ══════════════ HEADER ══════════════ */}
-          <header className="glass-panel gold-glow" style={{ padding:'20px 24px', position:'relative', overflow:'hidden' }}>
+          <header className="glass-panel gold-glow app-header" style={{ padding:'20px 24px', position:'relative', overflow:'hidden' }}>
             {/* Corner ornaments */}
             <div className="corner-tl"></div><div className="corner-tr"></div>
             <div className="corner-bl"></div><div className="corner-br"></div>
@@ -1291,7 +1601,7 @@
 
             <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
               {/* Row 1: Identity */}
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'10px' }}>
+              <div className="header-row header-row-top" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'10px' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
                   {/* Avatar orb */}
                   <div style={{ width:'52px', height:'52px', borderRadius:'50%', background:'linear-gradient(135deg, #4c1d95, #1e1b4b)', border:'2px solid rgba(245,200,66,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', boxShadow:'0 0 20px rgba(168,85,247,0.4), inset 0 0 15px rgba(99,102,241,0.2)', flexShrink:0 }}>
@@ -1321,14 +1631,14 @@
                 </div>
 
                 {/* Chợ đen button */}
-                <button onClick={() => setIsBlackMarketModalOpen(true)}
+                <button className="black-market-btn" onClick={() => setIsBlackMarketModalOpen(true)}
                   style={{ padding:'10px 20px', background:'linear-gradient(135deg, #451a03, #2d1003)', border:'1px solid rgba(245,200,66,0.5)', borderRadius:'12px', color:'#f5c842', cursor:'pointer', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px', boxShadow:'0 0 20px rgba(245,200,66,0.2), 0 4px 15px rgba(0,0,0,0.5)', display:'flex', alignItems:'center', gap:'8px', letterSpacing:'1px' }}>
                   <span>🖤</span> HẮC THỊ CHỢ ĐEN
                 </button>
               </div>
 
               {/* Row 2: Realm + Stats */}
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'12px' }}>
+              <div className="header-row header-row-bottom" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'12px' }}>
                 <div style={{ display:'flex', flexDirection:'column', gap:'4px' }}>
                   <div className="realm-badge">
                     ✦ {REALMS[gameState.realmIdx]?.name || "Phàm Nhân (Sơ Kỳ)"} ✦
@@ -1339,7 +1649,7 @@
                 </div>
 
                 {/* Stats row */}
-                <div style={{ display:'flex', gap:'1px', background:'rgba(0,0,0,0.5)', border:'1px solid rgba(100,60,180,0.3)', borderRadius:'12px', overflow:'hidden' }}>
+                <div className="stats-panel" style={{ display:'flex', gap:'1px', background:'rgba(0,0,0,0.5)', border:'1px solid rgba(100,60,180,0.3)', borderRadius:'12px', overflow:'hidden' }}>
                   <div className="stat-chip">
                     <span className="label">Linh Khí</span>
                     <span className="value" style={{ color:'#f5c842' }}>{formatNumber(gameState.qi)}</span>
@@ -1440,11 +1750,11 @@
           )}
 
           {/* ══════════════ MAIN GRID ══════════════ */}
-          <main style={{ display:'grid', gridTemplateColumns:'repeat(12, 1fr)', gap:'16px', flex:1 }}>
+          <main className="main-grid" style={{ display:'grid', gridTemplateColumns:'repeat(12, 1fr)', gap:'16px', flex:1 }}>
 
             {/* ── LEFT PANEL (4 cols) ── */}
-            <div style={{ gridColumn:'span 12', '@media(min-width:1024px)': { gridColumn:'span 4' }, display:'flex', flexDirection:'column', gap:'14px' }}
-                 className="lg:col-span-4 col-span-12">
+            <div style={{ gridColumn:'span 12', display:'flex', flexDirection:'column', gap:'14px' }}
+                 className="lg:col-span-4 col-span-12 left-panel">
 
               {/* ── Cultivation Orb ── */}
               <div className="glass-panel" style={{ padding:'28px 20px', display:'flex', flexDirection:'column', alignItems:'center', gap:'20px', position:'relative', overflow:'hidden' }}>
@@ -1512,20 +1822,24 @@
                   <div style={{ textAlign:'right', fontSize:'10px', color:'rgba(150,130,200,0.5)' }}>{progressPercent.toFixed(1)}%</div>
                 </div>
 
-                {/* Bí Cảnh HP bar — chỉ hiện khi đang trong bí cảnh */}
-                {biCanhRun && (
+                {/* Bí Cảnh HP bar — hiện khi đang trong bí cảnh solo hoặc trận Tổ Đội đang diễn ra */}
+                {inAnyBiCanh && (
                   <div style={{ width:'100%', display:'flex', flexDirection:'column', gap:'6px', padding:'10px', background:'rgba(60,5,5,0.35)', border:'1px solid rgba(220,38,38,0.35)', borderRadius:'10px' }}>
                     <div style={{ display:'flex', justifyContent:'space-between', fontSize:'10px', letterSpacing:'0.5px' }}>
-                      <span style={{ color:'#fca5a5', fontFamily:'Cinzel,serif' }}>{activeBcDef?.icon} {activeBcDef?.name} — Còn {bcTimeLeftSec}s</span>
-                      <span style={{ color:'#fca5a5', fontWeight:700 }}>{Math.ceil(bcCurrentHp)} / {biCanhRun.maxHp} Sinh Mệnh</span>
+                      <span style={{ color:'#fca5a5', fontFamily:'Cinzel,serif' }}>
+                        {headerBcLabel?.icon} {headerBcLabel?.name}{myLobby ? ` (👥 ${myLobby.members.length})` : ''} — Còn {headerBcTimeLeft}s
+                      </span>
+                      <span style={{ color:'#fca5a5', fontWeight:700 }}>{Math.ceil(headerBcHp)} / {headerBcMaxHp} Sinh Mệnh</span>
                     </div>
                     <div className="hp-bar-track">
-                      <div className="hp-bar-fill" style={{ width:`${bcHpPercent}%` }}></div>
+                      <div className="hp-bar-fill" style={{ width:`${headerBcPercent}%` }}></div>
                     </div>
-                    <button onClick={leaveBiCanh}
-                      style={{ alignSelf:'flex-end', padding:'4px 10px', borderRadius:'6px', fontSize:'9px', fontFamily:'Cinzel,serif', fontWeight:700, cursor:'pointer', background:'rgba(40,40,60,0.6)', border:'1px solid rgba(150,140,170,0.3)', color:'rgba(200,180,220,0.7)' }}>
-                      🚪 Rút Lui An Toàn
-                    </button>
+                    {biCanhRun && (
+                      <button onClick={leaveBiCanh}
+                        style={{ alignSelf:'flex-end', padding:'4px 10px', borderRadius:'6px', fontSize:'9px', fontFamily:'Cinzel,serif', fontWeight:700, cursor:'pointer', background:'rgba(40,40,60,0.6)', border:'1px solid rgba(150,140,170,0.3)', color:'rgba(200,180,220,0.7)' }}>
+                        🚪 Rút Lui An Toàn
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -1586,10 +1900,10 @@
 
             {/* ── RIGHT PANEL (8 cols) ── */}
             <div style={{ gridColumn:'span 12', display:'flex', flexDirection:'column', gap:'14px' }}
-                 className="lg:col-span-8 col-span-12">
+                 className="lg:col-span-8 col-span-12 right-panel">
 
               {/* ── Tabs ── */}
-              <div style={{ background:'linear-gradient(135deg, rgba(15,8,30,0.9), rgba(8,4,18,0.95))', border:'1px solid rgba(100,60,180,0.3)', borderRadius:'14px', padding:'6px', display:'flex', gap:'4px', boxShadow:'0 4px 20px rgba(0,0,0,0.5)', overflowX:'auto' }} className="no-scrollbar">
+              <div style={{ background:'linear-gradient(135deg, rgba(15,8,30,0.9), rgba(8,4,18,0.95))', border:'1px solid rgba(100,60,180,0.3)', borderRadius:'14px', padding:'6px', display:'flex', gap:'4px', boxShadow:'0 4px 20px rgba(0,0,0,0.5)', overflowX:'auto' }} className="no-scrollbar tab-strip">
                 {TABS.map(tab => (
                   <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`tab-btn${activeTab === tab.id ? ' active' : ''}`}>
                     {tab.label}
@@ -1598,18 +1912,18 @@
               </div>
 
               {/* ── Tab Content ── */}
-              <div className="glass-panel" style={{ padding:'24px', flex:1, minHeight:'420px', display:'flex', flexDirection:'column', gap:'18px', position:'relative', overflow:'hidden' }}>
+              <div className="glass-panel tab-content" style={{ padding:'24px', flex:1, minHeight:'420px', display:'flex', flexDirection:'column', gap:'18px', position:'relative', overflow:'hidden' }}>
                 <div className="corner-tl"></div><div className="corner-tr"></div>
 
                 {/* ─── SHOP TAB ─── */}
                 {activeTab === 'shop' && (
                   <div style={{ display:'flex', flexDirection:'column', gap:'18px' }}>
                     <div>
-                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>💊 Đan Phòng & Tụ Linh Trận</div>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }} className="section-title">💊 Đan Phòng & Tụ Linh Trận</div>
                       <div className="ornament-divider" style={{ margin:'8px 0' }}>TỰ ĐỘNG TỤ TẬP LINH KHÍ</div>
-                      <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Xây dựng kiến trúc tu luyện để gia tăng tốc độ tích tụ linh khí.</div>
+                      <div className="section-desc" style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Xây dựng kiến trúc tu luyện để gia tăng tốc độ tích tụ linh khí.</div>
                     </div>
-                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'12px' }}>
+                    <div className="shop-grid" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'12px' }}>
                       {SHOP_ITEMS.map(item => {
                         const count = gameState.shopCounts[item.id] || 0;
                         let cost = Math.floor(item.baseCost * Math.pow(1.6, count));
@@ -1642,7 +1956,7 @@
                 {activeTab === 'inventory' && (
                   <div style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
                     <div>
-                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>🎒 Túi Đồ & Pháp Bảo</div>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }} className="section-title">🎒 Túi Đồ & Pháp Bảo</div>
                       <div className="ornament-divider" style={{ margin:'8px 0' }}>CÁC BẢO VẬT ĐÃ THU PHỤC</div>
                       <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Pháp bảo thu phục từ Bí Cảnh. Trang bị để khuếch đại chiến lực.</div>
                     </div>
@@ -1665,7 +1979,7 @@
                             </button>
                           ))}
                         </div>
-                        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:'10px', maxHeight:'380px', overflowY:'auto' }} className="no-scrollbar">
+                        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:'10px', maxHeight:'380px', overflowY:'auto' }} className="no-scrollbar inventory-grid">
                         {gameState.inventory.filter(item => {
                           if (invFilter === 'all') return true;
                           const g = ALL_GEARS.find(g => g.id === item.gearId);
@@ -1707,11 +2021,11 @@
                 {activeTab === 'items' && (
                   <div style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
                     <div>
-                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>🧪 Vật Phẩm & Đan Dược</div>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }} className="section-title">🧪 Vật Phẩm & Đan Dược</div>
                       <div className="ornament-divider" style={{ margin:'8px 0' }}>ĐAN DƯỢC HỘ THÂN & LINH PHÙ</div>
                       <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Nhận từ Bí Cảnh hoặc mua tại đây. Đan hồi Linh Khí dùng bất cứ lúc nào; Linh Phù hộ thân chỉ dùng được khi đang Độ Kiếp.</div>
                     </div>
-                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(210px, 1fr))', gap:'12px' }}>
+                    <div className="items-grid items-grid" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(210px, 1fr))', gap:'12px' }}>
                       {ALL_ITEMS.map(consumable => {
                         const count = gameState.items[consumable.id] || 0;
                         const canBuy = consumable.price && gameState.qi >= consumable.price;
@@ -1754,73 +2068,209 @@
                 {activeTab === 'combat' && (
                   <div style={{ display:'flex', flexDirection:'column', gap:'16px', height:'100%' }}>
                     <div>
-                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>🌀 Bí Cảnh Thám Hiểm</div>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }} className="section-title">🌀 Bí Cảnh Thám Hiểm</div>
                       <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Tiến vào bí cảnh và trụ vững đến hết thời gian để nhận linh khí cùng trang bị. Sinh mệnh sẽ tự động hao tổn theo độ khó — Chiến Lực càng cao thì trụ càng lâu và càng an toàn.</div>
                     </div>
 
-                    {biCanhRun ? (
-                      /* Đang trong bí cảnh */
-                      <div className="monster-arena" style={{ flex:1 }}>
-                        <div style={{ fontSize:'72px', textAlign:'center', filter:`drop-shadow(0 0 20px ${activeBcDef?.color})`, animation:'bounce 2s infinite' }}>
-                          {activeBcDef?.icon}
-                        </div>
-                        <div style={{ textAlign:'center' }}>
-                          <div style={{ fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'18px', color:'#f5e6c8', marginBottom:'4px', textShadow:`0 0 20px ${activeBcDef?.color}60` }}>
-                            {activeBcDef?.name}
-                          </div>
-                          <div style={{ fontSize:'11px', color:'#67e8f9' }}>
-                            Còn lại {bcTimeLeftSec}s • Vượt qua để nhận +{formatNumber(activeBcDef?.reward || 0)} Linh Khí
-                          </div>
-                        </div>
-
-                        {/* HP bar */}
-                        <div style={{ width:'100%', maxWidth:'360px' }}>
-                          <div style={{ display:'flex', justifyContent:'space-between', fontSize:'11px', marginBottom:'5px' }}>
-                            <span style={{ color:'rgba(220,180,180,0.7)' }}>💔 Sinh Mệnh Của Bạn</span>
-                            <span style={{ color:'#fca5a5', fontWeight:700 }}>{Math.ceil(bcCurrentHp)} / {biCanhRun.maxHp}</span>
-                          </div>
-                          <div className="hp-bar-track">
-                            <div className="hp-bar-fill" style={{ width:`${bcHpPercent}%` }}></div>
-                          </div>
-                        </div>
-
-                        <button onClick={leaveBiCanh} className="btn-danger"
-                          style={{ width:'100%', maxWidth:'360px', padding:'12px', borderRadius:'12px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px', letterSpacing:'0.5px', cursor:'pointer' }}>
-                          🚪 Rút Lui An Toàn (Không Nhận Thưởng)
+                    {/* Solo / Tổ Đội switcher */}
+                    <div className="combat-subtabs" style={{ display:'flex', gap:'6px' }}>
+                      {[{ id:'solo', label:'🧍 Solo' }, { id:'team', label:'👥 Tổ Đội (Nhiều Người Thật)' }].map(st => (
+                        <button key={st.id} onClick={() => setCombatSubTab(st.id)}
+                          style={{ padding:'8px 16px', borderRadius:'8px', fontSize:'11px', fontFamily:'Cinzel,serif', fontWeight:700, cursor:'pointer',
+                            background: combatSubTab === st.id ? 'linear-gradient(135deg, rgba(100,40,180,0.5), rgba(60,20,120,0.6))' : 'rgba(20,10,40,0.6)',
+                            border: `1px solid ${combatSubTab === st.id ? 'rgba(192,132,252,0.5)' : 'rgba(100,60,180,0.25)'}`,
+                            color: combatSubTab === st.id ? '#f5c842' : 'rgba(180,160,220,0.5)' }}>
+                          {st.label}
                         </button>
-                      </div>
-                    ) : (
-                      /* Danh sách chọn bí cảnh */
-                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(230px, 1fr))', gap:'12px', maxHeight:'480px', overflowY:'auto' }} className="no-scrollbar">
-                        {BI_CANH_LIST.map(bc => (
-                          <div key={bc.id} className="item-card" style={{ display:'flex', flexDirection:'column', justifyContent:'space-between', gap:'10px', border:`1px solid ${bc.color}55` }}>
-                            <div>
-                              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
-                                <div style={{ fontSize:'30px' }}>{bc.icon}</div>
-                                <span style={{ fontSize:'9px', padding:'2px 8px', borderRadius:'20px', fontWeight:700,
-                                  background: bc.type === 'team' ? 'rgba(59,130,246,0.25)' : 'rgba(168,85,247,0.25)',
-                                  border: `1px solid ${bc.type === 'team' ? 'rgba(96,165,250,0.4)' : 'rgba(192,132,252,0.4)'}`,
-                                  color: bc.type === 'team' ? '#93c5fd' : '#d8b4fe' }}>
-                                  {bc.type === 'team' ? '👥 Tổ Đội' : '🧍 Solo'}
-                                </span>
+                      ))}
+                    </div>
+
+                    {combatSubTab === 'solo' ? (
+                      biCanhRun ? (
+                        /* Đang trong bí cảnh solo */
+                        <div className="monster-arena" style={{ flex:1 }}>
+                          <div className="monster-icon" style={{ fontSize:'72px', textAlign:'center', filter:`drop-shadow(0 0 20px ${activeBcDef?.color})`, animation:'bounce 2s infinite' }}>
+                            {activeBcDef?.icon}
+                          </div>
+                          <div style={{ textAlign:'center' }}>
+                            <div style={{ fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'18px', color:'#f5e6c8', marginBottom:'4px', textShadow:`0 0 20px ${activeBcDef?.color}60` }}>
+                              {activeBcDef?.name}
+                            </div>
+                            <div style={{ fontSize:'11px', color:'#67e8f9' }}>
+                              Còn lại {bcTimeLeftSec}s • Vượt qua để nhận +{formatNumber(activeBcDef?.reward || 0)} Linh Khí
+                            </div>
+                          </div>
+                          <div style={{ width:'100%', maxWidth:'360px' }}>
+                            <div style={{ display:'flex', justifyContent:'space-between', fontSize:'11px', marginBottom:'5px' }}>
+                              <span style={{ color:'rgba(220,180,180,0.7)' }}>💔 Sinh Mệnh Của Bạn</span>
+                              <span style={{ color:'#fca5a5', fontWeight:700 }}>{Math.ceil(bcCurrentHp)} / {biCanhRun.maxHp}</span>
+                            </div>
+                            <div className="hp-bar-track">
+                              <div className="hp-bar-fill" style={{ width:`${bcHpPercent}%` }}></div>
+                            </div>
+                          </div>
+                          <button onClick={leaveBiCanh} className="btn-danger"
+                            style={{ width:'100%', maxWidth:'360px', padding:'12px', borderRadius:'12px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'12px', letterSpacing:'0.5px', cursor:'pointer' }}>
+                            🚪 Rút Lui An Toàn (Không Nhận Thưởng)
+                          </button>
+                        </div>
+                      ) : (
+                        /* Danh sách chọn bí cảnh solo */
+                        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(230px, 1fr))', gap:'12px', maxHeight:'480px', overflowY:'auto' }} className="no-scrollbar solo-grid">
+                          {BI_CANH_LIST.filter(bc => bc.type === 'solo').map(bc => (
+                            <div key={bc.id} className="item-card" style={{ display:'flex', flexDirection:'column', justifyContent:'space-between', gap:'10px', border:`1px solid ${bc.color}55` }}>
+                              <div>
+                                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+                                  <div style={{ fontSize:'30px' }}>{bc.icon}</div>
+                                  <span style={{ fontSize:'9px', padding:'2px 8px', borderRadius:'20px', fontWeight:700, background:'rgba(168,85,247,0.25)', border:'1px solid rgba(192,132,252,0.4)', color:'#d8b4fe' }}>
+                                    🧍 Solo
+                                  </span>
+                                </div>
+                                <div style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color: bc.color, margin:'6px 0 3px' }}>{bc.name}</div>
+                                <div style={{ fontSize:'9px', padding:'2px 6px', background:'rgba(0,0,0,0.4)', borderRadius:'6px', color:'rgba(180,160,220,0.6)', display:'inline-block', marginBottom:'6px' }}>{bc.tier} · {bc.duration}s</div>
+                                <p style={{ fontSize:'10px', color:'rgba(160,140,200,0.6)', lineHeight:1.5, marginBottom:'6px' }}>{bc.desc}</p>
+                                <div style={{ fontSize:'10px', color:'#67e8f9', lineHeight:1.6 }}>
+                                  <div>⚡ +{formatNumber(bc.reward)} Linh Khí</div>
+                                  <div>🎁 {bc.dropRolls} lượt rớt đồ khi thành công</div>
+                                  <div>💔 Mất {Math.floor(bc.failPenaltyPercent * 100)}% Qi hiện có nếu thất bại</div>
+                                </div>
                               </div>
-                              <div style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color: bc.color, margin:'6px 0 3px' }}>{bc.name}</div>
-                              <div style={{ fontSize:'9px', padding:'2px 6px', background:'rgba(0,0,0,0.4)', borderRadius:'6px', color:'rgba(180,160,220,0.6)', display:'inline-block', marginBottom:'6px' }}>{bc.tier} · {bc.duration}s</div>
-                              <p style={{ fontSize:'10px', color:'rgba(160,140,200,0.6)', lineHeight:1.5, marginBottom:'6px' }}>{bc.desc}</p>
-                              <div style={{ fontSize:'10px', color:'#67e8f9', lineHeight:1.6 }}>
-                                <div>⚡ +{formatNumber(bc.reward)} Linh Khí</div>
-                                <div>🎁 {bc.dropRolls} lượt rớt đồ khi thành công</div>
-                                <div>💔 Mất {Math.floor(bc.failPenaltyPercent * 100)}% Qi hiện có nếu thất bại</div>
+                              <button onClick={() => enterBiCanh(bc.id)}
+                                style={{ width:'100%', padding:'10px', borderRadius:'10px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'11px', letterSpacing:'0.5px', cursor:'pointer',
+                                  background: `linear-gradient(135deg, ${bc.color}33, ${bc.color}1a)`, border:`1px solid ${bc.color}66`, color: bc.color }}>
+                                ⚔️ Tiến Vào Bí Cảnh
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    ) : (
+                      /* ═══════════ TỔ ĐỘI: nhiều người chơi thật đồng bộ qua cloud ═══════════ */
+                      myTeamRun && myLobby ? (
+                        myLobby.status === 'waiting' ? (
+                          /* Phòng chờ */
+                          <div className="monster-arena" style={{ flex:1 }}>
+                            <div style={{ fontSize:'56px', textAlign:'center' }}>{myTeamBcDef?.icon}</div>
+                            <div style={{ textAlign:'center' }}>
+                              <div style={{ fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'16px', color:'#f5e6c8' }}>{myTeamBcDef?.name}</div>
+                              <div style={{ fontSize:'11px', color:'#67e8f9' }}>Đang chờ đồng đội... ({myLobby.members.length}/4)</div>
+                            </div>
+                            <div style={{ width:'100%', maxWidth:'360px', display:'flex', flexDirection:'column', gap:'6px' }}>
+                              {myLobby.members.map(m => (
+                                <div key={m.name} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 12px', background:'rgba(30,15,55,0.5)', border:'1px solid rgba(139,92,246,0.25)', borderRadius:'8px', fontSize:'11px' }}>
+                                  <span style={{ color:'#e9d5ff' }}>{m.name === myLobby.hostName ? '👑 ' : '⚔️ '}{m.name}{m.name === playerName ? ' (Bạn)' : ''}</span>
+                                  <span style={{ color:'#86efac' }}>Sẵn sàng</span>
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ fontSize:'10px', color:'rgba(160,140,200,0.5)', textAlign:'center' }}>Cần tối thiểu 2 người để bắt đầu • Càng đông càng giảm hao tổn sinh mệnh</div>
+                            <div style={{ display:'flex', gap:'10px', width:'100%', maxWidth:'360px' }}>
+                              <button onClick={leaveTeamLobby} className="btn-danger" style={{ flex:1, padding:'12px', borderRadius:'12px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'11px', cursor:'pointer' }}>
+                                🚪 Rời Phòng
+                              </button>
+                              <button onClick={startTeamLobby} disabled={myLobby.members.length < 2}
+                                style={{ flex:1, padding:'12px', borderRadius:'12px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'11px', cursor: myLobby.members.length < 2 ? 'not-allowed' : 'pointer', opacity: myLobby.members.length < 2 ? 0.4 : 1,
+                                  background:'linear-gradient(135deg, #166534, #052e16)', border:'1px solid rgba(74,222,128,0.5)', color:'#bbf7d0' }}>
+                                ▶ Bắt Đầu
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Đang diễn ra / đã kết thúc — theo dõi tiến trình mọi thành viên theo thời gian thực */
+                          <div className="monster-arena" style={{ flex:1 }}>
+                            <div style={{ fontSize:'56px', textAlign:'center', filter:`drop-shadow(0 0 20px ${myTeamBcDef?.color})` }}>{myTeamBcDef?.icon}</div>
+                            <div style={{ textAlign:'center' }}>
+                              <div style={{ fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'16px', color:'#f5e6c8' }}>{myTeamBcDef?.name}</div>
+                              <div style={{ fontSize:'11px', color:'#67e8f9' }}>
+                                {myLobby.status === 'active' ? `Còn lại ${myTeamTimeLeftSec}s` : 'Trận đấu đã kết thúc'}
+                                {myLobbyMe?.status === 'success' ? ' • Bạn đã hoàn thành!' : myLobbyMe?.status === 'dead' ? ' • Bạn đã ngã xuống!' : ''}
                               </div>
                             </div>
-                            <button onClick={() => enterBiCanh(bc.id)}
-                              style={{ width:'100%', padding:'10px', borderRadius:'10px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'11px', letterSpacing:'0.5px', cursor:'pointer',
-                                background: `linear-gradient(135deg, ${bc.color}33, ${bc.color}1a)`, border:`1px solid ${bc.color}66`, color: bc.color }}>
-                              ⚔️ Tiến Vào Bí Cảnh
-                            </button>
+                            <div style={{ width:'100%', maxWidth:'400px', display:'flex', flexDirection:'column', gap:'8px' }}>
+                              {myLobby.members.map(m => {
+                                const mMaxHp = myTeamBcDef?.maxHp || 100;
+                                const mHp = computeMemberHp(myLobby, m, mMaxHp);
+                                const mHpPercent = Math.max(0, Math.min(100, (mHp / mMaxHp) * 100));
+                                return (
+                                  <div key={m.name} style={{ display:'flex', flexDirection:'column', gap:'3px' }}>
+                                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:'10px' }}>
+                                      <span style={{ color: m.name === playerName ? '#f5c842' : 'rgba(220,180,220,0.7)' }}>
+                                        {m.status === 'success' ? '✅ ' : m.status === 'dead' ? '💀 ' : '⚔️ '}{m.name}{m.name === playerName ? ' (Bạn)' : ''}
+                                      </span>
+                                      <span style={{ color:'#fca5a5' }}>{Math.ceil(mHp)} / {mMaxHp}</span>
+                                    </div>
+                                    <div className="hp-bar-track">
+                                      <div className="hp-bar-fill" style={{ width:`${mHpPercent}%`, opacity: m.status === 'alive' ? 1 : 0.4 }}></div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {myLobbyMe?.status !== 'alive' && (
+                              <button onClick={leaveTeamLobby}
+                                style={{ width:'100%', maxWidth:'360px', padding:'10px', borderRadius:'10px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'11px', cursor:'pointer', background:'rgba(40,40,60,0.6)', border:'1px solid rgba(150,140,170,0.3)', color:'rgba(200,180,220,0.7)' }}>
+                                Rời Phòng
+                              </button>
+                            )}
                           </div>
-                        ))}
-                      </div>
+                        )
+                      ) : (
+                        /* Chưa vào phòng nào — tạo phòng mới hoặc tham gia phòng đang chờ */
+                        <div style={{ display:'flex', flexDirection:'column', gap:'18px', overflowY:'auto' }} className="no-scrollbar">
+                          <div>
+                            <div style={{ fontSize:'11px', fontFamily:'Cinzel,serif', fontWeight:700, color:'#93c5fd', marginBottom:'8px' }}>➕ Tạo Phòng Mới</div>
+                            <div className="titles-grid" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:'12px' }}>
+                              {BI_CANH_LIST.filter(bc => bc.type === 'team').map(bc => (
+                                <div key={bc.id} className="item-card" style={{ display:'flex', flexDirection:'column', justifyContent:'space-between', gap:'10px', border:`1px solid ${bc.color}55` }}>
+                                  <div>
+                                    <div style={{ fontSize:'28px' }}>{bc.icon}</div>
+                                    <div style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color:bc.color, margin:'6px 0 3px' }}>{bc.name}</div>
+                                    <div style={{ fontSize:'9px', padding:'2px 6px', background:'rgba(0,0,0,0.4)', borderRadius:'6px', color:'rgba(180,160,220,0.6)', display:'inline-block', marginBottom:'6px' }}>{bc.tier} · {bc.duration}s · Tối đa 4 người</div>
+                                    <div style={{ fontSize:'10px', color:'#67e8f9', lineHeight:1.6 }}>
+                                      <div>⚡ +{formatNumber(bc.reward)} Linh Khí (thưởng thêm theo số người)</div>
+                                      <div>🎁 {bc.dropRolls} lượt rớt đồ khi thành công</div>
+                                      <div>💔 Mất {Math.floor(bc.failPenaltyPercent * 100)}% Qi nếu thất bại</div>
+                                    </div>
+                                  </div>
+                                  <button onClick={() => createTeamLobby(bc.id)}
+                                    style={{ width:'100%', padding:'9px', borderRadius:'10px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'10px', cursor:'pointer',
+                                      background:`linear-gradient(135deg, ${bc.color}33, ${bc.color}1a)`, border:`1px solid ${bc.color}66`, color: bc.color }}>
+                                    ➕ Tạo Phòng
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div>
+                            <div style={{ fontSize:'11px', fontFamily:'Cinzel,serif', fontWeight:700, color:'#93c5fd', marginBottom:'8px' }}>🚪 Phòng Đang Chờ ({openTeamLobbies.length})</div>
+                            {openTeamLobbies.length === 0 ? (
+                              <div style={{ textAlign:'center', padding:'24px', color:'rgba(140,120,180,0.5)', fontSize:'11px', fontFamily:'Cinzel,serif' }}>
+                                Chưa có phòng nào đang chờ. Hãy tạo phòng mới hoặc chờ đạo hữu khác vào!
+                              </div>
+                            ) : (
+                              <div style={{ display:'flex', flexDirection:'column', gap:'8px', maxHeight:'240px', overflowY:'auto' }} className="no-scrollbar">
+                                {openTeamLobbies.map(lob => {
+                                  const lobBcDef = BI_CANH_LIST.find(b => b.id === lob.bcId);
+                                  return (
+                                    <div key={lob.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 14px', background:'rgba(30,15,55,0.5)', border:`1px solid ${lobBcDef?.color || '#8b5cf6'}40`, borderRadius:'10px' }}>
+                                      <div>
+                                        <div style={{ fontSize:'12px', fontFamily:'Cinzel,serif', fontWeight:700, color: lobBcDef?.color }}>{lobBcDef?.icon} {lobBcDef?.name}</div>
+                                        <div style={{ fontSize:'10px', color:'rgba(180,160,220,0.6)' }}>Chủ phòng: {lob.hostName} • {lob.members.length}/4 người</div>
+                                      </div>
+                                      <button onClick={() => joinTeamLobby(lob.id)}
+                                        style={{ padding:'8px 16px', borderRadius:'8px', fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'10px', cursor:'pointer',
+                                          background:'linear-gradient(135deg, rgba(59,130,246,0.4), rgba(29,78,216,0.3))', border:'1px solid rgba(96,165,250,0.5)', color:'#bfdbfe' }}>
+                                        Tham Gia
+                                      </button>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )
                     )}
                   </div>
                 )}
@@ -1832,7 +2282,7 @@
                       <div style={{ fontFamily:'Cinzel Decorative,serif', fontSize:'16px', fontWeight:700, color:'#f5c842', marginBottom:'4px' }}>⛩️ Vạn Đạo Tông Môn</div>
                       <div className="ornament-divider" style={{ margin:'8px 0' }}>GIA NHẬP HOẶC KHAI SƠN LẬP PHÁI</div>
                     </div>
-                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:'14px' }}>
+                    <div className="sect-grid" style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:'14px' }}>
                       {/* Sect list */}
                       <div style={{ display:'flex', flexDirection:'column', gap:'10px', gridColumn:'span 1' }}>
                         <div style={{ fontSize:'10px', letterSpacing:'2px', color:'rgba(245,200,66,0.5)', textTransform:'uppercase', fontFamily:'Cinzel,serif' }}>— Danh Sách Tông Môn —</div>
@@ -1901,7 +2351,7 @@
                       <div className="ornament-divider" style={{ margin:'8px 0' }}>VINH DANH TRÊN CON ĐƯỜNG TU LUYỆN</div>
                       <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.6)' }}>Đột phá cảnh giới để mở khóa danh hiệu mới. Chọn một danh hiệu để trưng bày cạnh đạo hiệu của bạn.</div>
                     </div>
-                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:'12px', maxHeight:'420px', overflowY:'auto' }} className="no-scrollbar">
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:'12px', maxHeight:'420px', overflowY:'auto' }} className="no-scrollbar titles-grid">
                       {ALL_TITLES.map(titleData => {
                         const isUnlocked = gameState.realmIdx >= titleData.requiredRealmIdx;
                         const isEquipped = gameState.equippedTitleId === titleData.id;
@@ -2021,7 +2471,7 @@
                 </div>
 
                 {/* Content */}
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px', flex:1, overflowY:'auto' }} className="no-scrollbar">
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px', flex:1, overflowY:'auto' }} className="no-scrollbar modal-two-col">
                   {/* Left: My inventory */}
                   <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
                     <div style={{ fontSize:'12px', fontFamily:'Cinzel,serif', fontWeight:700, color:'#f5c842', display:'flex', alignItems:'center', gap:'6px' }}>
