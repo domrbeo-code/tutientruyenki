@@ -419,6 +419,24 @@
       filter: drop-shadow(0 0 6px rgba(0,229,204,0.45));
     }
 
+    /* ─── LINH CĂN BADGE ─── */
+    .linh-can-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 20px; cursor: pointer;
+      font-family: 'Cinzel', serif; font-weight: 700; font-size: 11px;
+      background: rgba(0,0,0,0.35);
+      transition: transform 0.15s, box-shadow 0.2s;
+      width: fit-content; letter-spacing: 0.3px;
+    }
+    .linh-can-badge:hover { transform: translateY(-1px) scale(1.02); }
+    .linh-can-badge .lc-hint { font-size: 8px; opacity: 0.55; font-weight: 400; letter-spacing: 0.5px; }
+    .linhcan-card {
+      display: flex; flex-direction: column; gap: 8px; padding: 14px;
+      border-radius: 14px; background: rgba(20,10,35,0.6);
+      border: 1px solid rgba(100,60,180,0.25); transition: all 0.2s; position: relative;
+    }
+    .linhcan-card.current { box-shadow: 0 0 0 1px rgba(245,200,66,0.6) inset; }
+
     /* ─── RANK BADGE ─── */
     .rank-1 { background: linear-gradient(135deg, #d97706, #fbbf24); color: #1a0a00; }
     .rank-2 { background: linear-gradient(135deg, #9ca3af, #e5e7eb); color: #111827; }
@@ -497,6 +515,7 @@
     .inventory-grid,
     .items-grid,
     .titles-grid,
+    .linhcan-grid,
     .solo-grid,
     .team-grid,
     .sect-grid,
@@ -518,6 +537,7 @@
       .inventory-grid,
       .items-grid,
       .titles-grid,
+      .linhcan-grid,
       .solo-grid,
       .team-grid,
       .sect-grid,
@@ -551,6 +571,7 @@
       .inventory-grid,
       .items-grid,
       .titles-grid,
+      .linhcan-grid,
       .solo-grid,
       .team-grid,
       .sect-grid,
@@ -559,6 +580,8 @@
         grid-template-columns: 1fr !important;
       }
       .item-card { padding: 12px !important; border-radius: 14px !important; }
+      .linh-can-badge { font-size: 10px !important; padding: 4px 10px !important; }
+      .linhcan-card { padding: 12px !important; }
       .combat-subtabs { flex-wrap: wrap !important; }
       .orb-shell { width: 150px !important; height: 150px !important; }
       .monster-arena { padding: 16px !important; }
@@ -633,9 +656,9 @@
         if (action === 'LEADERBOARD') {
           const idx = payload.leaderboard.findIndex(item => item.name === data.name);
           if (idx >= 0) {
-            payload.leaderboard[idx] = { ...payload.leaderboard[idx], totalQi: data.totalQi, realm: data.realm, lastOnline: Date.now() };
+            payload.leaderboard[idx] = { ...payload.leaderboard[idx], totalQi: data.totalQi, realm: data.realm, linhCan: data.linhCan || payload.leaderboard[idx].linhCan, lastOnline: Date.now() };
           } else {
-            payload.leaderboard.push({ name: data.name, totalQi: data.totalQi, realm: data.realm, lastOnline: Date.now() });
+            payload.leaderboard.push({ name: data.name, totalQi: data.totalQi, realm: data.realm, linhCan: data.linhCan, lastOnline: Date.now() });
           }
           payload.leaderboard.sort((a, b) => b.totalQi - a.totalQi);
           payload.leaderboard = payload.leaderboard.slice(0, 20);
@@ -645,9 +668,9 @@
           delete payload.activeTribulations[data.name];
           const idx = payload.leaderboard.findIndex(item => item.name === data.name);
           if (idx >= 0) {
-            payload.leaderboard[idx] = { ...payload.leaderboard[idx], totalQi: data.totalQi, realm: data.realm, lastOnline: Date.now() };
+            payload.leaderboard[idx] = { ...payload.leaderboard[idx], totalQi: data.totalQi, realm: data.realm, linhCan: data.linhCan || payload.leaderboard[idx].linhCan, lastOnline: Date.now() };
           } else {
-            payload.leaderboard.push({ name: data.name, totalQi: data.totalQi, realm: data.realm, lastOnline: Date.now() });
+            payload.leaderboard.push({ name: data.name, totalQi: data.totalQi, realm: data.realm, linhCan: data.linhCan, lastOnline: Date.now() });
           }
           payload.leaderboard.sort((a, b) => b.totalQi - a.totalQi);
           payload.leaderboard = payload.leaderboard.slice(0, 20);
@@ -866,6 +889,32 @@
       { id: 'title_12', name: 'Đạo Tổ Vĩnh Hằng', requiredRealmIdx: 24, desc: 'Đạo hợp trời đất, vĩnh hằng bất diệt, làm tổ của vạn đạo.', icon: '🌌' }
     ];
 
+    // ─── LINH CĂN — thuộc tính bẩm sinh, xác định ngẫu nhiên khi tu sĩ mới nhập môn ───
+    // Vĩnh viễn không đổi qua reset/tải lại/cập nhật game, trừ khi dùng "Tẩy Tủy Đan" (10.000 Tu Vi) ở UI riêng.
+    // weight: trọng số rơi ra khi random (số càng lớn càng dễ gặp). qpsMult nhân vào Tốc Độ Tu Luyện, powerMult nhân vào Chiến Lực.
+    const LINH_CAN_LIST = [
+      { id: 'kim',     name: 'Kim Linh Căn',     icon: '⚔️', color: '#e5e7eb', glow: 'rgba(229,231,235,0.45)', weight: 24, qpsMult: 1.20, powerMult: 1.15, desc: 'Linh căn Kim thuộc, sắc bén cương nghị.' },
+      { id: 'moc',     name: 'Mộc Linh Căn',     icon: '🌿', color: '#4ade80', glow: 'rgba(74,222,128,0.45)',  weight: 24, qpsMult: 1.35, powerMult: 1.00, desc: 'Linh căn Mộc thuộc, sinh cơ bất tận.' },
+      { id: 'thuy',    name: 'Thủy Linh Căn',    icon: '💧', color: '#38bdf8', glow: 'rgba(56,189,248,0.45)',  weight: 22, qpsMult: 1.28, powerMult: 1.08, desc: 'Linh căn Thủy thuộc, nhu hòa uyển chuyển.' },
+      { id: 'hoa',     name: 'Hỏa Linh Căn',     icon: '🔥', color: '#fb7185', glow: 'rgba(251,113,133,0.45)', weight: 20, qpsMult: 1.15, powerMult: 1.25, desc: 'Linh căn Hỏa thuộc, cương mãnh bạo liệt.' },
+      { id: 'tho',     name: 'Thổ Linh Căn',     icon: '⛰️', color: '#d97706', glow: 'rgba(217,119,6,0.45)',   weight: 18, qpsMult: 1.40, powerMult: 1.00, desc: 'Linh căn Thổ thuộc, hậu trọng vững chắc.' },
+      { id: 'hon_don', name: 'Hỗn Độn Linh Căn', icon: '🌀', color: '#a855f7', glow: 'rgba(168,85,247,0.7)',   weight: 3,  qpsMult: 6.00, powerMult: 1.50, desc: 'Linh căn tối cổ hồng hoang, dung hợp vạn pháp — cực kỳ hiếm có!' },
+      { id: 'thanh',   name: 'Thánh Linh Căn',   icon: '✨', color: '#f5c842', glow: 'rgba(245,200,66,0.8)',   weight: 1,  qpsMult: 7.50, powerMult: 2.00, desc: 'Linh căn thần thánh vạn cổ khó tìm, thiên địa sủng nhi!' }
+    ];
+    const LINH_CAN_TOTAL_WEIGHT = LINH_CAN_LIST.reduce((sum, lc) => sum + lc.weight, 0);
+    const LINH_CAN_REROLL_COST = 10000;
+    function rollLinhCan() {
+      let r = Math.random() * LINH_CAN_TOTAL_WEIGHT;
+      for (const lc of LINH_CAN_LIST) {
+        if (r < lc.weight) return lc.id;
+        r -= lc.weight;
+      }
+      return LINH_CAN_LIST[0].id;
+    }
+    function getLinhCan(id) {
+      return LINH_CAN_LIST.find(lc => lc.id === id) || LINH_CAN_LIST[0];
+    }
+
     const formatNumber = (num) => {
       if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
       if (num >= 1e9)  return (num / 1e9).toFixed(2) + 'B';
@@ -909,6 +958,8 @@
             if (!parsed.logs) parsed.logs = [];
             if (!parsed.items) parsed.items = {};
             if (!parsed.equippedTitleId) parsed.equippedTitleId = 'title_0';
+            // Tu sĩ đã có dữ liệu cũ nhưng chưa từng có Linh Căn (trước khi tính năng này ra đời) → random một lần duy nhất, sau đó giữ nguyên vĩnh viễn.
+            if (!parsed.linhCan || !LINH_CAN_LIST.some(lc => lc.id === parsed.linhCan)) parsed.linhCan = rollLinhCan();
             const now = Date.now();
             if (parsed.lastSaveTime) {
               const offlineSeconds = Math.floor((now - parsed.lastSaveTime) / 1000);
@@ -947,6 +998,7 @@
           qi: 0, totalQi: 0, realmIdx: 0, joinedSectId: 'thanh_van',
           shopCounts: {}, inventory: [], equippedGearId: null,
           items: {}, equippedTitleId: 'title_0',
+          linhCan: rollLinhCan(),
           lastSaveTime: Date.now(),
           logs: [{ id: '1', text: '[Đại Đạo]: Chào mừng tu sĩ gia nhập Đại Đạo Tranh Phong!', type: 'breakthrough', time: Date.now() }]
         };
@@ -960,6 +1012,7 @@
       const [invFilter, setInvFilter] = React.useState('all');
       const [combatSubTab, setCombatSubTab] = React.useState('solo');
       const [isBlackMarketModalOpen, setIsBlackMarketModalOpen] = React.useState(false);
+      const [isLinhCanModalOpen, setIsLinhCanModalOpen] = React.useState(false);
       const [listingPriceInput, setListingPriceInput] = React.useState({});
       const [biCanhRun, setBiCanhRun] = React.useState(null);
       const [cloudTeamInstances, setCloudTeamInstances] = React.useState({});
@@ -980,6 +1033,8 @@
         return () => clearInterval(t);
       }, []);
 
+      const myLinhCan = React.useMemo(() => getLinhCan(gameState.linhCan), [gameState.linhCan]);
+
       const combatPower = React.useMemo(() => {
         let base = 1 + gameState.realmIdx * 3;
         gameState.inventory.forEach(item => {
@@ -988,8 +1043,8 @@
             if (gear) base += gear.clickBonus;
           }
         });
-        return base;
-      }, [gameState.realmIdx, gameState.inventory]);
+        return Math.round(base * getLinhCan(gameState.linhCan).powerMult);
+      }, [gameState.realmIdx, gameState.inventory, gameState.linhCan]);
 
       const clickPower = combatPower;
 
@@ -1006,8 +1061,9 @@
           }
         });
         if (gameState.joinedSectId === 'thanh_van') total *= 1.2;
+        total *= getLinhCan(gameState.linhCan).qpsMult;
         return total;
-      }, [gameState.shopCounts, gameState.inventory, gameState.joinedSectId]);
+      }, [gameState.shopCounts, gameState.inventory, gameState.joinedSectId, gameState.linhCan]);
 
       React.useEffect(() => {
         const interval = setInterval(() => {
@@ -1070,7 +1126,7 @@
         };
         const doPushLeaderboard = async () => {
           const state = gameStateRef.current;
-          await modifyCloudData('LEADERBOARD', { name: playerName, totalQi: state.totalQi, realm: REALMS[state.realmIdx]?.name || "Phàm Nhân" });
+          await modifyCloudData('LEADERBOARD', { name: playerName, totalQi: state.totalQi, realm: REALMS[state.realmIdx]?.name || "Phàm Nhân", linhCan: state.linhCan });
         };
         const syncLoop = async () => {
           await doPoll();
@@ -1150,7 +1206,7 @@
                   ...prev, qi: prev.qi - nextRealm.req, realmIdx: prev.realmIdx + 1,
                   logs: [{ id: Date.now().toString(), text: `[Độ Kiếp Thành Công]: Chống chịu qua lôi kiếp, bước chân vào ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
                 };
-                modifyCloudData('END_TRIB_AND_UPDATE', { name: playerName, totalQi: updatedState.totalQi, realm: nextRealm.name })
+                modifyCloudData('END_TRIB_AND_UPDATE', { name: playerName, totalQi: updatedState.totalQi, realm: nextRealm.name, linhCan: updatedState.linhCan })
                   .then(r => r.success && setCloudLeaderboard(r.record.leaderboard));
                 return updatedState;
               });
@@ -1174,7 +1230,7 @@
                   inventory: updatedInventory,
                   logs: [{ id: Date.now().toString(), text: penaltyText, type: 'fail', time: Date.now() }, ...prev.logs].slice(0, 100)
                 };
-                modifyCloudData('END_TRIB_AND_UPDATE', { name: playerName, totalQi: updatedState.totalQi, realm: REALMS[updatedState.realmIdx].name });
+                modifyCloudData('END_TRIB_AND_UPDATE', { name: playerName, totalQi: updatedState.totalQi, realm: REALMS[updatedState.realmIdx].name, linhCan: updatedState.linhCan });
                 return updatedState;
               });
             }
@@ -1203,7 +1259,7 @@
               ...prev, qi: newQi, realmIdx: nextIdx,
               logs: [{ id: Date.now().toString(), text: `[Đột Phá]: Thành công tiến cấp lên ${nextRealm.name}!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
             }));
-            const res = await modifyCloudData('LEADERBOARD', { name: playerName, totalQi: gameState.totalQi, realm: nextRealm.name });
+            const res = await modifyCloudData('LEADERBOARD', { name: playerName, totalQi: gameState.totalQi, realm: nextRealm.name, linhCan: gameState.linhCan });
             if (res.success) setCloudLeaderboard(res.record.leaderboard);
           }
         } else {
@@ -1531,6 +1587,23 @@
         }));
       };
 
+      // ─── LINH CĂN: tiêu hao Tu Vi (Linh Khí) để tẩy tủy, random lại Linh Căn ───
+      const handleRerollLinhCan = () => {
+        if (gameState.qi < LINH_CAN_REROLL_COST) {
+          alert(`Tu Vi bất túc! Cần ${formatNumber(LINH_CAN_REROLL_COST)} Tu Vi để tẩy tủy đổi Linh Căn.`);
+          return;
+        }
+        const oldLinhCan = getLinhCan(gameState.linhCan);
+        const newLinhCanId = rollLinhCan();
+        const newLinhCan = getLinhCan(newLinhCanId);
+        setGameState(prev => ({
+          ...prev,
+          qi: prev.qi - LINH_CAN_REROLL_COST,
+          linhCan: newLinhCanId,
+          logs: [{ id: Date.now().toString(), text: `[Tẩy Tủy Linh Căn]: Tiêu hao ${formatNumber(LINH_CAN_REROLL_COST)} Tu Vi, ${oldLinhCan.icon} ${oldLinhCan.name} hóa thành ${newLinhCan.icon} ${newLinhCan.name}!`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
+        }));
+      };
+
       const handleCreateSect = async (e) => {
         e.preventDefault();
         if (!newSectName.trim()) return;
@@ -1629,13 +1702,13 @@
         let list = [...cloudLeaderboard];
         const index = list.findIndex(item => item.name === playerName);
         if (index >= 0) {
-          list[index] = { ...list[index], totalQi: Math.max(list[index].totalQi, gameState.totalQi), realm: REALMS[gameState.realmIdx].name };
+          list[index] = { ...list[index], totalQi: Math.max(list[index].totalQi, gameState.totalQi), realm: REALMS[gameState.realmIdx].name, linhCan: gameState.linhCan };
         } else {
-          list.push({ name: playerName, totalQi: gameState.totalQi, realm: REALMS[gameState.realmIdx].name });
+          list.push({ name: playerName, totalQi: gameState.totalQi, realm: REALMS[gameState.realmIdx].name, linhCan: gameState.linhCan });
         }
         list.sort((a, b) => b.totalQi - a.totalQi);
         return list.slice(0, 20).map(item => ({ ...item, isPlayer: item.name === playerName, title: item.realm || 'Phàm Nhân' }));
-      }, [cloudLeaderboard, playerName, gameState.totalQi, gameState.realmIdx]);
+      }, [cloudLeaderboard, playerName, gameState.totalQi, gameState.realmIdx, gameState.linhCan]);
 
       // ─── TABS CONFIG ───
       const TABS = [
@@ -1709,6 +1782,12 @@
                   <div className="title-badge">
                     「{equippedTitle?.icon} {equippedTitle?.name}」
                   </div>
+                  <button onClick={() => setIsLinhCanModalOpen(true)} className="linh-can-badge"
+                    style={{ border:`1px solid ${myLinhCan.color}88`, color: myLinhCan.color, boxShadow:`0 0 12px ${myLinhCan.glow}` }}>
+                    <span>{myLinhCan.icon}</span>
+                    <span>{myLinhCan.name}</span>
+                    <span className="lc-hint">🎲 Tẩy Tủy</span>
+                  </button>
                 </div>
 
                 {/* Stats row */}
@@ -2485,16 +2564,22 @@
                         {fullLeaderboard.map((item, index) => {
                           const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-n';
                           const rankIcon = index === 0 ? '👑' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                          const rowLinhCan = item.linhCan ? getLinhCan(item.linhCan) : null;
                           return (
                             <div key={item.name} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderRadius:'12px', border:`1px solid ${item.isPlayer ? 'rgba(192,132,252,0.5)' : 'rgba(60,30,100,0.3)'}`, background: item.isPlayer ? 'linear-gradient(135deg, rgba(60,20,110,0.5), rgba(30,10,60,0.6))' : 'linear-gradient(135deg, rgba(20,10,40,0.6), rgba(10,5,20,0.7))', transition:'all 0.2s' }}>
                               {/* Rank badge */}
                               <div className={rankClass} style={{ width:'32px', height:'32px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'11px', flexShrink:0 }}>
                                 {rankIcon || (index + 1)}
                               </div>
-                              <div style={{ flex:1 }}>
-                                <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'2px' }}>
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'2px', flexWrap:'wrap' }}>
                                   <span style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color:'#f5e6c8' }}>{item.name}</span>
                                   {item.isPlayer && <span style={{ fontSize:'9px', color:'#67e8f9', background:'rgba(6,182,212,0.2)', border:'1px solid rgba(6,182,212,0.4)', padding:'1px 6px', borderRadius:'10px', fontFamily:'Cinzel,serif' }}>CHÍNH MÌNH</span>}
+                                  {rowLinhCan && (
+                                    <span style={{ fontSize:'9px', color: rowLinhCan.color, background:'rgba(0,0,0,0.4)', border:`1px solid ${rowLinhCan.color}66`, padding:'1px 7px', borderRadius:'10px', fontFamily:'Cinzel,serif', display:'inline-flex', alignItems:'center', gap:'3px', whiteSpace:'nowrap' }}>
+                                      {rowLinhCan.icon} {rowLinhCan.name}
+                                    </span>
+                                  )}
                                 </div>
                                 <div style={{ fontSize:'10px', color:'rgba(100,200,255,0.6)' }}>{item.title}</div>
                               </div>
@@ -2646,6 +2731,77 @@
                       )}
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ══════════════ LINH CĂN MODAL ══════════════ */}
+          {isLinhCanModalOpen && (
+            <div className="modal-backdrop">
+              <div className="modal-box" style={{ maxWidth:'900px' }}>
+                <div style={{ position:'absolute', top:0, left:'15%', right:'15%', height:'1px', background:'linear-gradient(to right, transparent, rgba(245,200,66,0.6), transparent)' }}></div>
+                <div className="corner-tl"></div><div className="corner-tr"></div><div className="corner-bl"></div><div className="corner-br"></div>
+
+                {/* Header */}
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'1px solid rgba(100,60,180,0.25)', paddingBottom:'16px' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+                    <div style={{ width:'48px', height:'48px', borderRadius:'12px', background:'linear-gradient(135deg, #2d0a45, #1c0033)', border:`1px solid ${myLinhCan.color}88`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', boxShadow:`0 0 20px ${myLinhCan.glow}` }}>{myLinhCan.icon}</div>
+                    <div>
+                      <div style={{ fontFamily:'Cinzel Decorative,serif', fontWeight:700, fontSize:'18px', color:'#f5c842' }}>Linh Căn Các</div>
+                      <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.5)', marginTop:'2px' }}>Bẩm sinh chi vật, quyết định thiên phú tu luyện của đạo hữu.</div>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsLinhCanModalOpen(false)}
+                    style={{ width:'36px', height:'36px', borderRadius:'50%', background:'rgba(60,10,10,0.7)', border:'1px solid rgba(220,60,60,0.4)', color:'#fca5a5', cursor:'pointer', fontSize:'14px', fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.15s' }}>
+                    ✕
+                  </button>
+                </div>
+
+                {/* Current linh căn summary + reroll action */}
+                <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:'14px', padding:'14px 18px', borderRadius:'14px', background:'rgba(0,0,0,0.35)', border:`1px solid ${myLinhCan.color}55` }}>
+                  <div>
+                    <div style={{ fontSize:'10px', color:'rgba(180,160,220,0.6)', letterSpacing:'1px', textTransform:'uppercase', marginBottom:'4px' }}>Linh Căn Hiện Tại</div>
+                    <div style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'15px', color: myLinhCan.color }}>{myLinhCan.icon} {myLinhCan.name}</div>
+                    <div style={{ fontSize:'10px', color:'rgba(200,190,220,0.6)', marginTop:'4px' }}>
+                      +{Math.round((myLinhCan.qpsMult - 1) * 100)}% Tốc Độ Tu Luyện · +{Math.round((myLinhCan.powerMult - 1) * 100)}% Chiến Lực
+                    </div>
+                  </div>
+                  <button onClick={handleRerollLinhCan} disabled={gameState.qi < LINH_CAN_REROLL_COST} className="btn-gold"
+                    style={{ padding:'12px 22px', borderRadius:'12px', fontFamily:'Cinzel,serif', fontSize:'12px', fontWeight:700, cursor: gameState.qi < LINH_CAN_REROLL_COST ? 'not-allowed' : 'pointer', opacity: gameState.qi < LINH_CAN_REROLL_COST ? 0.5 : 1, whiteSpace:'nowrap' }}>
+                    🎲 Tẩy Tủy Đổi Linh Căn — {formatNumber(LINH_CAN_REROLL_COST)} Tu Vi
+                  </button>
+                </div>
+
+                <div style={{ fontSize:'10px', color:'rgba(160,140,200,0.5)', lineHeight:1.5 }}>
+                  Linh Căn được Trời Đất phú cho ngay lúc mới nhập môn và sẽ tồn tại vĩnh viễn cùng đạo hữu — không đổi qua bất kỳ lần tải lại hay cập nhật nào. Muốn thay đổi, chỉ có thể tiêu hao Tu Vi để tẩy tủy tại đây.
+                </div>
+
+                {/* Grid of all possible linh can */}
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:'12px', maxHeight:'340px', overflowY:'auto' }} className="no-scrollbar linhcan-grid">
+                  {LINH_CAN_LIST.map(lc => {
+                    const isCurrent = gameState.linhCan === lc.id;
+                    const chancePercent = (lc.weight / LINH_CAN_TOTAL_WEIGHT * 100);
+                    return (
+                      <div key={lc.id} className={`linhcan-card${isCurrent ? ' current' : ''}`} style={{ borderColor: isCurrent ? `${lc.color}aa` : undefined }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                          <span style={{ fontSize:'22px' }}>{lc.icon}</span>
+                          <div>
+                            <div style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color: lc.color }}>{lc.name}</div>
+                            <div style={{ fontSize:'9px', color:'rgba(160,140,200,0.5)' }}>Tỉ lệ: {chancePercent < 1 ? chancePercent.toFixed(1) : Math.round(chancePercent)}%</div>
+                          </div>
+                        </div>
+                        <div style={{ fontSize:'10px', color:'rgba(200,190,220,0.65)', lineHeight:1.5 }}>{lc.desc}</div>
+                        <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
+                          <span style={{ fontSize:'9px', color:'#22d3ee', background:'rgba(6,182,212,0.15)', border:'1px solid rgba(6,182,212,0.3)', padding:'2px 8px', borderRadius:'8px' }}>+{Math.round((lc.qpsMult - 1) * 100)}% Tu Luyện</span>
+                          <span style={{ fontSize:'9px', color:'#fb7185', background:'rgba(251,113,133,0.15)', border:'1px solid rgba(251,113,133,0.3)', padding:'2px 8px', borderRadius:'8px' }}>+{Math.round((lc.powerMult - 1) * 100)}% Chiến Lực</span>
+                        </div>
+                        {isCurrent && (
+                          <div style={{ position:'absolute', top:'10px', right:'10px', fontSize:'8px', color:'#f5c842', background:'rgba(0,0,0,0.5)', border:'1px solid rgba(245,200,66,0.5)', padding:'2px 7px', borderRadius:'8px', fontFamily:'Cinzel,serif', fontWeight:700 }}>✦ HIỆN TẠI</div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
