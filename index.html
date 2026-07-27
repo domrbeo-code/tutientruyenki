@@ -354,6 +354,24 @@
       overflow: hidden; padding: 2px;
     }
 
+    /* ─── CULTIVATE COOLDOWN BAR (Thanh Tu Luyện) ─── */
+    .cultivate-bar-track {
+      width: 100%; background: rgba(0,0,0,0.6); height: 12px;
+      border-radius: 6px; border: 1px solid rgba(34,211,238,0.35);
+      overflow: hidden; padding: 2px;
+    }
+    .cultivate-bar-fill {
+      height: 100%; border-radius: 6px; transition: width 0.2s linear;
+      background: linear-gradient(90deg, #0e7490, #22d3ee, #67e8f9, #a5f3fc);
+      box-shadow: 0 0 12px rgba(34,211,238,0.6);
+      position: relative; overflow: hidden;
+    }
+    .cultivate-bar-fill::after {
+      content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmerHP 1.4s infinite;
+    }
+
     /* ─── STAT CHIP ─── */
     .stat-chip {
       display: flex; flex-direction: column; align-items: flex-end;
@@ -1539,6 +1557,51 @@
       const isMaxedOut = nextRealmObj && gameState.qi >= nextRealmObj.req;
       const equippedTitle = ALL_TITLES.find(t => t.id === gameState.equippedTitleId) || ALL_TITLES[0];
 
+      // ═══ CƠ CHẾ TU LUYỆN: ấn nút → đếm ngược 5 giây, mỗi giây nhận Qi, hết cooldown phải ấn lại ═══
+      const CULTIVATE_DURATION_MS = 5000;
+      const CULTIVATE_TICK_MS = 1000;
+      const CULTIVATE_TOTAL_TICKS = CULTIVATE_DURATION_MS / CULTIVATE_TICK_MS;
+
+      const [cultivateState, setCultivateState] = React.useState({ active: false, startTime: 0, endTime: 0, ticksGranted: 0 });
+
+      const startCultivate = () => {
+        if (isMaxedOut || cultivateState.active) return;
+        const now = Date.now();
+        setCultivateState({ active: true, startTime: now, endTime: now + CULTIVATE_DURATION_MS, ticksGranted: 0 });
+      };
+
+      React.useEffect(() => {
+        if (!cultivateState.active) return;
+        const timer = setInterval(() => {
+          setCultivateState(prev => {
+            if (!prev.active) return prev;
+            const elapsedTicks = Math.min(CULTIVATE_TOTAL_TICKS, Math.floor((Date.now() - prev.startTime) / CULTIVATE_TICK_MS));
+            if (elapsedTicks > prev.ticksGranted) {
+              const ticksToGrant = elapsedTicks - prev.ticksGranted;
+              setGameState(gs => {
+                const nextRealmForTick = REALMS[gs.realmIdx + 1];
+                const gain = clickPower * ticksToGrant;
+                const nextReq = nextRealmForTick ? nextRealmForTick.req : gs.qi + gain;
+                const newQi = Math.min(nextReq, gs.qi + gain);
+                const added = newQi - gs.qi;
+                if (added <= 0) return gs;
+                return { ...gs, qi: newQi, totalQi: gs.totalQi + added };
+              });
+              return { ...prev, ticksGranted: elapsedTicks, active: elapsedTicks < CULTIVATE_TOTAL_TICKS };
+            }
+            if (Date.now() >= prev.endTime) return { ...prev, active: false };
+            return prev;
+          });
+        }, 200);
+        return () => clearInterval(timer);
+      }, [cultivateState.active, clickPower]);
+
+      const cultivateRemainingMs = cultivateState.active ? Math.max(0, cultivateState.endTime - Date.now()) : 0;
+      const cultivateRemainingSec = Math.max(0, Math.ceil(cultivateRemainingMs / 1000));
+      const cultivateElapsedPercent = cultivateState.active
+        ? Math.min(100, ((CULTIVATE_DURATION_MS - cultivateRemainingMs) / CULTIVATE_DURATION_MS) * 100)
+        : 0;
+
       // ─── BÍ CẢNH: giá trị hiển thị theo thời gian thực (làm mới nhờ setTick 500ms có sẵn) ───
       const activeBcDef = biCanhRun ? BI_CANH_LIST.find(b => b.id === biCanhRun.bcId) : null;
       const bcCurrentHp = biCanhRun ? Math.max(0, biCanhRun.maxHp - biCanhRun.decayPerSec * ((Date.now() - biCanhRun.startTime) / 1000)) : 0;
@@ -1764,7 +1827,7 @@
                 <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:'200px', height:'200px', borderRadius:'50%', background:'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)', pointerEvents:'none' }}></div>
 
                 {/* ORB BUTTON */}
-                <div style={{ position:'relative', width:'176px', height:'176px' }} className="orb-float">
+                <div style={{ position:'relative' }} className="orb-float orb-shell">
                   {/* Outer rotating ring */}
                   <div className="ring-cw" style={{ position:'absolute', inset:'-12px', borderRadius:'50%', border:'1px dashed rgba(192,132,252,0.25)' }}></div>
                   {/* Middle ring */}
@@ -1773,39 +1836,64 @@
                   <div className="ring-cw2" style={{ position:'absolute', inset:'-2px', borderRadius:'50%', border:'2px solid rgba(245,200,66,0.15)' }}></div>
 
                   <button
-                    onClick={() => {
-                      if (isMaxedOut) return;
-                      const nextReq = nextRealmObj ? nextRealmObj.req : gameState.qi + clickPower;
-                      const newQi = Math.min(nextReq, gameState.qi + clickPower);
-                      const added = newQi - gameState.qi;
-                      setGameState(prev => ({ ...prev, qi: newQi, totalQi: prev.totalQi + added }));
-                    }}
+                    onClick={startCultivate}
+                    disabled={isMaxedOut || cultivateState.active}
                     style={{
-                      width:'100%', height:'100%', borderRadius:'50%', cursor: isMaxedOut ? 'not-allowed' : 'pointer',
+                      width:'100%', height:'100%', borderRadius:'50%',
+                      cursor: (isMaxedOut || cultivateState.active) ? 'not-allowed' : 'pointer',
                       background: isMaxedOut
                         ? 'radial-gradient(circle at 35% 35%, #5a3010, #2d1500, #1a0800)'
-                        : 'radial-gradient(circle at 35% 35%, #312e81, #1e1b4b, #0d0b2b)',
-                      border: `2px solid ${isMaxedOut ? 'rgba(245,200,66,0.6)' : 'rgba(99,102,241,0.5)'}`,
+                        : cultivateState.active
+                          ? 'radial-gradient(circle at 35% 35%, #0e4f5c, #073642, #041b21)'
+                          : 'radial-gradient(circle at 35% 35%, #312e81, #1e1b4b, #0d0b2b)',
+                      border: `2px solid ${isMaxedOut ? 'rgba(245,200,66,0.6)' : cultivateState.active ? 'rgba(34,211,238,0.7)' : 'rgba(99,102,241,0.5)'}`,
                       boxShadow: isMaxedOut
                         ? '0 0 40px rgba(245,200,66,0.3), inset 0 0 30px rgba(245,200,66,0.1)'
-                        : '0 0 40px rgba(99,102,241,0.3), inset 0 0 30px rgba(99,102,241,0.1)',
+                        : cultivateState.active
+                          ? '0 0 40px rgba(34,211,238,0.35), inset 0 0 30px rgba(34,211,238,0.15)'
+                          : '0 0 40px rgba(99,102,241,0.3), inset 0 0 30px rgba(99,102,241,0.1)',
                       display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'6px',
                       transition:'all 0.15s', outline:'none',
-                      animation: isMaxedOut ? 'pulse 2s infinite' : 'none',
+                      animation: isMaxedOut ? 'pulse 2s infinite' : cultivateState.active ? 'pulseJade 1.2s infinite' : 'none',
                       position:'relative', overflow:'hidden'
                     }}>
                     {/* Inner shimmer */}
                     <div style={{ position:'absolute', top:'-50%', left:'-50%', width:'40%', height:'200%', background:'linear-gradient(to bottom right, transparent, rgba(255,255,255,0.06), transparent)', transform:'rotate(-30deg)', pointerEvents:'none' }}></div>
-                    <span style={{ fontSize:'38px', filter: isMaxedOut ? 'drop-shadow(0 0 12px rgba(245,200,66,0.8))' : 'drop-shadow(0 0 10px rgba(99,102,241,0.8))' }}>
-                      {isMaxedOut ? '🌟' : '🌌'}
+                    <span style={{
+                      fontSize: cultivateState.active ? '40px' : '38px',
+                      fontFamily: cultivateState.active ? 'Cinzel,serif' : undefined,
+                      fontWeight: cultivateState.active ? 900 : undefined,
+                      color: cultivateState.active ? '#a5f3fc' : undefined,
+                      filter: isMaxedOut
+                        ? 'drop-shadow(0 0 12px rgba(245,200,66,0.8))'
+                        : cultivateState.active
+                          ? 'drop-shadow(0 0 10px rgba(34,211,238,0.9))'
+                          : 'drop-shadow(0 0 10px rgba(99,102,241,0.8))'
+                    }}>
+                      {isMaxedOut ? '🌟' : cultivateState.active ? cultivateRemainingSec : '🌌'}
                     </span>
-                    <span style={{ fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'10px', letterSpacing:'1.5px', color: isMaxedOut ? '#f5c842' : '#c4b5fd', textAlign:'center', lineHeight:1.3 }}>
-                      {isMaxedOut ? 'ĐÃ ĐẠT NGƯỠNG' : 'HẤP THU\nLINH KHÍ'}
+                    <span style={{ fontFamily:'Cinzel,serif', fontWeight:900, fontSize:'10px', letterSpacing:'1.5px', color: isMaxedOut ? '#f5c842' : cultivateState.active ? '#67e8f9' : '#c4b5fd', textAlign:'center', lineHeight:1.3 }}>
+                      {isMaxedOut ? 'ĐÃ ĐẠT NGƯỠNG' : cultivateState.active ? 'ĐANG HẤP THU...' : 'HẤP THU\nLINH KHÍ'}
                     </span>
-                    <span style={{ fontSize:'10px', color: isMaxedOut ? '#fbbf24' : '#67e8f9' }}>
-                      {isMaxedOut ? '⚡ Cần Đột Phá!' : `+${clickPower} Qi`}
+                    <span style={{ fontSize:'10px', color: isMaxedOut ? '#fbbf24' : cultivateState.active ? '#22d3ee' : '#67e8f9' }}>
+                      {isMaxedOut ? '⚡ Cần Đột Phá!' : cultivateState.active ? `+${clickPower} Qi/giây` : `+${clickPower} Qi/giây × 5s`}
                     </span>
                   </button>
+                </div>
+
+                {/* ── Thanh Tu Luyện: đếm ngược cooldown 5 giây ── */}
+                <div style={{ width:'100%', display:'flex', flexDirection:'column', gap:'6px' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:'10px', letterSpacing:'0.5px' }}>
+                    <span style={{ color: cultivateState.active ? '#67e8f9' : 'rgba(192,132,252,0.6)', fontFamily:'Cinzel,serif', fontWeight:700 }}>
+                      {cultivateState.active ? '🌀 ĐANG TU LUYỆN...' : '💤 CHƯA TU LUYỆN'}
+                    </span>
+                    <span style={{ color: cultivateState.active ? '#22d3ee' : 'rgba(150,130,200,0.5)', fontWeight:700 }}>
+                      {cultivateState.active ? `Còn ${cultivateRemainingSec}s` : 'Nhấn nút để bắt đầu'}
+                    </span>
+                  </div>
+                  <div className="cultivate-bar-track">
+                    <div className="cultivate-bar-fill" style={{ width:`${cultivateElapsedPercent}%` }}></div>
+                  </div>
                 </div>
 
                 {/* Progress */}
