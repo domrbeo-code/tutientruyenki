@@ -562,6 +562,12 @@
         width: 100% !important;
       }
       .stat-chip { align-items: flex-start !important; padding: 10px 12px !important; }
+      .stat-chip-linhthach {
+        grid-column: 1 / -1 !important;
+        flex-direction: row !important; align-items: center !important; justify-content: space-between !important;
+        background: rgba(103,232,249,0.08) !important; border-radius: 10px !important;
+        border: 1px solid rgba(103,232,249,0.25) !important;
+      }
       .tab-strip { padding: 4px !important; gap: 6px !important; }
       .tab-btn { padding: 10px 12px !important; font-size: 10px !important; flex: 0 0 auto; }
       .tab-content { padding: 14px !important; gap: 14px !important; }
@@ -623,9 +629,9 @@
         });
         if (!res.ok) throw new Error("Network response was not ok");
         const data = await res.json();
-        return data.record || { leaderboard: [], customSects: [], activeTribulations: {}, marketListings: [], teamInstances: {} };
+        return data.record || { leaderboard: [], customSects: [], activeTribulations: {}, marketListings: [], teamInstances: {}, pendingEarnings: {} };
       } catch (e) {
-        return { leaderboard: [], customSects: [], activeTribulations: {}, marketListings: [], teamInstances: {} };
+        return { leaderboard: [], customSects: [], activeTribulations: {}, marketListings: [], teamInstances: {}, pendingEarnings: {} };
       }
     }
 
@@ -637,9 +643,11 @@
           customSects: current.customSects || [],
           activeTribulations: current.activeTribulations || {},
           marketListings: current.marketListings || [],
-          teamInstances: current.teamInstances || {}
+          teamInstances: current.teamInstances || {},
+          pendingEarnings: current.pendingEarnings || {}
         };
         let isSuccess = true;
+        let claimedAmount = 0;
 
         // ─── Dọn dẹp phòng Bí Cảnh Tổ Đội cũ/bỏ hoang, tránh dữ liệu cloud phình to vô hạn ───
         {
@@ -688,9 +696,13 @@
           const exists = payload.marketListings.find(l => l.listingId === data.listingId);
           if (exists) {
             payload.marketListings = payload.marketListings.filter(l => l.listingId !== data.listingId);
+            payload.pendingEarnings[exists.sellerName] = (payload.pendingEarnings[exists.sellerName] || 0) + exists.price;
           } else {
             isSuccess = false;
           }
+        } else if (action === 'CLAIM_EARNINGS') {
+          claimedAmount = payload.pendingEarnings[data.name] || 0;
+          delete payload.pendingEarnings[data.name];
         } else if (action === 'ADD_SECT') {
           payload.customSects.push(data.sect);
         } else if (action === 'CREATE_TEAM_LOBBY') {
@@ -740,7 +752,7 @@
           body: JSON.stringify(payload)
         });
         const result = await res.json();
-        return { success: true, record: result.record || payload };
+        return { success: true, record: result.record || payload, claimedAmount };
       } catch (e) {
         return { success: false, error: "Lỗi kết nối máy chủ!" };
       }
@@ -837,13 +849,14 @@
     // ─── BÍ CẢNH (thay thế cơ chế đánh quái cũ) ───
     // decayPerSec hiệu quả = baseDecayPerSec / (1 + combatPower / powerScale) — Chiến Lực càng cao, sinh mệnh tụt càng chậm.
     // dropRolls: số lần lặp lại bảng rớt đồ ALL_GEARS/ALL_ITEMS khi hoàn thành (bí cảnh khó hơn = nhiều lượt roll hơn).
+    // linhThachReward: lượng Linh Thạch (tiền tệ giao dịch Hắc Thị) nhận thêm khi vượt qua bí cảnh.
     const BI_CANH_LIST = [
-      { id: 'bc_solo_1', name: 'Loạn Thạch Bí Cảnh', type: 'solo', tier: 'Sơ Cấp', duration: 30, maxHp: 100, baseDecayPerSec: 3, powerScale: 8, reward: 400, dropRolls: 1, failPenaltyPercent: 0.10, icon: '🌫️', color: '#94a3b8', desc: 'Bí cảnh sơ khai, thích hợp cho tu sĩ mới nhập môn thử sức.' },
-      { id: 'bc_solo_2', name: 'Huyết Vực Bí Cảnh', type: 'solo', tier: 'Trung Cấp', duration: 40, maxHp: 100, baseDecayPerSec: 6, powerScale: 60, reward: 3000, dropRolls: 1, failPenaltyPercent: 0.15, icon: '🌋', color: '#f87171', desc: 'Vùng đất nhuốm huyết khí yêu ma, hiểm nguy hơn hẳn.' },
-      { id: 'bc_solo_3', name: 'Thâm Uyên Bí Cảnh', type: 'solo', tier: 'Cao Cấp', duration: 50, maxHp: 100, baseDecayPerSec: 9, powerScale: 400, reward: 25000, dropRolls: 2, failPenaltyPercent: 0.20, icon: '🌌', color: '#a855f7', desc: 'Vực sâu không đáy, chỉ cường giả pháp bảo đầy mình mới dám bước vào.' },
-      { id: 'bc_team_1', name: 'Đồng Môn Hợp Kích — Sơ Cấp', type: 'team', tier: 'Sơ Cấp', duration: 35, maxHp: 100, baseDecayPerSec: 4, powerScale: 8, reward: 700, dropRolls: 1, failPenaltyPercent: 0.12, icon: '🛡️', color: '#60a5fa', desc: 'Cùng đồng môn xông pha bí cảnh, rủi ro và phần thưởng đều tăng so với đi solo.' },
-      { id: 'bc_team_2', name: 'Đồng Môn Hợp Kích — Trung Cấp', type: 'team', tier: 'Trung Cấp', duration: 45, maxHp: 100, baseDecayPerSec: 8, powerScale: 60, reward: 5500, dropRolls: 2, failPenaltyPercent: 0.18, icon: '⚔️', color: '#fb923c', desc: 'Trận chiến quy mô lớn, hung hiểm gấp bội bí cảnh solo cùng cấp.' },
-      { id: 'bc_team_3', name: 'Đồng Môn Hợp Kích — Cao Cấp', type: 'team', tier: 'Cao Cấp', duration: 60, maxHp: 100, baseDecayPerSec: 12, powerScale: 400, reward: 45000, dropRolls: 3, failPenaltyPercent: 0.25, icon: '👹', color: '#f43f5e', desc: 'Đại chiến tối nguy hiểm, phần thưởng cực kỳ hậu hĩnh.' }
+      { id: 'bc_solo_1', name: 'Loạn Thạch Bí Cảnh', type: 'solo', tier: 'Sơ Cấp', duration: 30, maxHp: 100, baseDecayPerSec: 3, powerScale: 8, reward: 400, linhThachReward: 15, dropRolls: 1, failPenaltyPercent: 0.10, icon: '🌫️', color: '#94a3b8', desc: 'Bí cảnh sơ khai, thích hợp cho tu sĩ mới nhập môn thử sức.' },
+      { id: 'bc_solo_2', name: 'Huyết Vực Bí Cảnh', type: 'solo', tier: 'Trung Cấp', duration: 40, maxHp: 100, baseDecayPerSec: 6, powerScale: 60, reward: 3000, linhThachReward: 40, dropRolls: 1, failPenaltyPercent: 0.15, icon: '🌋', color: '#f87171', desc: 'Vùng đất nhuốm huyết khí yêu ma, hiểm nguy hơn hẳn.' },
+      { id: 'bc_solo_3', name: 'Thâm Uyên Bí Cảnh', type: 'solo', tier: 'Cao Cấp', duration: 50, maxHp: 100, baseDecayPerSec: 9, powerScale: 400, reward: 25000, linhThachReward: 120, dropRolls: 2, failPenaltyPercent: 0.20, icon: '🌌', color: '#a855f7', desc: 'Vực sâu không đáy, chỉ cường giả pháp bảo đầy mình mới dám bước vào.' },
+      { id: 'bc_team_1', name: 'Đồng Môn Hợp Kích — Sơ Cấp', type: 'team', tier: 'Sơ Cấp', duration: 35, maxHp: 100, baseDecayPerSec: 4, powerScale: 8, reward: 700, linhThachReward: 20, dropRolls: 1, failPenaltyPercent: 0.12, icon: '🛡️', color: '#60a5fa', desc: 'Cùng đồng môn xông pha bí cảnh, rủi ro và phần thưởng đều tăng so với đi solo.' },
+      { id: 'bc_team_2', name: 'Đồng Môn Hợp Kích — Trung Cấp', type: 'team', tier: 'Trung Cấp', duration: 45, maxHp: 100, baseDecayPerSec: 8, powerScale: 60, reward: 5500, linhThachReward: 60, dropRolls: 2, failPenaltyPercent: 0.18, icon: '⚔️', color: '#fb923c', desc: 'Trận chiến quy mô lớn, hung hiểm gấp bội bí cảnh solo cùng cấp.' },
+      { id: 'bc_team_3', name: 'Đồng Môn Hợp Kích — Cao Cấp', type: 'team', tier: 'Cao Cấp', duration: 60, maxHp: 100, baseDecayPerSec: 12, powerScale: 400, reward: 45000, linhThachReward: 160, dropRolls: 3, failPenaltyPercent: 0.25, icon: '👹', color: '#f43f5e', desc: 'Đại chiến tối nguy hiểm, phần thưởng cực kỳ hậu hĩnh.' }
     ];
 
     // ─── BÍ CẢNH TỔ ĐỘI: mỗi thành viên tự tính chỉ số của bản thân, server chỉ lưu trạng thái dùng chung ───
@@ -958,6 +971,7 @@
             if (!parsed.logs) parsed.logs = [];
             if (!parsed.items) parsed.items = {};
             if (!parsed.equippedTitleId) parsed.equippedTitleId = 'title_0';
+            if (typeof parsed.linhThach !== 'number') parsed.linhThach = 0;
             // Tu sĩ đã có dữ liệu cũ nhưng chưa từng có Linh Căn (trước khi tính năng này ra đời) → random một lần duy nhất, sau đó giữ nguyên vĩnh viễn.
             if (!parsed.linhCan || !LINH_CAN_LIST.some(lc => lc.id === parsed.linhCan)) parsed.linhCan = rollLinhCan();
             const now = Date.now();
@@ -999,6 +1013,7 @@
           shopCounts: {}, inventory: [], equippedGearId: null,
           items: {}, equippedTitleId: 'title_0',
           linhCan: rollLinhCan(),
+          linhThach: 0,
           lastSaveTime: Date.now(),
           logs: [{ id: '1', text: '[Đại Đạo]: Chào mừng tu sĩ gia nhập Đại Đạo Tranh Phong!', type: 'breakthrough', time: Date.now() }]
         };
@@ -1093,6 +1108,7 @@
       myTeamRunRef.current = myTeamRun;
       const cloudTeamInstancesRef = React.useRef(cloudTeamInstances);
       cloudTeamInstancesRef.current = cloudTeamInstances;
+      const claimingEarningsRef = React.useRef(false);
 
       React.useEffect(() => {
         let isMounted = true;
@@ -1122,6 +1138,22 @@
             if (myRun && !teamInstances[myRun.lobbyId]) {
               setMyTeamRun(null);
             }
+            // ─── Hắc Thị: nhận Linh Thạch từ các giao dịch bán vật phẩm đang chờ nhận ───
+            const owedLinhThach = (data.pendingEarnings || {})[playerName] || 0;
+            if (owedLinhThach > 0 && !claimingEarningsRef.current) {
+              claimingEarningsRef.current = true;
+              modifyCloudData('CLAIM_EARNINGS', { name: playerName }).then(claimRes => {
+                const claimed = claimRes.claimedAmount || 0;
+                if (claimRes.success && claimed > 0) {
+                  setGameState(prev => ({
+                    ...prev,
+                    linhThach: (prev.linhThach || 0) + claimed,
+                    logs: [{ id: Date.now().toString(), text: `[Hắc Thị]: Bảo vật ký gửi đã được mua! Nhận +${formatNumber(claimed)} Linh Thạch.`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
+                  }));
+                }
+                claimingEarningsRef.current = false;
+              });
+            }
           } catch (e) {}
         };
         const doPushLeaderboard = async () => {
@@ -1143,7 +1175,7 @@
         if (!itemToSell) return;
         const rawPrice = listingPriceInput[uniqueId] || 100;
         const price = parseInt(rawPrice, 10);
-        if (isNaN(price) || price <= 0) { alert("Xin vui lòng nhập giá linh khí hợp lệ lớn hơn 0!"); return; }
+        if (isNaN(price) || price <= 0) { alert("Xin vui lòng nhập giá Linh Thạch hợp lệ lớn hơn 0!"); return; }
         const gearData = ALL_GEARS.find(g => g.id === itemToSell.gearId);
         if (!gearData) return;
         const newListing = {
@@ -1156,7 +1188,7 @@
           setGameState(prev => ({
             ...prev,
             inventory: prev.inventory.filter(i => i.uniqueId !== uniqueId),
-            logs: [{ id: Date.now().toString(), text: `[Hắc Thị]: Ký gửi thành công ${gearData.name} với giá ${formatNumber(price)} Qi!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
+            logs: [{ id: Date.now().toString(), text: `[Hắc Thị]: Ký gửi thành công ${gearData.name} với giá ${formatNumber(price)} Linh Thạch!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
           }));
           alert("Ký gửi bảo vật lên Hắc Thị thành công!");
         } else alert(res.error);
@@ -1179,16 +1211,16 @@
 
       const handleBuyMarketItem = async (listing) => {
         if (listing.sellerName === playerName) { alert("Đạo hữu không thể tự mua vật phẩm do chính mình ký gửi!"); return; }
-        if (gameState.qi < listing.price) { alert("Linh khí bất túc, không đủ linh thạch để mua bảo vật này!"); return; }
+        if ((gameState.linhThach || 0) < listing.price) { alert("Linh Thạch bất túc, không đủ để mua bảo vật này!"); return; }
         const res = await modifyCloudData('BUY_MARKET', { listingId: listing.listingId });
         const gearData = ALL_GEARS.find(g => g.id === listing.gearId);
         if (res.success) {
           setMarketListings(res.record.marketListings);
           const purchasedItem = { uniqueId: 'item_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7), gearId: listing.gearId, isEquipped: false };
           setGameState(prev => ({
-            ...prev, qi: prev.qi - listing.price,
+            ...prev, linhThach: (prev.linhThach || 0) - listing.price,
             inventory: [...prev.inventory, purchasedItem],
-            logs: [{ id: Date.now().toString(), text: `[Hắc Thị]: Mua thành công ${gearData?.name || 'Bảo Vật'} từ ${listing.sellerName} giá ${formatNumber(listing.price)} Qi!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
+            logs: [{ id: Date.now().toString(), text: `[Hắc Thị]: Mua thành công ${gearData?.name || 'Bảo Vật'} từ ${listing.sellerName} giá ${formatNumber(listing.price)} Linh Thạch!`, type: 'shop', time: Date.now() }, ...prev.logs].slice(0, 100)
           }));
           alert(`Giao dịch thành công! Đã thu phục "${gearData?.name}" vào túi đồ.`);
         } else alert(res.error);
@@ -1382,11 +1414,12 @@
                 });
               }
               const reward = bcDef?.reward || 0;
+              const linhThachReward = bcDef?.linhThachReward || 0;
               let dropLogText = droppedItemsLogs.length > 0 ? ` | Nhận được bảo vật: ${droppedItemsLogs.join(', ')}!` : '';
               return {
-                ...prev, qi: prev.qi + reward, totalQi: prev.totalQi + reward,
+                ...prev, qi: prev.qi + reward, totalQi: prev.totalQi + reward, linhThach: (prev.linhThach || 0) + linhThachReward,
                 inventory: newInventoryItems, items: newItemCounts,
-                logs: [{ id: Date.now().toString(), text: `[Bí Cảnh Thành Công]: Vượt qua ${bcDef?.name || 'Bí Cảnh'}, đoạt +${formatNumber(reward)} Khí${dropLogText}`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
+                logs: [{ id: Date.now().toString(), text: `[Bí Cảnh Thành Công]: Vượt qua ${bcDef?.name || 'Bí Cảnh'}, đoạt +${formatNumber(reward)} Khí & +${formatNumber(linhThachReward)} Linh Thạch${dropLogText}`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
               };
             });
             setBiCanhRun(null);
@@ -1509,11 +1542,12 @@
               }
               const groupBonus = 1 + 0.15 * (lob.members.length - 1);
               const reward = Math.floor((bcDef.reward || 0) * groupBonus);
+              const linhThachReward = Math.floor((bcDef.linhThachReward || 0) * groupBonus);
               let dropLogText = droppedItemsLogs.length > 0 ? ` | Nhận được bảo vật: ${droppedItemsLogs.join(', ')}!` : '';
               return {
-                ...prev, qi: prev.qi + reward, totalQi: prev.totalQi + reward,
+                ...prev, qi: prev.qi + reward, totalQi: prev.totalQi + reward, linhThach: (prev.linhThach || 0) + linhThachReward,
                 inventory: newInventoryItems, items: newItemCounts,
-                logs: [{ id: Date.now().toString(), text: `[Bí Cảnh Tổ Đội Thành Công]: Cùng ${lob.members.length} đồng đội vượt qua ${bcDef.name}, đoạt +${formatNumber(reward)} Khí${dropLogText}`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
+                logs: [{ id: Date.now().toString(), text: `[Bí Cảnh Tổ Đội Thành Công]: Cùng ${lob.members.length} đồng đội vượt qua ${bcDef.name}, đoạt +${formatNumber(reward)} Khí & +${formatNumber(linhThachReward)} Linh Thạch${dropLogText}`, type: 'breakthrough', time: Date.now() }, ...prev.logs].slice(0, 100)
               };
             });
             modifyCloudData('FINISH_TEAM_MEMBER', { lobbyId: myTeamRun.lobbyId, memberName: playerName, outcome: 'success' })
@@ -1795,6 +1829,11 @@
                   <div className="stat-chip">
                     <span className="label">Linh Khí</span>
                     <span className="value" style={{ color:'#f5c842' }}>{formatNumber(gameState.qi)}</span>
+                  </div>
+                  <div style={{ width:'1px', background:'rgba(100,60,180,0.3)', margin:'8px 0' }}></div>
+                  <div className="stat-chip stat-chip-linhthach">
+                    <span className="label">💎 Linh Thạch</span>
+                    <span className="value" style={{ color:'#67e8f9' }}>{formatNumber(gameState.linhThach || 0)}</span>
                   </div>
                   <div style={{ width:'1px', background:'rgba(100,60,180,0.3)', margin:'8px 0' }}></div>
                   <div className="stat-chip">
@@ -2264,7 +2303,7 @@
                               {activeBcDef?.name}
                             </div>
                             <div style={{ fontSize:'11px', color:'#67e8f9' }}>
-                              Còn lại {bcTimeLeftSec}s • Vượt qua để nhận +{formatNumber(activeBcDef?.reward || 0)} Linh Khí
+                              Còn lại {bcTimeLeftSec}s • Vượt qua để nhận +{formatNumber(activeBcDef?.reward || 0)} Linh Khí & +{formatNumber(activeBcDef?.linhThachReward || 0)} Linh Thạch
                             </div>
                           </div>
                           <div style={{ width:'100%', maxWidth:'360px' }}>
@@ -2298,6 +2337,7 @@
                                 <p style={{ fontSize:'10px', color:'rgba(160,140,200,0.6)', lineHeight:1.5, marginBottom:'6px' }}>{bc.desc}</p>
                                 <div style={{ fontSize:'10px', color:'#67e8f9', lineHeight:1.6 }}>
                                   <div>⚡ +{formatNumber(bc.reward)} Linh Khí</div>
+                                  <div>💎 +{formatNumber(bc.linhThachReward)} Linh Thạch</div>
                                   <div>🎁 {bc.dropRolls} lượt rớt đồ khi thành công</div>
                                   <div>💔 Mất {Math.floor(bc.failPenaltyPercent * 100)}% Qi hiện có nếu thất bại</div>
                                 </div>
@@ -2395,6 +2435,7 @@
                                     <div style={{ fontSize:'9px', padding:'2px 6px', background:'rgba(0,0,0,0.4)', borderRadius:'6px', color:'rgba(180,160,220,0.6)', display:'inline-block', marginBottom:'6px' }}>{bc.tier} · {bc.duration}s · Tối đa 4 người</div>
                                     <div style={{ fontSize:'10px', color:'#67e8f9', lineHeight:1.6 }}>
                                       <div>⚡ +{formatNumber(bc.reward)} Linh Khí (thưởng thêm theo số người)</div>
+                                      <div>💎 +{formatNumber(bc.linhThachReward)} Linh Thạch</div>
                                       <div>🎁 {bc.dropRolls} lượt rớt đồ khi thành công</div>
                                       <div>💔 Mất {Math.floor(bc.failPenaltyPercent * 100)}% Qi nếu thất bại</div>
                                     </div>
@@ -2629,7 +2670,7 @@
                 <div className="corner-tl"></div><div className="corner-tr"></div><div className="corner-bl"></div><div className="corner-br"></div>
 
                 {/* Header */}
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'1px solid rgba(100,60,180,0.25)', paddingBottom:'16px' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:'1px solid rgba(100,60,180,0.25)', paddingBottom:'16px', flexWrap:'wrap', gap:'12px' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
                     <div style={{ width:'48px', height:'48px', borderRadius:'12px', background:'linear-gradient(135deg, #451a03, #1c0900)', border:'1px solid rgba(245,200,66,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', boxShadow:'0 0 20px rgba(245,200,66,0.2)' }}>🖤</div>
                     <div>
@@ -2637,10 +2678,19 @@
                       <div style={{ fontSize:'11px', color:'rgba(160,140,200,0.5)', marginTop:'2px' }}>Ký gửi & giao dịch bảo vật trực tiếp với người chơi khác.</div>
                     </div>
                   </div>
-                  <button onClick={() => setIsBlackMarketModalOpen(false)}
-                    style={{ width:'36px', height:'36px', borderRadius:'50%', background:'rgba(60,10,10,0.7)', border:'1px solid rgba(220,60,60,0.4)', color:'#fca5a5', cursor:'pointer', fontSize:'14px', fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.15s' }}>
-                    ✕
-                  </button>
+                  <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 14px', borderRadius:'10px', background:'rgba(103,232,249,0.08)', border:'1px solid rgba(103,232,249,0.3)' }}>
+                      <span style={{ fontSize:'16px' }}>💎</span>
+                      <div>
+                        <div style={{ fontSize:'8px', color:'rgba(180,160,220,0.6)', letterSpacing:'1px', textTransform:'uppercase' }}>Linh Thạch</div>
+                        <div style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'14px', color:'#67e8f9' }}>{formatNumber(gameState.linhThach || 0)}</div>
+                      </div>
+                    </div>
+                    <button onClick={() => setIsBlackMarketModalOpen(false)}
+                      style={{ width:'36px', height:'36px', borderRadius:'50%', background:'rgba(60,10,10,0.7)', border:'1px solid rgba(220,60,60,0.4)', color:'#fca5a5', cursor:'pointer', fontSize:'14px', fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.15s', flexShrink:0 }}>
+                      ✕
+                    </button>
+                  </div>
                 </div>
 
                 {/* Content */}
@@ -2670,10 +2720,10 @@
                                 <div style={{ fontSize:'10px', color:'#22d3ee' }}>+{gear.clickBonus} C.Lực</div>
                               </div>
                               <div style={{ display:'flex', gap:'8px' }}>
-                                <input type="number" placeholder="Nhập giá Qi..."
+                                <input type="number" placeholder="Nhập giá Linh Thạch..."
                                   value={listingPriceInput[item.uniqueId] || ''}
                                   onChange={e => setListingPriceInput(prev => ({ ...prev, [item.uniqueId]: e.target.value }))}
-                                  style={{ flex:1, background:'rgba(0,0,0,0.7)', border:'1px solid rgba(245,200,66,0.3)', borderRadius:'8px', padding:'6px 10px', fontSize:'11px', color:'#f5c842', fontFamily:'Share Tech Mono,monospace', outline:'none' }} />
+                                  style={{ flex:1, background:'rgba(0,0,0,0.7)', border:'1px solid rgba(103,232,249,0.3)', borderRadius:'8px', padding:'6px 10px', fontSize:'11px', color:'#67e8f9', fontFamily:'Share Tech Mono,monospace', outline:'none' }} />
                                 <button onClick={() => handleListMarketItem(item.uniqueId)} className="btn-gold"
                                   style={{ padding:'6px 12px', borderRadius:'8px', fontFamily:'Cinzel,serif', fontSize:'10px', fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }}>
                                   Ký Gửi
@@ -2710,8 +2760,8 @@
                                   </div>
                                 </div>
                                 <div style={{ textAlign:'right' }}>
-                                  <div style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color:'#f5c842' }}>{formatNumber(listing.price)}</div>
-                                  <div style={{ fontSize:'9px', color:'rgba(180,160,200,0.4)' }}>Linh Khí</div>
+                                  <div style={{ fontFamily:'Cinzel,serif', fontWeight:700, fontSize:'13px', color:'#67e8f9' }}>{formatNumber(listing.price)}</div>
+                                  <div style={{ fontSize:'9px', color:'rgba(180,160,200,0.4)' }}>💎 Linh Thạch</div>
                                 </div>
                               </div>
                               {isMyListing ? (
@@ -2721,8 +2771,9 @@
                                 </button>
                               ) : (
                                 <button onClick={() => handleBuyMarketItem(listing)} className="btn-success"
-                                  style={{ padding:'6px 12px', borderRadius:'8px', fontFamily:'Cinzel,serif', fontSize:'10px', fontWeight:700, cursor:'pointer', textAlign:'center' }}>
-                                  💰 Mua Lại — {formatNumber(listing.price)} Qi
+                                  disabled={(gameState.linhThach || 0) < listing.price}
+                                  style={{ padding:'6px 12px', borderRadius:'8px', fontFamily:'Cinzel,serif', fontSize:'10px', fontWeight:700, cursor: (gameState.linhThach || 0) < listing.price ? 'not-allowed' : 'pointer', opacity: (gameState.linhThach || 0) < listing.price ? 0.5 : 1, textAlign:'center' }}>
+                                  💰 Mua Lại — {formatNumber(listing.price)} Linh Thạch
                                 </button>
                               )}
                             </div>
