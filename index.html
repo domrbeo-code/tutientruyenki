@@ -3,628 +3,2547 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Phế Vật Nghịch Tập</title>
+<title>Vấn Đạo Trường Sinh — Zero to Hero Tu Tiên</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #0b0d0a;
-    --bg-panel: #12160f;
-    --bg-panel-2: #161b12;
-    --text-main: #d8d3c4;
-    --text-dim: #7a7d70;
-    --jade: #6fae7c;
-    --jade-dim: #3d5c45;
-    --gold: #c9a24b;
-    --gold-dim: #6b5726;
-    --blood: #9a4b4b;
-    --border: #2a2f22;
-    --shadow: rgba(0,0,0,0.6);
-    --font-display: 'Noto Serif SC', serif;
-    --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+    --bg-void:#050a12;
+    --panel-bg: rgba(16,34,50,0.44);
+    --panel-bg-strong: rgba(16,34,50,0.62);
+    --panel-border: rgba(122,224,205,0.16);
+    --panel-border-strong: rgba(122,224,205,0.30);
+    --teal:#2dd4bf;
+    --teal-soft:#8fece0;
+    --blue:#3b82f6;
+    --blue-soft:#7fb2ff;
+    --gold:#e8c27a;
+    --text-main:#e7f6f2;
+    --text-dim:#8fa8b3;
+    --text-faint:#5c7681;
+    --danger:#f2837a;
+    --success:#4fdba0;
+    --font-display:'Noto Serif', serif;
+    --font-body:'Be Vietnam Pro', sans-serif;
+    --radius:18px;
   }
 
-  *{ box-sizing: border-box; }
+  *{ box-sizing:border-box; }
 
-  html, body{
-    margin:0; padding:0; height:100%;
-    background: var(--bg);
-    color: var(--text-main);
-    font-family: var(--font-mono);
+  html,body{
+    margin:0; padding:0; min-height:100%;
+    background: var(--bg-void);
+    color:var(--text-main);
+    font-family: var(--font-body);
   }
 
   body{
+    position:relative;
+    overflow-x:hidden;
+    background:
+      radial-gradient(ellipse 900px 600px at 15% -10%, rgba(59,130,246,0.20), transparent 60%),
+      radial-gradient(ellipse 900px 700px at 90% 110%, rgba(45,212,191,0.16), transparent 60%),
+      radial-gradient(ellipse 1200px 800px at 50% 40%, rgba(20,50,70,0.35), transparent 70%),
+      linear-gradient(180deg, #050a12 0%, #081422 45%, #050a12 100%);
+    background-attachment: fixed;
+  }
+
+  body::before{
+    content:'';
+    position:fixed; inset:0;
     background-image:
-      radial-gradient(circle at 20% 10%, rgba(111,174,122,0.05), transparent 40%),
-      radial-gradient(circle at 80% 90%, rgba(201,162,75,0.04), transparent 40%);
+      radial-gradient(1px 1px at 40px 60px, rgba(255,255,255,0.55), transparent),
+      radial-gradient(1px 1px at 140px 120px, rgba(255,255,255,0.35), transparent),
+      radial-gradient(1.5px 1.5px at 260px 200px, rgba(255,255,255,0.4), transparent),
+      radial-gradient(1px 1px at 340px 40px, rgba(255,255,255,0.3), transparent),
+      radial-gradient(1.5px 1.5px at 90px 260px, rgba(255,255,255,0.35), transparent),
+      radial-gradient(1px 1px at 380px 300px, rgba(255,255,255,0.25), transparent);
+    background-repeat: repeat;
+    background-size: 420px 320px;
+    opacity:0.55;
+    pointer-events:none;
+    z-index:0;
   }
 
-  #game-container{
-    max-width: 900px;
-    margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    padding: 18px 16px 28px;
+  ::selection{ background: rgba(45,212,191,0.35); }
+
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-track{ background: transparent; }
+  ::-webkit-scrollbar-thumb{ background: rgba(122,224,205,0.25); border-radius:8px; }
+  ::-webkit-scrollbar-thumb:hover{ background: rgba(122,224,205,0.45); }
+
+  button, input{ font-family: inherit; }
+
+  :focus-visible{ outline:2px solid var(--teal); outline-offset:2px; border-radius:6px; }
+
+  .app-shell{
+    position:relative;
+    z-index:1;
+    max-width:1420px;
+    margin:0 auto;
+    padding:28px 20px 60px;
   }
 
-  /* ---------- HEADER ---------- */
-  header{
+  /* ---------- Header ---------- */
+  .game-header{
+    text-align:center;
+    margin-bottom:22px;
+  }
+  .game-header h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(28px, 4.2vw, 44px);
+    margin:0 0 6px;
+    letter-spacing:0.5px;
+    background: linear-gradient(120deg, var(--teal-soft), var(--blue-soft) 55%, var(--gold));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    text-shadow: 0 0 40px rgba(45,212,191,0.15);
+  }
+  .game-header .subtitle{
+    color:var(--text-dim);
+    font-size:14px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    margin-bottom:16px;
+  }
+
+  .journey-bar-wrap{
+    max-width:640px;
+    margin:0 auto;
     display:flex;
     align-items:center;
-    justify-content:center;
-    gap: 14px;
-    padding: 10px 0 14px;
-    position: relative;
+    gap:12px;
+  }
+  .journey-bar-wrap .label{
+    font-size:11px;
+    color:var(--text-faint);
+    letter-spacing:1px;
+    white-space:nowrap;
+  }
+  .journey-track{
+    flex:1;
+    height:6px;
+    border-radius:6px;
+    background: rgba(255,255,255,0.06);
+    border:1px solid rgba(122,224,205,0.14);
+    overflow:hidden;
+  }
+  .journey-fill{
+    height:100%;
+    background: linear-gradient(90deg, var(--blue), var(--teal), var(--gold));
+    border-radius:6px;
+    transition: width .5s ease;
+  }
+  .journey-pct{ font-size:11px; color:var(--text-dim); min-width:40px; text-align:right; }
+
+  /* ---------- Layout ---------- */
+  .game-container{
+    display:grid;
+    grid-template-columns: 300px 1fr 360px;
+    grid-template-areas: "char main log";
+    gap:20px;
+    align-items:start;
+  }
+  @media (max-width: 1100px){
+    .game-container{
+      grid-template-columns: 1fr;
+      grid-template-areas: "char" "main" "log";
+    }
   }
 
-  .seal{
-    width: 40px; height: 40px;
-    min-width: 40px;
-    border: 2px solid var(--blood);
-    border-radius: 6px;
-    display:flex; align-items:center; justify-content:center;
-    color: var(--blood);
+  .panel{
+    background: var(--panel-bg);
+    border:1px solid var(--panel-border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+    padding:20px;
+  }
+
+  .panel-title{
     font-family: var(--font-display);
-    font-weight: 900;
-    font-size: 18px;
-    box-shadow: 0 0 10px rgba(154,75,75,0.35) inset;
-    transform: rotate(-3deg);
-    background: rgba(154,75,75,0.06);
-  }
-
-  header h1{
-    font-family: var(--font-display);
-    font-weight: 900;
-    letter-spacing: 4px;
-    font-size: clamp(20px, 4vw, 30px);
-    color: var(--gold);
-    text-shadow: 0 0 18px rgba(201,162,75,0.25);
-    margin: 0;
-    text-align:center;
-  }
-
-  .divider{
-    height: 10px;
-    margin: 4px 0 18px;
-    background: repeating-linear-gradient(
-      to right,
-      transparent 0px, transparent 6px,
-      var(--jade-dim) 6px, var(--jade-dim) 8px
-    );
-    opacity: 0.5;
-    mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
-  }
-
-  /* ---------- CHARACTER PANEL ---------- */
-  #character-panel{
-    background: var(--bg-panel);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 8px 18px;
-    font-size: 13px;
-    box-shadow: 0 4px 18px var(--shadow);
-    position: sticky;
-    top: 8px;
-    z-index: 5;
-    backdrop-filter: blur(2px);
-  }
-
-  .stat{
+    font-size:15px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color: var(--teal-soft);
+    margin:0 0 16px;
     display:flex;
-    flex-direction: column;
-    gap: 2px;
+    align-items:center;
+    gap:10px;
+  }
+  .panel-title::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background: linear-gradient(90deg, rgba(122,224,205,0.35), transparent);
   }
 
-  .stat .label{
-    color: var(--text-dim);
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
+  /* ---------- Character panel ---------- */
+  .panel-char{ grid-area:char; text-align:center; }
+
+  .orb-wrap{
+    position:relative;
+    width:132px; height:132px;
+    margin: 4px auto 14px;
   }
-
-  .stat .value{
-    color: var(--text-main);
-    font-weight: 500;
+  .orb-ring{
+    position:absolute; inset:0;
+    border-radius:50%;
+    background: conic-gradient(from 0deg, var(--blue) 0deg, var(--teal) 120deg, var(--gold) 220deg, var(--blue) 360deg);
+    filter: blur(0.3px);
+    animation: spin 16s linear infinite;
+    opacity:0.85;
   }
-
-  .stat.realm .value{ color: var(--jade); }
-  .stat.root .value{ color: var(--blood); }
-  .stat.stone .value{ color: var(--gold); }
-
-  /* ---------- STORY LOG ---------- */
-  #story-log{
-    flex: 1;
-    background: var(--bg-panel-2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px 22px;
-    min-height: 320px;
-    max-height: 52vh;
-    overflow-y: auto;
-    line-height: 1.85;
-    font-size: 15px;
-    box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
+  .orb-ring::before{
+    content:'';
+    position:absolute; inset:6px;
+    border-radius:50%;
+    background: var(--bg-void);
   }
-
-  #story-log::-webkit-scrollbar{ width: 8px; }
-  #story-log::-webkit-scrollbar-track{ background: transparent; }
-  #story-log::-webkit-scrollbar-thumb{ background: var(--jade-dim); border-radius: 4px; }
-
-  .log-line{
-    margin-bottom: 14px;
-    white-space: pre-wrap;
-    color: var(--text-main);
+  .orb-core{
+    position:absolute; inset:22px;
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.9), var(--teal-soft) 25%, var(--blue) 70%, transparent 100%);
+    box-shadow: 0 0 26px 6px rgba(45,212,191,0.45), 0 0 60px 14px rgba(59,130,246,0.25);
+    animation: pulse 3.2s ease-in-out infinite;
   }
+  .orb-wrap.tier-1 .orb-core{ box-shadow: 0 0 30px 8px rgba(232,194,122,0.55), 0 0 70px 18px rgba(45,212,191,0.3); }
+  .orb-wrap.tier-2 .orb-core{ box-shadow: 0 0 34px 10px rgba(255,255,255,0.5), 0 0 80px 22px rgba(232,194,122,0.4); }
+  .orb-wrap.tier-3 .orb-core{ box-shadow: 0 0 40px 14px rgba(122,224,205,0.6), 0 0 90px 26px rgba(139,92,246,0.35); }
 
-  .log-line.system{
-    color: var(--gold);
-    font-style: italic;
-    border-left: 2px solid var(--gold-dim);
-    padding-left: 10px;
-  }
+  @keyframes spin{ from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
+  @keyframes pulse{ 0%,100%{ transform:scale(1); opacity:1;} 50%{ transform:scale(1.06); opacity:0.85;} }
 
-  .log-line.narration{ color: var(--text-main); }
-  .log-line.chapter-title{
+  .char-name{
     font-family: var(--font-display);
-    color: var(--jade);
-    font-size: 17px;
-    letter-spacing: 2px;
-    margin: 6px 0 16px;
-    border-bottom: 1px dashed var(--jade-dim);
-    padding-bottom: 8px;
+    font-size:19px;
+    font-weight:600;
+    margin-bottom:2px;
   }
-
-  .cursor{
-    display:inline-block;
-    width: 8px; height: 1em;
-    background: var(--jade);
-    vertical-align: text-bottom;
-    animation: blink 1s step-start infinite;
-    margin-left: 2px;
+  .char-kiep{ font-size:11px; color:var(--text-faint); margin-bottom:10px; }
+  .char-realm{
+    font-size:13.5px;
+    color: var(--teal-soft);
+    margin-bottom:16px;
+    line-height:1.5;
   }
+  .char-realm .major{ font-weight:700; color: var(--gold); display:block; font-family:var(--font-display); font-size:16px; margin-bottom:2px;}
 
-  @keyframes blink{ 50%{ opacity: 0; } }
-
-  /* ---------- CHOICES ---------- */
-  #choices-panel{
-    margin-top: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  .bar-block{ margin-bottom:14px; text-align:left; }
+  .bar-label{
+    display:flex; justify-content:space-between;
+    font-size:11.5px; color:var(--text-dim); margin-bottom:5px;
   }
-
-  .choice-btn{
-    background: var(--bg-panel);
-    border: 1px solid var(--jade-dim);
-    color: var(--text-main);
-    font-family: var(--font-mono);
-    font-size: 14px;
-    padding: 13px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: border-color 0.2s, background 0.2s, transform 0.1s;
+  .bar-label b{ color:var(--text-main); font-weight:600; }
+  .bar-track{
+    height:12px; border-radius:8px;
+    background: rgba(255,255,255,0.05);
+    border:1px solid rgba(122,224,205,0.12);
+    overflow:hidden;
+    position:relative;
   }
-
-  .choice-btn:hover{
-    border-color: var(--jade);
-    background: rgba(111,174,122,0.08);
-    transform: translateX(3px);
+  .bar-fill{
+    height:100%; border-radius:8px;
+    background: linear-gradient(90deg, var(--blue), var(--teal));
+    transition: width .4s ease;
+    position:relative;
   }
-
-  .choice-btn:active{ transform: translateX(1px) scale(0.99); }
-
-  .choice-btn:focus-visible{
-    outline: 2px solid var(--gold);
-    outline-offset: 2px;
+  .bar-fill.tho{ background: linear-gradient(90deg, #e86a6a, var(--gold)); }
+  .bar-fill.gate-ready{
+    background: linear-gradient(90deg, var(--gold), #fff6df);
+    animation: shimmer 1.6s ease-in-out infinite;
   }
+  @keyframes shimmer{ 0%,100%{ filter:brightness(1);} 50%{ filter:brightness(1.35);} }
+  .bar-nums{ font-size:10.5px; color:var(--text-faint); margin-top:4px; text-align:right; }
 
-  .choice-btn .arrow{ color: var(--gold); font-weight: 700; }
-
-  .choice-btn:disabled{
-    opacity: 0.4;
-    cursor: not-allowed;
+  .resource-row{
+    display:flex; justify-content:space-between;
+    font-size:12.5px; color:var(--text-dim);
+    padding:8px 10px; margin-bottom:6px;
+    background: rgba(255,255,255,0.03);
+    border:1px solid rgba(122,224,205,0.10);
+    border-radius:10px;
   }
+  .resource-row b{ color: var(--teal-soft); font-weight:600; }
 
-  #restart-btn{
-    display:none;
-    margin-top: 6px;
-    background: transparent;
-    border: 1px solid var(--blood);
-    color: var(--blood);
-    font-family: var(--font-mono);
-    padding: 10px 16px;
-    border-radius: 6px;
-    cursor: pointer;
+  .attrs-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
+    margin-top:14px;
   }
-
-  #restart-btn:hover{ background: rgba(154,75,75,0.1); }
-
-  footer{
+  .attr-cell{
+    background: rgba(255,255,255,0.03);
+    border:1px solid rgba(122,224,205,0.10);
+    border-radius:10px;
+    padding:8px 6px;
     text-align:center;
-    color: var(--text-dim);
-    font-size: 11px;
-    margin-top: 22px;
-    letter-spacing: 1px;
+  }
+  .attr-cell .v{ font-size:16px; font-weight:700; color:var(--text-main); font-family:var(--font-display); }
+  .attr-cell .k{ font-size:10px; color:var(--text-faint); letter-spacing:0.5px; margin-top:2px; }
+
+  .combat-stats-grid{
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;
+    margin-bottom:14px;
+  }
+  .combat-cell{
+    background: rgba(242,131,122,0.05);
+    border:1px solid rgba(242,131,122,0.18);
+    border-radius:10px; padding:8px 4px; text-align:center;
+  }
+  .combat-cell .v{ font-size:16px; font-weight:700; color:#ffb3ac; font-family:var(--font-display); }
+  .combat-cell .k{ font-size:10px; color:var(--text-faint); letter-spacing:0.5px; margin-top:2px; }
+
+  /* ---------- Main panel ---------- */
+  .panel-main{ grid-area:main; }
+  .status-line{
+    font-size:14px;
+    color:var(--text-dim);
+    background: rgba(255,255,255,0.03);
+    border:1px solid rgba(122,224,205,0.12);
+    border-radius:12px;
+    padding:14px 16px;
+    margin-bottom:20px;
+    line-height:1.6;
+    min-height:20px;
+  }
+  .status-line b{ color:var(--gold); }
+
+  .action-buttons{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:14px;
+  }
+  .action-btn{
+    position:relative;
+    border:1px solid var(--panel-border-strong);
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+    color: var(--text-main);
+    border-radius:14px;
+    padding:18px 20px;
+    font-size:16px;
+    font-weight:600;
+    letter-spacing:0.5px;
+    text-align:left;
+    cursor:pointer;
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .action-btn .sub{ font-size:12px; font-weight:400; color:var(--text-faint); }
+  .action-btn:hover{
+    transform: translateY(-2px);
+    border-color: var(--teal);
+    box-shadow: 0 10px 30px rgba(45,212,191,0.15);
+  }
+  .action-btn:active{ transform: translateY(0px); }
+  .action-btn:disabled{
+    opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none;
+  }
+  .action-btn.tuluyen{ border-left:3px solid var(--blue); }
+  .action-btn.khampha{ border-left:3px solid var(--teal); }
+  .action-btn.dotpha{ border-left:3px solid var(--gold); }
+  .action-btn.dotpha.ready{
+    animation: readyglow 1.6s ease-in-out infinite;
+    border-color: var(--gold);
+  }
+  @keyframes readyglow{
+    0%,100%{ box-shadow: 0 0 0 rgba(232,194,122,0); }
+    50%{ box-shadow: 0 0 26px 4px rgba(232,194,122,0.35); }
   }
 
-  @media (max-width: 560px){
-    #character-panel{ font-size: 12px; grid-template-columns: repeat(2, 1fr); }
-    #story-log{ font-size: 14px; padding: 16px; }
+  .realm-roadmap{
+    margin-top:26px;
+    padding-top:18px;
+    border-top:1px solid rgba(122,224,205,0.12);
   }
+  .realm-roadmap .rm-title{
+    font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-faint); margin-bottom:10px;
+  }
+  .rm-chip-row{ display:flex; flex-wrap:wrap; gap:6px; }
+  .rm-chip{
+    font-size:11px; padding:4px 9px; border-radius:20px;
+    background: rgba(255,255,255,0.03);
+    border:1px solid rgba(122,224,205,0.12);
+    color:var(--text-faint);
+  }
+  .rm-chip.done{ color:var(--teal-soft); border-color: rgba(45,212,191,0.35); }
+  .rm-chip.current{ color:var(--gold); border-color: var(--gold); background: rgba(232,194,122,0.08); }
+
+  /* ---------- Log panel ---------- */
+  .panel-log{ grid-area:log; max-height:78vh; display:flex; flex-direction:column; }
+  .log-container{
+    overflow-y:auto;
+    padding-right:4px;
+    display:flex; flex-direction:column; gap:10px;
+    flex:1;
+    min-height:200px;
+  }
+  .log-entry{
+    background: rgba(255,255,255,0.03);
+    border:1px solid rgba(122,224,205,0.10);
+    border-left:3px solid var(--text-faint);
+    border-radius:10px;
+    padding:10px 12px;
+    animation: fadein .35s ease;
+  }
+  @keyframes fadein{ from{ opacity:0; transform:translateY(-4px);} to{ opacity:1; transform:translateY(0);} }
+  .log-entry.log-gain, .log-entry.log-success, .log-entry.log-levelup{ border-left-color: var(--success); }
+  .log-entry.log-fail, .log-entry.log-danger{ border-left-color: var(--danger); }
+  .log-entry.log-legend{ border-left-color: var(--gold); }
+  .log-entry.log-gate{ border-left-color: var(--blue); }
+  .log-entry.log-choice{ border-left-color: var(--teal); }
+  .log-day{ font-size:10px; color:var(--text-faint); margin-bottom:3px; }
+  .log-title{ font-family:var(--font-display); font-weight:700; font-size:13.5px; color:var(--text-main); margin-bottom:3px; }
+  .log-text{ font-size:12.5px; color:var(--text-dim); line-height:1.55; }
+  .log-resolution{ margin-top:6px; padding-top:6px; border-top:1px dashed rgba(122,224,205,0.15); }
+  .log-delta{ font-size:11px; color:var(--teal-soft); margin-top:6px; letter-spacing:0.3px; }
+  .log-choices{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .choice-btn{
+    font-size:12px; padding:7px 12px; border-radius:8px;
+    background: rgba(45,212,191,0.08);
+    border:1px solid rgba(45,212,191,0.35);
+    color: var(--teal-soft); cursor:pointer;
+    transition: background .15s ease, transform .15s ease;
+  }
+  .choice-btn:hover{ background: rgba(45,212,191,0.18); transform:translateY(-1px); }
+
+  /* ---------- Modals ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; z-index:50;
+    background: rgba(3,7,12,0.72);
+    backdrop-filter: blur(6px);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .modal-box{
+    max-width:480px; width:100%;
+    background: var(--panel-bg-strong);
+    border:1px solid var(--panel-border-strong);
+    border-radius:20px;
+    padding:30px 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    text-align:center;
+  }
+  .modal-box h2{
+    font-family:var(--font-display); font-size:24px; margin:0 0 10px;
+    color: var(--gold);
+  }
+  .modal-box p{ font-size:14px; color:var(--text-dim); line-height:1.7; margin:0 0 18px; }
+  .modal-box input{
+    width:100%; padding:12px 14px; border-radius:10px;
+    background: rgba(255,255,255,0.05);
+    border:1px solid rgba(122,224,205,0.25);
+    color:var(--text-main); font-size:15px; margin-bottom:16px;
+    text-align:center;
+  }
+  .modal-box .stats-summary{
+    text-align:left; font-size:13px; color:var(--text-dim);
+    background: rgba(255,255,255,0.03); border-radius:10px; padding:12px 14px; margin-bottom:18px;
+    line-height:1.8;
+  }
+  .modal-btn{
+    display:inline-block; padding:13px 28px; border-radius:12px;
+    background: linear-gradient(120deg, var(--blue), var(--teal));
+    border:none; color:#04141a; font-weight:700; font-size:15px; cursor:pointer;
+    letter-spacing:0.5px;
+    transition: transform .15s ease, filter .15s ease;
+  }
+  .modal-btn:hover{ transform:translateY(-2px); filter:brightness(1.08); }
+  .modal-btn-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .modal-btn-cancel{
+    background: rgba(255,255,255,0.05);
+    border:1px solid rgba(122,224,205,0.25);
+    color: var(--text-dim);
+  }
+  .modal-btn-cancel:hover{ background: rgba(255,255,255,0.09); color:var(--text-main); }
+
+  .reincarnate-link{
+    display:block; width:100%; margin-top:14px;
+    background:none; border:1px dashed rgba(232,194,122,0.3);
+    color: var(--text-faint); font-size:11.5px; letter-spacing:0.5px;
+    padding:8px; border-radius:10px; cursor:pointer;
+    transition: color .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .reincarnate-link:hover{ color: var(--gold); border-color: var(--gold); background: rgba(232,194,122,0.06); }
+
+  .leaderboard-btn{
+    margin-top:16px; border-left:3px solid var(--blue-soft);
+    padding:14px 16px;
+  }
+  .inventory-btn{
+    margin-top:16px; border-left:3px solid var(--gold);
+    padding:14px 16px;
+  }
+
+  .sync-status{
+    margin-top:14px; font-size:10.5px; color:var(--text-faint);
+    text-align:center; letter-spacing:0.3px;
+  }
+  .sync-status.syncing{ color: var(--blue-soft); }
+  .sync-status.ok{ color: var(--success); }
+  .sync-status.error{ color: var(--danger); }
+
+  .player-id-row{
+    margin-top:6px; font-size:10.5px; color:var(--text-faint); text-align:center;
+  }
+  .player-id-row b{ color:var(--teal-soft); font-weight:600; user-select:all; }
+
+  /* ---------- Leaderboard modal ---------- */
+  .modal-box.wide{ max-width:640px; text-align:left; }
+  .lb-toolbar{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    margin-bottom:14px; flex-wrap:wrap;
+  }
+  .lb-toolbar .sync-status{ margin-top:0; text-align:left; }
+  .lb-refresh-btn{
+    font-size:12px; padding:8px 14px; border-radius:10px;
+    background: rgba(45,212,191,0.08); border:1px solid rgba(45,212,191,0.3);
+    color: var(--teal-soft); cursor:pointer;
+  }
+  .lb-refresh-btn:hover{ background: rgba(45,212,191,0.16); }
+  .lb-list{ max-height:50vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+  .lb-row{
+    display:flex; align-items:center; gap:10px;
+    background: rgba(255,255,255,0.03); border:1px solid rgba(122,224,205,0.10);
+    border-radius:10px; padding:10px 12px;
+  }
+  .lb-row.me{ border-color: var(--gold); background: rgba(232,194,122,0.06); }
+  .lb-rank{ font-family:var(--font-display); font-weight:700; color:var(--text-faint); width:26px; flex-shrink:0; }
+  .lb-info{ flex:1; min-width:0; }
+  .lb-name{ font-size:13px; font-weight:600; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .lb-realm{ font-size:11px; color:var(--text-dim); }
+  .lb-stats{ font-size:10.5px; color:var(--text-faint); text-align:right; flex-shrink:0; }
+  .lb-fight-btn{
+    font-size:11.5px; padding:7px 12px; border-radius:8px; flex-shrink:0;
+    background: rgba(242,131,122,0.1); border:1px solid rgba(242,131,122,0.35);
+    color:#ffb3ac; cursor:pointer;
+  }
+  .lb-fight-btn:hover{ background: rgba(242,131,122,0.2); }
+  .lb-fight-btn:disabled{ opacity:0.35; cursor:not-allowed; }
+  .lb-empty{ text-align:center; color:var(--text-faint); font-size:13px; padding:20px 0; }
+  .lb-fight-btn.gated{ background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); color: var(--text-faint); }
+
+  /* ---------- Inventory / Equipment modal ---------- */
+  .inv-slots{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:18px; }
+  .inv-slot{
+    background: rgba(255,255,255,0.03); border:1px solid rgba(232,194,122,0.2);
+    border-radius:12px; padding:12px 10px; text-align:center;
+  }
+  .inv-slot .slot-label{ font-size:10px; color:var(--text-faint); letter-spacing:0.5px; margin-bottom:6px; }
+  .inv-slot .slot-item{ font-size:13px; font-weight:600; color:var(--gold); min-height:18px; margin-bottom:8px; }
+  .inv-slot .slot-item.empty{ color:var(--text-faint); font-weight:400; }
+  .inv-slot button{
+    font-size:11px; padding:5px 10px; border-radius:8px;
+    background: rgba(242,131,122,0.1); border:1px solid rgba(242,131,122,0.3);
+    color:#ffb3ac; cursor:pointer;
+  }
+  .inv-slot button:disabled{ opacity:0.3; cursor:not-allowed; }
+  .inv-section-title{ font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); margin:16px 0 8px; }
+  .inv-list{ display:flex; flex-direction:column; gap:6px; max-height:34vh; overflow-y:auto; }
+  .inv-item-row{
+    display:flex; align-items:center; gap:10px;
+    background: rgba(255,255,255,0.03); border:1px solid rgba(122,224,205,0.10);
+    border-radius:10px; padding:8px 10px;
+  }
+  .inv-item-row .rarity-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .rarity-common{ background:#8fa8b3; } .rarity-uncommon{ background:#4fdba0; }
+  .rarity-rare{ background:#60a5fa; } .rarity-epic{ background:#c084fc; } .rarity-legendary{ background:var(--gold); }
+  .inv-item-info{ flex:1; min-width:0; }
+  .inv-item-name{ font-size:12.5px; font-weight:600; color:var(--text-main); }
+  .inv-item-meta{ font-size:10.5px; color:var(--text-faint); }
+  .inv-item-row button{
+    font-size:11px; padding:6px 12px; border-radius:8px; flex-shrink:0;
+    background: rgba(45,212,191,0.08); border:1px solid rgba(45,212,191,0.3);
+    color:var(--teal-soft); cursor:pointer;
+  }
+  .inv-item-row button:disabled{ opacity:0.3; cursor:not-allowed; }
+
+  /* ---------- Combat modal ---------- */
+  .combat-fighters{ display:flex; gap:14px; align-items:stretch; margin-bottom:16px; }
+  .fighter-card{
+    flex:1; background: rgba(255,255,255,0.03); border:1px solid rgba(122,224,205,0.14);
+    border-radius:12px; padding:12px;
+  }
+  .fighter-card.enemy{ border-color: rgba(242,131,122,0.25); }
+  .fighter-name{ font-size:13.5px; font-weight:700; color:var(--text-main); margin-bottom:2px; }
+  .fighter-realm{ font-size:10.5px; color:var(--text-faint); margin-bottom:8px; }
+  .fighter-hp-track{ height:10px; border-radius:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(242,131,122,0.2); overflow:hidden; }
+  .fighter-hp-fill{ height:100%; background: linear-gradient(90deg,#f2837a,#ffb3ac); transition: width .35s ease; }
+  .fighter-hp-nums{ font-size:10px; color:var(--text-faint); margin-top:4px; text-align:right; }
+  .combat-vs{ display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:20px; color:var(--gold); padding:0 4px; }
+  .combat-log{
+    max-height:32vh; overflow-y:auto; display:flex; flex-direction:column; gap:6px;
+    background: rgba(0,0,0,0.15); border-radius:10px; padding:10px; margin-bottom:16px;
+  }
+  .combat-log-line{ font-size:12px; color:var(--text-dim); line-height:1.5; animation: fadein .25s ease; }
+  .combat-log-line.me{ color:var(--teal-soft); }
+  .combat-log-line.enemy{ color:#ffb3ac; }
+  .combat-result-banner{
+    text-align:center; font-family:var(--font-display); font-size:22px; font-weight:700;
+    padding:10px; margin-bottom:14px; border-radius:10px;
+  }
+  .combat-result-banner.win{ color:var(--success); background: rgba(79,219,160,0.08); }
+  .combat-result-banner.lose{ color:var(--danger); background: rgba(242,131,122,0.08); }
+
+  .hidden{ display:none !important; }
 
   @media (prefers-reduced-motion: reduce){
-    .cursor{ animation: none; opacity: 1; }
-    .choice-btn{ transition: none; }
+    .orb-ring, .orb-core, .action-btn.dotpha.ready, .bar-fill.gate-ready{ animation:none !important; }
+  }
+
+  @media (max-width:640px){
+    .app-shell{ padding:18px 12px 40px; }
+    .panel{ padding:16px; }
+    .attrs-grid{ grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
 <body>
 
-<div id="game-container">
-  <header>
-    <div class="seal">廢</div>
-    <h1>PHẾ VẬT NGHỊCH TẬP</h1>
-  </header>
-  <div class="divider"></div>
+<div class="app-shell">
 
-  <div id="character-panel">
-    <div class="stat">
-      <span class="label">Đạo Hiệu</span>
-      <span class="value" id="stat-name">—</span>
-    </div>
-    <div class="stat realm">
-      <span class="label">Cảnh Giới</span>
-      <span class="value" id="stat-realm">—</span>
-    </div>
-    <div class="stat root">
-      <span class="label">Linh Căn</span>
-      <span class="value" id="stat-root">—</span>
-    </div>
-    <div class="stat">
-      <span class="label">Thọ Nguyên</span>
-      <span class="value" id="stat-life">—</span>
-    </div>
-    <div class="stat stone">
-      <span class="label">Linh Thạch</span>
-      <span class="value" id="stat-stone">—</span>
-    </div>
-    <div class="stat">
-      <span class="label">Túi Đồ</span>
-      <span class="value" id="stat-inventory">Trống</span>
+  <div class="game-header">
+    <h1>Vấn Đạo Trường Sinh</h1>
+    <div class="subtitle">Nhất niệm thành ma, nhất niệm thành Phật — Con đường tu tiên vạn dặm bắt đầu từ một hơi thở</div>
+    <div class="journey-bar-wrap">
+      <span class="label">ĐẠI ĐẠO CHI LỘ</span>
+      <div class="journey-track"><div class="journey-fill" id="journeyFill" style="width:0%"></div></div>
+      <span class="journey-pct" id="journeyPct">0%</span>
     </div>
   </div>
 
-  <div id="story-log" aria-live="polite"></div>
+  <div class="game-container">
 
-  <div id="choices-panel"></div>
-  <button id="restart-btn">↺ Chơi Lại Từ Đầu</button>
+    <!-- CHARACTER PANEL -->
+    <div class="panel panel-char">
+      <div class="orb-wrap tier-0" id="orbWrap">
+        <div class="orb-ring"></div>
+        <div class="orb-core"></div>
+      </div>
+      <div class="char-name" id="charName">Vô Danh Đạo Nhân</div>
+      <div class="char-kiep" id="charKiep">Kiếp thứ 1 · Ngày tu luyện thứ 0</div>
+      <div class="char-realm">
+        <span class="major" id="realmMajor">Phàm Nhân</span>
+        <span id="realmSub">Sơ Kỳ · Tầng 1/10</span>
+      </div>
 
-  <footer>Chương 1: Trục Xuất — Demo Text-based Cultivation Game</footer>
+      <div class="bar-block">
+        <div class="bar-label"><span>Tu Vi</span><b id="tuViLabel">0%</b></div>
+        <div class="bar-track"><div class="bar-fill" id="tuViFill" style="width:0%"></div></div>
+        <div class="bar-nums" id="tuViNums">0 / 0</div>
+      </div>
+
+      <div class="bar-block">
+        <div class="bar-label"><span>Thọ Nguyên</span><b id="thoLabel">100%</b></div>
+        <div class="bar-track"><div class="bar-fill tho" id="thoFill" style="width:100%"></div></div>
+        <div class="bar-nums" id="thoNums">100 / 100 năm</div>
+      </div>
+
+      <div class="combat-stats-grid">
+        <div class="combat-cell"><div class="v" id="statHP">0</div><div class="k">HP</div></div>
+        <div class="combat-cell"><div class="v" id="statATK">0</div><div class="k">ATK</div></div>
+        <div class="combat-cell"><div class="v" id="statDEF">0</div><div class="k">DEF</div></div>
+      </div>
+
+      <div class="resource-row"><span>Linh Thạch</span><b id="linhThachVal">20</b></div>
+      <div class="resource-row"><span>Hộ Đạo Đan</span><b id="hoDaoDanVal">0</b></div>
+      <div class="resource-row"><span>Tổng Đạo Hạnh (kiếp này)</span><b id="totalExpVal">0</b></div>
+      <div class="resource-row hidden" id="kiepNanRow"><span>Buff Kiếp Nạn</span><b id="kiepNanVal">+0%</b></div>
+      <div class="resource-row"><span>Tốc Độ Tu Luyện</span><b id="speedVal">0</b></div>
+      <div class="resource-row"><span>Lực Chiến</span><b id="powerVal">0</b></div>
+      <div class="resource-row"><span>Danh Vọng</span><b id="danhVongVal">0</b></div>
+
+      <div class="attrs-grid">
+        <div class="attr-cell"><div class="v" id="statNgoTinh">10</div><div class="k">NGỘ TÍNH</div></div>
+        <div class="attr-cell"><div class="v" id="statCoDuyen">10</div><div class="k">CƠ DUYÊN</div></div>
+        <div class="attr-cell"><div class="v" id="statDaoTam">10</div><div class="k">ĐẠO TÂM</div></div>
+        <div class="attr-cell"><div class="v" id="statTheChat">10</div><div class="k">THỂ CHẤT</div></div>
+      </div>
+
+      <button class="action-btn inventory-btn" id="btnInventory">
+        Túi Đồ &amp; Trang Bị
+        <span class="sub">Trang bị vũ khí/giáp/pháp bảo, dùng đan dược để tăng tốc tu luyện vĩnh viễn</span>
+      </button>
+
+      <button class="action-btn leaderboard-btn" id="btnLeaderboard">
+        Bảng Xếp Hạng &amp; Tỉ Thí
+        <span class="sub">Xem thứ hạng toàn server và khiêu chiến đạo hữu cùng bậc cảnh giới</span>
+      </button>
+
+      <div class="sync-status" id="syncStatus">Chưa đồng bộ</div>
+      <div class="player-id-row" id="playerIdRow">Mã Đạo Hữu: <b id="playerIdVal">—</b></div>
+
+      <button class="reincarnate-link" id="btnManualReincarnate">Chủ Động Luân Hồi…</button>
+    </div>
+
+    <!-- MAIN ACTION PANEL -->
+    <div class="panel panel-main">
+      <div class="panel-title">Tu Luyện Đường</div>
+      <div class="status-line" id="statusLine">Đạo tâm như nước tĩnh, vạn dặm hồng trần chờ một bước chân đi.</div>
+
+      <div class="action-buttons">
+        <button class="action-btn tuluyen" id="btnTuLuyen">
+          Tăng Tu Vi
+          <span class="sub">Vận chuyển chân khí, tích lũy tu vi để đột phá từng tầng cảnh giới</span>
+        </button>
+        <button class="action-btn dotpha" id="btnDotPha">
+          Đột Phá Cảnh Giới
+          <span class="sub">Xung kích lên Đại Cảnh Giới kế tiếp — chỉ khả thi khi tu vi tại Viên Mãn Tầng 10 đã viên mãn</span>
+        </button>
+        <button class="action-btn khampha" id="btnKhamPha">
+          Khám Phá Kỳ Ngộ
+          <span class="sub">Rời khỏi động phủ, dấn thân vào hồng trần để tìm kỳ ngộ hoặc hiểm cảnh</span>
+        </button>
+      </div>
+
+      <div class="realm-roadmap">
+        <div class="rm-title">42 Đại Cảnh Giới Chi Lộ</div>
+        <div class="rm-chip-row" id="roadmapRow"></div>
+      </div>
+    </div>
+
+    <!-- LOG PANEL -->
+    <div class="panel panel-log">
+      <div class="panel-title">Nhật Ký Tu Tiên</div>
+      <div class="log-container" id="logContainer"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- START MODAL -->
+<div class="modal-overlay" id="startModal">
+  <div class="modal-box">
+    <h2>Khởi Đầu Đạo Đồ</h2>
+    <p>Một hài nhi phàm tục sinh ra giữa cõi hồng trần, mang trong mình một tia linh căn mờ nhạt. Từ hôm nay, ngươi sẽ dấn bước trên con đường nghịch thiên cải mệnh — tu luyện để trường sinh, khám phá để đổi đời. Hãy đặt cho mình một đạo hiệu.</p>
+    <input type="text" id="nameInput" maxlength="20" placeholder="Nhập Đạo Hiệu của ngươi...">
+    <input type="text" id="resumeIdInput" maxlength="40" placeholder="Mã Đạo Hữu cũ (bỏ trống nếu là đạo hữu mới)...">
+    <div><button class="modal-btn" id="btnStart">Bắt Đầu Tu Luyện</button></div>
+    <p style="font-size:11.5px; margin-top:14px; margin-bottom:0; color:var(--text-faint);">Trò chơi không lưu tự động trong trình duyệt — sau khi tạo nhân vật, hãy ghi nhớ "Mã Đạo Hữu" hiển thị trong bảng thông tin để tiếp tục đúng nhân vật ở lần chơi sau.</p>
+  </div>
+</div>
+
+<!-- DEATH / REINCARNATION MODAL -->
+<div class="modal-overlay hidden" id="deathModal">
+  <div class="modal-box">
+    <h2 id="deathTitle">Thọ Nguyên Đã Tận</h2>
+    <p id="deathText">Sinh mệnh dẫu mạnh mẽ đến đâu, cũng khó thoát khỏi quy luật sinh lão bệnh tử của trời đất.</p>
+    <div class="stats-summary" id="deathSummary"></div>
+    <div class="modal-btn-row">
+      <button class="modal-btn modal-btn-cancel hidden" id="btnCancelReincarnate">Hủy Bỏ</button>
+      <button class="modal-btn" id="btnReincarnate">Chuyển Sinh, Trùng Tu Đạo Đồ</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD / PVP MODAL -->
+<div class="modal-overlay hidden" id="leaderboardModal">
+  <div class="modal-box wide">
+    <h2>Bảng Xếp Hạng Tu Tiên Giới</h2>
+    <div class="lb-toolbar">
+      <div class="sync-status" id="lbSyncStatus">Chưa tải dữ liệu</div>
+      <button class="lb-refresh-btn" id="btnLbRefresh">Làm Mới</button>
+    </div>
+    <div class="lb-list" id="lbList"><div class="lb-empty">Bấm "Làm Mới" để tải bảng xếp hạng từ máy chủ.</div></div>
+    <div style="text-align:center; margin-top:18px;">
+      <button class="modal-btn modal-btn-cancel" id="btnCloseLeaderboard">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVENTORY / EQUIPMENT MODAL -->
+<div class="modal-overlay hidden" id="inventoryModal">
+  <div class="modal-box wide">
+    <h2>Túi Đồ &amp; Trang Bị</h2>
+    <div class="inv-slots" id="invSlots"></div>
+    <div class="inv-section-title">Túi Trữ Vật</div>
+    <div class="inv-list" id="invList"><div class="lb-empty">Túi trữ vật trống rỗng.</div></div>
+    <div style="text-align:center; margin-top:18px;">
+      <button class="modal-btn modal-btn-cancel" id="btnCloseInventory">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMBAT MODAL -->
+<div class="modal-overlay hidden" id="combatModal">
+  <div class="modal-box wide">
+    <h2>Tỉ Thí</h2>
+    <div class="combat-fighters">
+      <div class="fighter-card me">
+        <div class="fighter-name" id="combatMeName">—</div>
+        <div class="fighter-realm" id="combatMeRealm">—</div>
+        <div class="fighter-hp-track"><div class="fighter-hp-fill" id="combatMeHpFill" style="width:100%"></div></div>
+        <div class="fighter-hp-nums" id="combatMeHpNums">0/0</div>
+      </div>
+      <div class="combat-vs">VS</div>
+      <div class="fighter-card enemy">
+        <div class="fighter-name" id="combatOppName">—</div>
+        <div class="fighter-realm" id="combatOppRealm">—</div>
+        <div class="fighter-hp-track"><div class="fighter-hp-fill" id="combatOppHpFill" style="width:100%"></div></div>
+        <div class="fighter-hp-nums" id="combatOppHpNums">0/0</div>
+      </div>
+    </div>
+    <div class="combat-result-banner hidden" id="combatResultBanner"></div>
+    <div class="combat-log" id="combatLog"></div>
+    <div style="text-align:center;">
+      <button class="modal-btn modal-btn-cancel hidden" id="btnCloseCombat">Đóng</button>
+    </div>
+  </div>
 </div>
 
 <script>
+
 (function(){
-  "use strict";
+"use strict";
 
-  /* =========================================================
-     1. STATE MANAGER
-  ========================================================= */
-  const StateManager = {
-    player: {
-      name: "Lâm Phàm",
-      realm: "Luyện Khí Kỳ - Tầng 1",
-      linhCan: "Phế Linh Căn (Ngũ Hành Câm Linh Căn)",
-      tho: 92,
-      linhThach: 3,
-      inventory: []
+/* ================= DATA: REALMS ================= */
+const MAJOR_REALMS = [
+  "Phàm Nhân","Ngưng Khí","Luyện Khí","Trúc Cơ","Kết Đan","Nguyên Anh","Hóa Thần","Luyện Hư","Hợp Thể","Đại Thừa","Độ Kiếp",
+  "Nhân Tiên","Địa Tiên","Thiên Tiên","Chân Tiên","Kim Tiên","Thái Ất Thiên Tiên","Thái Ất Ngọc Tiên","Đại La Tán Tiên","Đại La Kim Tiên","Cửu Thiên Huyền Tiên","Tiên Vương","Tiên Tôn","Tiên Đế",
+  "Thần Nhân","Chân Thần","Cổ Thần","Thần Vương","Thần Tôn","Thần Hoàng","Chúa Tể Thần Giới",
+  "Hỗn Mang Sơ Cảnh","Hỗn Mang Trung Cảnh","Hỗn Mang Hậu Cảnh","Hỗn Mang Cực Cảnh",
+  "Vô Thượng Đạo Tôn","Vô Cực Thánh Nhân","Hỗn Nguyên Vô Cực","Thiên Đạo Chủ Xưởng","Đại Đạo Luân Hồi Giả","Hồng Mông Chưởng Mệnh","Vô Thượng Vĩnh Hằng Đạo Tổ"
+];
+const SUB_REALMS = ["Sơ Kỳ","Trung Kỳ","Hậu Kỳ","Viên Mãn"];
+const TANG_PER_SUB = 10;
+const TOTAL_FLAT = MAJOR_REALMS.length * SUB_REALMS.length * TANG_PER_SUB; // 1680
+
+function flatIndex(realmIdx, subIdx, tang){
+  return realmIdx * (SUB_REALMS.length*TANG_PER_SUB) + subIdx*TANG_PER_SUB + (tang-1);
+}
+
+/* ZERO-INFLATION EXP CURVE (bản cân bằng khổ tu tuyệt đối)
+   Khác với bản trước (từng phình tới 10^50), đường cong này được nén lại có chủ đích:
+   bắt đầu từ 100, cảnh giới đầu tiên chạm mốc hàng trăm nghìn, và toàn bộ 42 đại cảnh giới
+   chỉ tiệm cận khoảng 1 tỷ ở cực hạn cuối cùng. Lý do: tốc độ tu luyện KHÔNG còn tự động tăng
+   theo cảnh giới (xem BASE_TU_LUYEN_SPEED bên dưới) — nếu vẫn để yêu cầu phình tới 10^50 như
+   trước thì trò chơi sẽ vỡ trận hoàn toàn khi tốc độ bị đóng băng. Độ khó "khổ tu" giờ đến từ
+   việc tốc độ đứng yên trong khi yêu cầu vẫn tăng theo cấp số nhân cục bộ rất dốc (mỗi tầng x1.9,
+   mỗi tiểu cảnh giới x1.46, mỗi đại cảnh giới x1.25) — không phải từ những con số khổng lồ vô nghĩa. */
+const BASE_REQ = 100;
+const REALM_BASE_GROWTH = 1.25;
+const SUBREALM_GROWTH = 1.46;
+const TANG_RATIO = 1.9;
+function requiredCultivation(realmIdx, subIdx, tang){
+  const realmBase = BASE_REQ * Math.pow(REALM_BASE_GROWTH, realmIdx);
+  const subBase = realmBase * Math.pow(SUBREALM_GROWTH, subIdx);
+  return subBase * Math.pow(TANG_RATIO, tang-1);
+}
+
+/* ================= UTIL ================= */
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function pickWeighted(pool){
+  const total = pool.reduce((s,e)=>s+(e.weight||1),0);
+  let r = Math.random()*total;
+  for(const e of pool){
+    r -= (e.weight||1);
+    if(r<=0) return e;
+  }
+  return pool[pool.length-1];
+}
+const NUM_UNITS = ["","K","M","B","T","Qa","Qi","Sx","Sp","Oc","No","Dc","UDc","DDc","TDc","QaDc","QiDc","SxDc","SpDc","OcDc","NoDc","Vg"];
+function fmt(n){
+  n = Math.max(0, n);
+  if(n < 1000) return (n<10 && n%1!==0) ? n.toFixed(1) : Math.floor(n).toString();
+  let val = n, idx = 0;
+  while(val>=1000 && idx < NUM_UNITS.length-1){ val/=1000; idx++; }
+  const digits = val<10 ? 2 : (val<100 ? 1 : 0);
+  return val.toFixed(digits) + NUM_UNITS[idx];
+}
+
+/* ================= STATE ================= */
+let state = null;
+let lifeCount = 1;
+let eternalBonus = 0;
+let kiepNanBuff = 0; // Buff Kiếp Nạn: +15% tốc độ tu luyện, cộng dồn vĩnh viễn mỗi lần chuyển sinh
+let deathModalShown = false;
+
+function freshState(name){
+  return {
+    name: name || "Vô Danh Đạo Nhân",
+    realmIdx: 0, subIdx: 0, tang: 1,
+    cultivation: 0,
+    totalExpEarned: 0, // tổng EXP tích lũy trong kiếp này (chỉ cộng, không trừ) — dùng để quy đổi khi luân hồi
+    linhThach: 20,
+    thoNguyen: 100 + lifeCount*2,
+    thoNguyenMax: 100 + lifeCount*2,
+    stats: {
+      ngoTinh: 10 + eternalBonus,
+      coDuyen: 10 + eternalBonus,
+      daoTam: 10 + eternalBonus,
+      theChat: 10 + eternalBonus
     },
-    currentNode: "start",
+    hoDaoDan: 0,
+    isDead: false,
+    kiepSo: lifeCount,
+    ngayTu: 0,
+    gateNotified: false,
+    danhVong: 0,
+    pvpWins: 0,
+    pvpLosses: 0,
+    inventory: {},
+    equipped: { weapon: null, armor: null, phapBao: null },
+    pillBonuses: { atk: 0, def: 0, hp: 0, tocDoTuLuyen: 0 },
+    pvpCooldowns: {},
+    raidLog: []
+  };
+}
 
-    addItem(item){
-      this.player.inventory.push(item);
-    },
+function reqNow(){ return requiredCultivation(state.realmIdx, state.subIdx, state.tang); }
+function isAtBreakthroughGate(){ return state.subIdx === SUB_REALMS.length-1 && state.tang === TANG_PER_SUB; }
 
-    setStat(key, value){
-      this.player[key] = value;
-    },
+function loseTho(amount){
+  if(amount<=0) return;
+  state.thoNguyen = Math.max(0, state.thoNguyen - amount);
+}
+function addLinhThach(n){ state.linhThach = Math.max(0, state.linhThach + n); }
+function addHoDaoDan(n){ state.hoDaoDan = Math.max(0, state.hoDaoDan + n); }
+function addStat(key, n){ state.stats[key] = Math.max(1, state.stats[key] + n); }
 
-    modifyStat(key, delta){
-      if (typeof this.player[key] === "number"){
-        this.player[key] += delta;
+/* Mọi lượt tăng tu vi (click, sự kiện...) đều phải đi qua đây để ghi nhận vào totalExpEarned —
+   ledger này CHỈ CỘNG, không bị trừ khi tu vi bị mất, vì nó đại diện cho "đạo hạnh đã từng đạt được"
+   dùng làm căn cứ quy đổi 10% khi chuyển sinh. */
+function gainCultivation(s, amount){
+  if(amount <= 0) return;
+  s.cultivation += amount;
+  s.totalExpEarned = (s.totalExpEarned||0) + amount;
+}
+
+/* Tụt cấp: lùi lại từng tầng một, có thể lùi qua tiểu cảnh giới liền trước, nhưng KHÔNG BAO GIỜ
+   lùi ngược về đại cảnh giới trước đó (không thể tước đi một đại đột phá đã thành công). */
+function demoteTang(amount){
+  let remain = Math.max(0, Math.floor(amount));
+  while(remain > 0){
+    if(state.tang > 1){
+      state.tang--;
+    } else if(state.subIdx > 0){
+      state.subIdx--;
+      state.tang = TANG_PER_SUB;
+    } else {
+      break; // đã chạm sàn Sơ Kỳ Tầng 1 của đại cảnh giới hiện tại
+    }
+    remain--;
+  }
+  state.cultivation = 0;
+  state.gateNotified = false;
+}
+
+/* ================= LOG ================= */
+const logContainer = document.getElementById('logContainer');
+
+function addLogNode({type, title, text, deltas}){
+  const card = document.createElement('div');
+  card.className = 'log-entry log-' + (type||'neutral');
+
+  const day = document.createElement('div');
+  day.className = 'log-day';
+  day.textContent = 'Ngày thứ ' + state.ngayTu;
+
+  const h = document.createElement('div');
+  h.className = 'log-title';
+  h.textContent = title;
+
+  const p = document.createElement('div');
+  p.className = 'log-text';
+  p.textContent = text;
+
+  card.appendChild(day);
+  card.appendChild(h);
+  card.appendChild(p);
+
+  if(deltas && deltas.length){
+    const d = document.createElement('div');
+    d.className = 'log-delta';
+    d.textContent = deltas.join('   ·   ');
+    card.appendChild(d);
+  }
+
+  logContainer.insertBefore(card, logContainer.firstChild);
+  while(logContainer.children.length > 60){
+    logContainer.removeChild(logContainer.lastChild);
+  }
+  return card;
+}
+
+function triggerChoiceEvent(ev){
+  const card = addLogNode({type:'choice', title: ev.title, text: ev.text, deltas: []});
+  const wrap = document.createElement('div');
+  wrap.className = 'log-choices';
+
+  ev.choices.forEach((choice)=>{
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = choice.label;
+    btn.addEventListener('click', function(){
+      const result = choice.effect(state) || {text:'', deltas:[]};
+      wrap.remove();
+      const resP = document.createElement('div');
+      resP.className = 'log-text log-resolution';
+      resP.textContent = result.text || '';
+      card.appendChild(resP);
+      if(result.deltas && result.deltas.length){
+        const d = document.createElement('div');
+        d.className = 'log-delta';
+        d.textContent = result.deltas.join('   ·   ');
+        card.appendChild(d);
       }
-    },
-
-    reset(){
-      this.player = {
-        name: "Lâm Phàm",
-        realm: "Luyện Khí Kỳ - Tầng 1",
-        linhCan: "Phế Linh Căn (Ngũ Hành Câm Linh Căn)",
-        tho: 92,
-        linhThach: 3,
-        inventory: []
-      };
-      this.currentNode = "start";
-    }
-  };
-
-  /* =========================================================
-     2. NODE TREE — CỐT TRUYỆN CHƯƠNG 1
-  ========================================================= */
-  const nodeTree = {
-
-    start: {
-      chapterTitle: "CHƯƠNG 1: TRỤC XUẤT",
-      lines: [
-        {type:"narration", text:"Đại điện Thanh Vân Tông tĩnh lặng đến rợn người. Hàng trăm đệ tử đứng hai bên, không ai dám thở mạnh."},
-        {type:"narration", text:"Lâm Phàm quỳ giữa điện, máu khô trên khóe môi. Ba ngày trước, ngươi vẫn còn là thiên tài được cả tông môn kỳ vọng — cho đến khi kỳ kiểm tra linh căn ba năm một lần chứng minh ngươi mang Ngũ Hành Câm Linh Căn, vạn năm khó gặp một kẻ phế vật như vậy."},
-        {type:"narration", text:"Trên cao, Tông chủ Diệp Thanh Sơn lạnh giọng: \"Phế linh căn thì không xứng làm đệ tử Thanh Vân Tông. Hôn ước với Nhị tiểu thư Vân gia, ngươi cũng không xứng giữ nữa — nhường lại cho sư đệ Triệu Húc Nhật.\""},
-        {type:"narration", text:"Triệu Húc Nhật đứng cạnh Vân Nhược Nhi, khóe miệng nhếch lên đầy đắc ý. Nhược Nhi cúi đầu, không dám nhìn ngươi."},
-        {type:"system", text:"[Trạng thái: Bị phế trừ tư cách đệ tử — bị hủy hôn ước — trục xuất khỏi tông môn]"},
-        {type:"narration", text:"\"Từ nay,\" Tông chủ phất tay áo, \"Lâm Phàm không còn liên quan gì đến Thanh Vân Tông. Cút khỏi núi trước hoàng hôn, nếu không, đừng trách bản tông vô tình.\""},
-        {type:"narration", text:"Gió lạnh thổi qua đại điện. Trong khoảnh khắc ấy, ngươi phải chọn: nuốt nhục ra đi, hay để cơn giận trong lòng bùng cháy lần cuối..."}
-      ],
-      choices: [
-        { label: "Im lặng nhẫn nhịn, âm thầm rời đi.", next: "forest_entry" },
-        { label: "Phản kháng, mắng chửi rồi nhảy vực.", next: "cliff_jump" }
-      ]
-    },
-
-    /* ============ NHÁNH A: NHẪN NHỊN — HẮC PHONG SÂM LÂM ============ */
-    forest_entry: {
-      lines: [
-        {type:"narration", text:"Ngươi cắn chặt răng, cúi đầu quay lưng bước đi. Không một lời biện minh, không một giọt nước mắt — chỉ có ánh mắt lạnh như băng nhìn thẳng về phía trước."},
-        {type:"system", text:"[Thọ Nguyên -2: chấn thương nội phủ do bị đánh trọng thương trước khi trục xuất]"},
-        {type:"narration", text:"Sau ba ngày lang thang, ngươi lạc vào Hắc Phong Sâm Lâm — khu rừng nổi tiếng u ám, nơi yêu thú cấp thấp lẫn tàn tích thượng cổ đan xen. Không ai ngờ một phế vật lại dám bước vào đây."},
-        {type:"narration", text:"Trời sắp tối, sương mù dày đặc bò là là trên mặt đất. Trước mắt ngươi, một miệng hang đá bị dây leo che khuất gần như hoàn toàn hiện ra sau tia sét vừa lóe lên."}
-      ],
-      choices: [
-        { label: "Tiến vào hang động khám phá.", next: "cave_discovery" },
-        { label: "Cảnh giác, đốt lửa trại nghỉ chân bên ngoài trước.", next: "campfire_rest" }
-      ]
-    },
-
-    campfire_rest: {
-      lines: [
-        {type:"narration", text:"Ngươi quyết định thận trọng. Nhóm một đống lửa nhỏ, dựa lưng vào tảng đá, mắt không rời miệng hang tối om."},
-        {type:"narration", text:"Đêm khuya, một luồng linh khí mỏng manh bất chợt thoát ra từ khe đá trong hang, tan vào không khí rồi biến mất. Ngươi giật mình — nơi ấy không hề đơn giản."},
-        {type:"system", text:"[Thọ Nguyên -1: một đêm không ngủ giữa rừng hoang]"}
-      ],
-      choices: [
-        { label: "Không chần chừ nữa, tiến vào hang ngay khi trời sáng.", next: "cave_discovery" }
-      ]
-    },
-
-    cave_discovery: {
-      lines: [
-        {type:"narration", text:"Hang động sâu hun hút, vách đá phủ đầy rêu phong cả ngàn năm. Càng đi sâu, luồng linh khí kỳ lạ càng rõ rệt — thứ linh khí này khác hẳn linh khí ngươi từng cảm nhận, âm trầm mà cổ xưa."},
-        {type:"narration", text:"Cuối hang là một mật thất nhỏ. Giữa mật thất, một bộ xương khô ngồi kiết già, trước ngực là một quyển sách da thú đã ố vàng và một chiếc bình ngọc nhỏ phát ra ánh sáng mờ nhạt."},
-        {type:"system", text:"[Phát hiện: Tàn Khuyết Công Pháp — 《Huyền Âm Tức Tức Quyết》 (thiếu mất chương cuối)]"},
-        {type:"system", text:"[Phát hiện: Nhất phẩm đan dược — Tẩy Tủy Đan (đã hóa thạch một phần, hiệu quả giảm đi nhưng vẫn còn dùng được)]"},
-        {type:"narration", text:"Trong đầu ngươi bỗng vang lên một giọng nói mơ hồ, như tàn niệm cuối cùng còn sót lại của chủ nhân bộ xương: \"Câm linh căn... không phải là tuyệt lộ. Đó là linh căn bị phong ấn... Nếu tìm được cách giải phong ấn... ha... ha...\""},
-        {type:"narration", text:"Giọng nói tan biến. Ngươi run rẩy nắm chặt quyển tàn quyết trong tay — đây có lẽ chính là cơ duyên đầu tiên trên con đường nghịch tập."}
-      ],
-      choices: [
-        { label: "Lập tức ngồi xuống, thử vận chuyển công pháp tàn khuyết.", next: "chapter1_end_a" }
-      ]
-    },
-
-    chapter1_end_a: {
-      lines: [
-        {type:"narration", text:"Ngươi ngồi kiết già giữa mật thất, chậm rãi vận chuyển từng câu quyết trong 《Huyền Âm Tức Tức Quyết》. Một luồng khí lạnh len lỏi qua đan điền — nơi vốn dĩ trống rỗng suốt mười tám năm qua."},
-        {type:"narration", text:"Lần đầu tiên trong đời, ngươi cảm nhận được một tia linh khí, dù nhỏ bé đến đáng thương, đang chảy trong cơ thể mình."},
-        {type:"system", text:"[Nhận được vật phẩm: Huyền Âm Tức Tức Quyết (Tàn Khuyết)]"},
-        {type:"system", text:"[Nhận được vật phẩm: Tẩy Tủy Đan (Hóa Thạch)]"},
-        {type:"narration", text:"Thanh Vân Tông đã ruồng bỏ ngươi. Nhưng Hắc Phong Sâm Lâm, trong bóng tối lạnh lẽo của nó, lại vừa mở ra cánh cửa đầu tiên trên con đường nghịch thiên..."},
-        {type:"system", text:"— Hết Chương 1 (Nhánh Nhẫn Nhịn) — Cảm ơn bạn đã trải nghiệm bản demo —"}
-      ],
-      choices: []
-    },
-
-    /* ============ NHÁNH B: PHẢN KHÁNG — NHẢY VỰC ============ */
-    cliff_jump: {
-      lines: [
-        {type:"narration", text:"\"Phế vật thì sao?!\" Ngươi ngẩng đầu, gào lên giữa đại điện, tiếng vang dội khắp bốn phía. \"Thanh Vân Tông các người, có mắt như mù! Hôm nay ta thua, nhưng tổ tông ba đời các người, tổng có ngày phải cúi đầu nhìn ta!\""},
-        {type:"narration", text:"Triệu Húc Nhật cười lạnh, sải bước tới định ra tay lần nữa. Ngươi không né tránh — thay vào đó, ngươi lao thẳng ra khỏi đại điện, chạy về phía vách núi sau tông môn, nơi vực sâu Vô Để Nhai nổi tiếng không đáy."},
-        {type:"system", text:"[Cảnh báo: Hành động cực đoan — rủi ro cao]"},
-        {type:"narration", text:"\"Sống làm phế vật bị người khinh rẻ, chi bằng chết cũng phải chết cho ra dáng!\" Ngươi hét lên câu cuối cùng, rồi buông mình lao xuống vực sâu không đáy."}
-      ],
-      choices: [
-        { label: "Nhắm mắt buông xuôi, phó mặc số mệnh.", next: "abyss_landing" },
-        { label: "Gắng gượng vận sức, cố kiểm soát hướng rơi.", next: "abyss_control" }
-      ]
-    },
-
-    abyss_control: {
-      lines: [
-        {type:"narration", text:"Dù linh căn bị phế, thân thể ngươi vẫn được tôi luyện nhiều năm. Ngươi xoay người giữa không trung, hai tay bấu vào từng mỏm đá lồi ra trên vách vực, làm chậm lại tốc độ rơi."},
-        {type:"system", text:"[Thọ Nguyên -3: toàn thân trầy xước, gân cốt tổn thương]"},
-        {type:"narration", text:"Cuối cùng ngươi cũng rơi xuống một mỏm đá nhô ra giữa vực, thay vì lao thẳng xuống đáy. Trước mắt là một hắc động khép hờ, phát ra thứ ánh sáng âm u kỳ dị."}
-      ],
-      choices: [
-        { label: "Bước vào hắc động giữa vực sâu.", next: "abyss_soul" }
-      ]
-    },
-
-    abyss_landing: {
-      lines: [
-        {type:"narration", text:"Ngươi nhắm mắt, để mặc thân thể rơi tự do trong bóng tối vô tận. Gió rít bên tai, ý thức dần mơ hồ..."},
-        {type:"narration", text:"Không biết đã rơi bao lâu, một lớp mạng nhện linh khí kỳ dị giăng ngang lòng vực bỗng hứng lấy thân thể ngươi, hóa giải phần lớn lực rơi trước khi ngươi bất tỉnh."},
-        {type:"system", text:"[Thọ Nguyên -5: trọng thương, may mắn thoát chết trong đường tơ kẽ tóc]"},
-        {type:"narration", text:"Khi tỉnh lại, ngươi thấy mình đang nằm trong một hắc động ẩm thấp sâu dưới đáy Vô Để Nhai, xung quanh là những phù văn cổ xưa phát sáng lờ mờ."}
-      ],
-      choices: [
-        { label: "Gắng gượng đứng dậy, dò xét xung quanh.", next: "abyss_soul" }
-      ]
-    },
-
-    abyss_soul: {
-      lines: [
-        {type:"narration", text:"Giữa hắc động, một làn khói đen mỏng manh vụt hiện lên, dần dần kết thành hình dáng một lão giả mặc chiến bào rách nát, toàn thân trong suốt — một tàn hồn tồn tại đã không biết bao nhiêu năm."},
-        {type:"narration", text:"\"Ha... cuối cùng cũng có người rơi tới đây...\" Tàn hồn cất giọng khàn đục như từ đáy mộ vọng lên. \"Ngươi mang trong người khí tức Câm Linh Căn... thú vị, thú vị lắm.\""},
-        {type:"narration", text:"\"Lão phu vốn là Chấp Kiếm Trưởng Lão của một đại tông môn đã diệt vong vạn năm trước. Trước khi hồn phi phách tán, lão phu để lại một kiếm ý tàn dư, cùng một dị bảo áp thân — Nếu ngươi đủ gan dạ tiếp nhận, những thứ này là của ngươi.\""},
-        {type:"system", text:"[Tiền bối tàn hồn xuất hiện: Chấp Kiếm Tàn Hồn]"},
-        {type:"narration", text:"Trước mặt ngươi, một chiếc nhẫn sắt đen cũ kỹ, khắc đầy hoa văn kiếm quang mờ nhạt, từ từ trôi tới, đáp xuống lòng bàn tay ngươi."},
-        {type:"system", text:"[Nhận được dị bảo: Tàng Phong Giới Chỉ — không gian thu nạp bí ẩn, bên trong phong ấn một tia Kiếm Ý tàn dư]"},
-        {type:"narration", text:"Tàn hồn khẽ cười, thân hình bắt đầu tan loãng: \"Câm Linh Căn của ngươi... không phải phế vật. Đó là dấu tích của một loại thể chất thất truyền... Đi đi, ra khỏi nơi này, con đường tu tiên của ngươi mới chỉ vừa bắt đầu...\""}
-      ],
-      choices: [
-        { label: "Quỳ xuống bái tạ tiền bối, tiếp nhận dị bảo.", next: "chapter1_end_b" }
-      ]
-    },
-
-    chapter1_end_b: {
-      lines: [
-        {type:"narration", text:"Ngươi cung kính dập đầu ba lạy về phía làn khói đen đang tan biến dần. Khi ngẩng đầu lên, tàn hồn đã hoàn toàn biến mất, chỉ còn Tàng Phong Giới Chỉ lặng lẽ nằm trong lòng bàn tay, ấm áp lạ thường."},
-        {type:"system", text:"[Nhận được vật phẩm: Tàng Phong Giới Chỉ (chứa Kiếm Ý tàn dư)]"},
-        {type:"narration", text:"Thanh Vân Tông tưởng rằng đẩy ngươi xuống vực là kết thúc. Nhưng vực sâu này, lại chính là khởi đầu cho một Phế Vật Nghịch Tập không ai ngờ tới..."},
-        {type:"system", text:"— Hết Chương 1 (Nhánh Phản Kháng) — Cảm ơn bạn đã trải nghiệm bản demo —"}
-      ],
-      choices: []
-    }
-  };
-
-  /* =========================================================
-     3. RENDER ENGINE
-  ========================================================= */
-  const dom = {
-    log: document.getElementById("story-log"),
-    choices: document.getElementById("choices-panel"),
-    restartBtn: document.getElementById("restart-btn"),
-    name: document.getElementById("stat-name"),
-    realm: document.getElementById("stat-realm"),
-    root: document.getElementById("stat-root"),
-    life: document.getElementById("stat-life"),
-    stone: document.getElementById("stat-stone"),
-    inventory: document.getElementById("stat-inventory")
-  };
-
-  const TYPE_SPEED = 18; // ms per character
-
-  function renderCharacterPanel(){
-    const p = StateManager.player;
-    dom.name.textContent = p.name;
-    dom.realm.textContent = p.realm;
-    dom.root.textContent = p.linhCan;
-    dom.life.textContent = p.tho + " năm";
-    dom.stone.textContent = p.linhThach + " viên";
-    dom.inventory.textContent = p.inventory.length
-      ? p.inventory.join(", ")
-      : "Trống";
-  }
-
-  function typeLine(el, text, speed){
-    return new Promise((resolve) => {
-      let i = 0;
-      const cursor = document.createElement("span");
-      cursor.className = "cursor";
-      el.appendChild(cursor);
-
-      function step(){
-        if (i < text.length){
-          cursor.insertAdjacentText("beforebegin", text.charAt(i));
-          i++;
-          dom.log.scrollTop = dom.log.scrollHeight;
-          setTimeout(step, speed);
-        } else {
-          cursor.remove();
-          resolve();
-        }
-      }
-      step();
-    });
-  }
-
-  async function playLines(lines){
-    for (const line of lines){
-      const el = document.createElement("div");
-      el.className = "log-line " + (line.type || "narration");
-      dom.log.appendChild(el);
-      const speed = line.type === "system" ? TYPE_SPEED * 0.6 : TYPE_SPEED;
-      await typeLine(el, line.text, speed);
-    }
-  }
-
-  function renderChoices(choices, disableAll){
-    dom.choices.innerHTML = "";
-    if (!choices || choices.length === 0){
-      dom.restartBtn.style.display = "inline-block";
-      return;
-    }
-    dom.restartBtn.style.display = "none";
-    choices.forEach((choice) => {
-      const btn = document.createElement("button");
-      btn.className = "choice-btn";
-      btn.disabled = !!disableAll;
-      btn.innerHTML = '<span class="arrow">▸</span><span>' + choice.label + '</span>';
-      btn.addEventListener("click", () => goToNode(choice.next));
-      dom.choices.appendChild(btn);
-    });
-  }
-
-  async function goToNode(nodeId){
-    const node = nodeTree[nodeId];
-    if (!node) return;
-
-    StateManager.currentNode = nodeId;
-    renderChoices([], true); // lock while typing
-
-    if (node.chapterTitle){
-      const titleEl = document.createElement("div");
-      titleEl.className = "log-line chapter-title";
-      titleEl.textContent = node.chapterTitle;
-      dom.log.appendChild(titleEl);
-    }
-
-    await playLines(node.lines);
-    applyNodeEffects(nodeId);
-    renderCharacterPanel();
-    renderChoices(node.choices, false);
-  }
-
-  function applyNodeEffects(nodeId){
-    // Gắn hiệu ứng thay đổi state theo từng node cụ thể (item / stat)
-    const effects = {
-      forest_entry: () => StateManager.modifyStat("tho", -2),
-      campfire_rest: () => StateManager.modifyStat("tho", -1),
-      cave_discovery: () => {
-        StateManager.addItem("Huyền Âm Tức Tức Quyết (Tàn Khuyết)");
-        StateManager.addItem("Tẩy Tủy Đan (Hóa Thạch)");
-      },
-      abyss_control: () => StateManager.modifyStat("tho", -3),
-      abyss_landing: () => StateManager.modifyStat("tho", -5),
-      abyss_soul: () => StateManager.addItem("Tàng Phong Giới Chỉ"),
-    };
-    if (effects[nodeId]) effects[nodeId]();
-  }
-
-  /* =========================================================
-     4. INIT / RESTART
-  ========================================================= */
-  function startGame(){
-    dom.log.innerHTML = "";
-    renderCharacterPanel();
-    goToNode("start");
-  }
-
-  dom.restartBtn.addEventListener("click", () => {
-    StateManager.reset();
-    dom.restartBtn.style.display = "none";
-    startGame();
+      updateUI();
+    }, {once:true});
+    wrap.appendChild(btn);
   });
 
-  startGame();
+  card.appendChild(wrap);
+}
+
+function triggerNormalEvent(ev){
+  const deltas = ev.effect(state) || [];
+  addLogNode({type: ev.tone || 'neutral', title: ev.title, text: ev.text, deltas});
+}
+
+function triggerEvent(pool){
+  const ev = pickWeighted(pool);
+  if(ev.choices) triggerChoiceEvent(ev); else triggerNormalEvent(ev);
+}
+
+/* ================= EVENT POOLS ================= */
+
+const CULTIVATION_EVENTS = [
+  { title:"Cảm Ngộ Thoáng Qua", tone:"gain", weight:1,
+    text:"Giữa lúc vận chuyển chân khí trong kinh mạch, ngươi bỗng bắt được một tia cảm ngộ mơ hồ về vòng tuần hoàn của trời đất. Chân khí lập tức thuận theo đó mà cuồn cuộn dâng trào.",
+    effect:(s)=>{ const g = reqNow()*0.25; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+
+  { title:"Linh Khí Hoang Dã", tone:"gain", weight:1,
+    text:"Một luồng linh khí hoang dã ngoài ý muốn tụ tập quanh thân thể, ngươi thuận thế mở rộng kinh mạch thu nạp toàn bộ vào đan điền.",
+    effect:(s)=>{ const g = reqNow()*0.18; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+
+  { title:"Tạp Niệm Nhiễu Loạn", tone:"fail", weight:1,
+    text:"Tạp niệm bất chợt nổi lên giữa lúc nhập định, khí cơ vận hành hỗn loạn trong chốc lát, một phần tu vi tản mát vô ích.",
+    effect:(s)=>{ const g = reqNow()*0.10; s.cultivation = Math.max(0, s.cultivation-g); return ["Tu Vi -"+fmt(g)]; } },
+
+  { title:"Tiếng Động Bên Ngoài", tone:"fail", weight:1,
+    text:"Ngoài cửa thiền phòng bỗng vang lên tiếng động lớn, sự chú tâm bị phân tán, công lực đang vận chuyển hao tổn một ít.",
+    effect:(s)=>{ const g = reqNow()*0.08; s.cultivation = Math.max(0, s.cultivation-g); return ["Tu Vi -"+fmt(g)]; } },
+
+  { title:"Diệu Ý Về Đạo", tone:"gain", weight:0.8,
+    text:"Trong lúc tĩnh tọa, ngươi chợt lĩnh ngộ được một tia diệu ý mơ hồ về Đạo, tâm trí trở nên sáng suốt hơn hẳn ngày thường.",
+    effect:(s)=>{ addStat('ngoTinh',1); return ["Ngộ Tính +1"]; } },
+
+  { title:"Linh Thạch Vụn", tone:"gain", weight:1,
+    text:"Vô tình đào được một khối linh thạch nhỏ lẫn trong lớp đất dưới chỗ ngồi, tuy không nhiều nhưng cũng là một khoản thu bất ngờ.",
+    effect:(s)=>{ const n = Math.round(5+s.realmIdx*3); addLinhThach(n); return ["Linh Thạch +"+n]; } },
+
+  { title:"Chân Khí Nghịch Hành", tone:"fail", weight:0.8,
+    text:"Chân khí nghịch hành trong thoáng chốc, ngũ tạng chấn động nhẹ, hao tổn một chút thọ nguyên quý giá.",
+    effect:(s)=>{ const t = s.thoNguyenMax*0.008; loseTho(t); return ["Thọ Nguyên -"+fmt(t)]; } },
+
+  { title:"Đom Đóm Linh Khí", tone:"gain", weight:0.5,
+    text:"Một đốm sáng nhỏ tựa đom đóm bay ngang qua thiền phòng, để lại một vệt tinh hoa rơi đúng vào đan điền, ngưng tụ thành dòng linh khí đậm đặc hiếm có.",
+    effect:(s)=>{ const g = reqNow()*0.42; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+
+  { title:"Cơn Mưa Bất Chợt", tone:"neutral", weight:1,
+    text:"Ngoài trời mây đen kéo đến, một trận mưa nhỏ rơi xuống làm gián đoạn việc tu luyện, nhưng cũng giúp tâm tình trở nên thư thái hơn đôi chút.",
+    effect:(s)=>{ const g = reqNow()*0.05; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+
+  { title:"Yêu Khí Ẩn Tàng", tone:"fail", weight:0.6,
+    text:"Một luồng yêu khí ẩn tàng gần đó đột ngột trỗi dậy, tâm thần chấn động dữ dội khiến chân khí đảo lộn, thân thể mệt mỏi rã rời.",
+    effect:(s)=>{ const g = reqNow()*0.15; s.cultivation = Math.max(0,s.cultivation-g); const t=s.thoNguyenMax*0.015; loseTho(t); return ["Tu Vi -"+fmt(g), "Thọ Nguyên -"+fmt(t)]; } }
+];
+
+const EXPLORE_EVENTS = [
+  { title:"Cổ Mộ Tàn Tích", tone:"gain", weight:1,
+    text:"Ngươi lạc bước vào một cổ mộ đổ nát phủ đầy rêu phong, giữa đống xương tàn tìm thấy một mảnh ngọc giản còn sót lại. Vừa vận công cảm ứng, một đoạn tâm pháp thượng cổ hiện lên trong tâm trí.",
+    effect:(s)=>{ const g=reqNow()*0.6; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+
+  { title:"Linh Tuyền Ẩn Hiện", tone:"gain", weight:1,
+    text:"Sâu trong một khe núi hiểm trở, ngươi phát hiện một mạch linh tuyền trong vắt tỏa hơi linh khí nồng đậm. Ngâm mình hấp thụ trọn một canh giờ, toàn thân như được tắm gội lại từ đầu.",
+    effect:(s)=>{ const g=reqNow()*0.45; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+
+  { title:"Tiên Nhân Đàm Đạo", tone:"gain", weight:1,
+    text:"Trên đỉnh núi mây phủ, ngươi vô tình nghe được hai vị cao nhân đang đàm đạo về lẽ huyền vi của đạo pháp. Không dám kinh động, chỉ lặng lẽ ẩn mình ghi nhớ từng câu chữ.",
+    effect:(s)=>{ const g=reqNow()*0.3; gainCultivation(s,g); addStat('ngoTinh',1); return ["Tu Vi +"+fmt(g), "Ngộ Tính +1"]; } },
+
+  { title:"Dị Thú Tặng Đan", tone:"gain", weight:0.8,
+    text:"Một con linh hồ lông trắng như tuyết chậm rãi bước tới trước mặt, nhả ra một viên nội đan óng ánh rồi lặng lẽ quay mình biến mất vào rừng sâu, tựa như đang trả một món nợ duyên từ kiếp trước.",
+    effect:(s)=>{ addHoDaoDan(1); return ["Nhận được: Hộ Đạo Đan x1"]; } },
+
+  { title:"Mưa Sao Băng Linh Khí", tone:"gain", weight:0.7,
+    text:"Giữa đêm khuya thanh vắng, từng vệt sao băng mang theo linh khí nguyên thủy của trời đất vụt qua bầu trời. Ngươi vội vàng vận công thu nạp, tận hưởng một cơ duyên ngàn năm khó gặp.",
+    effect:(s)=>{ const g=reqNow()*0.35; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+
+  { title:"Cứu Tế Lữ Khách", tone:"gain", weight:1,
+    text:"Bên đường mòn hoang vắng, một tu sĩ trọng thương nằm thoi thóp. Ngươi ra tay tương trợ, băng bó vết thương và chia sẻ chút linh dược mang theo. Trước khi rời đi, người ấy tặng lại một chậu đan dược tạ ơn.",
+    effect:(s)=>{ addHoDaoDan(1); addStat('daoTam',1); return ["Nhận được: Hộ Đạo Đan x1", "Đạo Tâm +1"]; } },
+
+  { title:"Đốn Ngộ Hoa Đào", tone:"gain", weight:1,
+    text:"Đứng lặng dưới rừng hoa đào rụng cánh như mưa, từng cánh hoa xoay tròn trong gió, tâm cảnh bỗng trở nên tĩnh lặng lạ thường. Trong khoảnh khắc ấy, đạo tâm như được tôi luyện thêm một tầng.",
+    effect:(s)=>{ addStat('daoTam',1); return ["Đạo Tâm +1"]; } },
+
+  { title:"Bia Đá Kiếm Ý", tone:"gain", weight:0.8,
+    text:"Giữa vách núi dựng đứng, một phiến đá cổ khắc đầy kiếm ý sắc bén hiện ra trước mắt. Chỉ nhìn thoáng qua những đường nét ấy, ngươi đã cảm thấy chân khí trong người cuộn trào không ngừng.",
+    effect:(s)=>{ const g=reqNow()*0.4; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+
+  { title:"Trận Pháp Cổ Mê Hoặc", tone:"fail", weight:1,
+    text:"Không cẩn thận, ngươi lạc bước vào tàn tích của một trận pháp mê hoặc năm xưa. Ảo cảnh trùng trùng khiến tâm thần bị nhiễu loạn suốt một khắc, khi thoát ra được thì tu vi đã hao tổn không ít.",
+    effect:(s)=>{ const g=reqNow()*0.2; s.cultivation=Math.max(0,s.cultivation-g); return ["Tu Vi -"+fmt(g)]; } },
+
+  { title:"Yêu Thú Tập Kích", tone:"fail", weight:1,
+    text:"Một con dã thú hung tợn bất ngờ lao ra từ bụi rậm, móng vuốt sắc bén xé rách một mảng y phục. Ngươi chật vật mới thoát được thân, người mang theo vài vết thương âm ỉ.",
+    effect:(s)=>{ const t=s.thoNguyenMax*0.025; loseTho(t); const g=reqNow()*0.1; s.cultivation=Math.max(0,s.cultivation-g); return ["Thọ Nguyên -"+fmt(t), "Tu Vi -"+fmt(g)]; } },
+
+  { title:"Trúng Độc Hoa Dị", tone:"fail", weight:0.9,
+    text:"Vô tình chạm phải một loài hoa dị mọc sâu trong khu rừng cấm, độc khí vô hình len lỏi vào kinh mạch trước khi ngươi kịp nhận ra. Phải mất một thời gian dài vận công mới đẩy lùi được độc tố.",
+    effect:(s)=>{ const t=s.thoNguyenMax*0.03; loseTho(t); return ["Thọ Nguyên -"+fmt(t)]; } },
+
+  { title:"Đấu Giá Thất Bại", tone:"fail", weight:0.8,
+    text:"Tham gia một phiên chợ nhỏ của đám tán tu qua đường, ngươi tranh mua nhầm một món đồ giả mạo tinh vi, đành ngậm ngùi nhìn số linh thạch mang theo vơi đi quá nửa.",
+    effect:(s)=>{ const n=Math.round(10+s.realmIdx*4); addLinhThach(-n); return ["Linh Thạch -"+n]; } },
+
+  { title:"Tẩu Hỏa Nhẹ", tone:"fail", weight:0.7,
+    text:"Trong lúc dò dẫm khám phá một sơn động tối tăm, ngươi chợt thấy một ảo ảnh kinh hoàng phản chiếu trong bóng tối. Tâm thần dao động khiến chân khí đảo lộn trong chốc lát.",
+    effect:(s)=>{ const g=reqNow()*0.15; s.cultivation=Math.max(0,s.cultivation-g); return ["Tu Vi -"+fmt(g)]; } },
+
+  { title:"Bị Đồng Đạo Lừa Gạt", tone:"fail", weight:0.6,
+    text:"Một tán tu tự xưng thiện lành đã dùng thủ đoạn xảo trá dụ ngươi vào một canh bạc đạo pháp, rồi lặng lẽ lấy đi một phần tu vi trước khi biến mất không dấu vết.",
+    effect:(s)=>{ const g=reqNow()*0.12; s.cultivation=Math.max(0,s.cultivation-g); return ["Tu Vi -"+fmt(g)]; } },
+
+  { title:"Cố Nhân Trùng Phùng", tone:"neutral", weight:1,
+    text:"Tình cờ gặp lại một người quen cũ giữa chốn hồng trần, hai bên ngồi bên đống lửa nhỏ đàm đạo suốt đêm dài. Tâm tình khoan khoái, dường như mọi mệt mỏi trên đường tu đạo đều tan biến.",
+    effect:(s)=>{ const g=reqNow()*0.1; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+
+  { title:"Bản Đồ Bí Cảnh", tone:"neutral", weight:0.9,
+    text:"Từ một lão giả bán hàng rong ven đường, ngươi mua được một tấm bản đồ cũ kỹ, nét vẽ đã phai mờ theo năm tháng. Không rõ thực hư, nhưng cũng coi như một cơ duyên nho nhỏ giữa dòng đời.",
+    effect:(s)=>{ addLinhThach(8); return ["Linh Thạch +8"]; } },
+
+  { title:"Sương Sớm Trên Đỉnh Non", tone:"neutral", weight:1,
+    text:"Đứng trên đỉnh núi cao nhìn biển mây cuồn cuộn phía dưới, ánh bình minh len qua từng lớp sương mỏng. Tâm cảnh trong khoảnh khắc ấy như được khai mở đôi chút.",
+    effect:(s)=>{ const g=reqNow()*0.08; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+
+  { title:"Thư Tín Từ Phương Xa", tone:"gain", weight:0.6,
+    text:"Nhận được một phong thư không rõ người gửi, bên trong chỉ vỏn vẹn một câu đạo ngôn khó hiểu. Ngươi đọc đi đọc lại nhiều lần, càng ngẫm càng thấy thâm sâu khôn cùng.",
+    effect:(s)=>{ addStat('ngoTinh',1); return ["Ngộ Tính +1"]; } },
+
+  /* ---- Choice events ---- */
+  { title:"Cửa Bí Cảnh Cổ Xưa", weight:0.8,
+    text:"Trước mặt là một cánh cổng đá phủ đầy rêu phong, linh khí bên trong cuồn cuộn nhưng cũng ẩn chứa hung hiểm khó lường. Ngươi cảm nhận được cả cơ duyên lẫn nguy cơ đang chờ đợi ở phía sau cánh cổng ấy.",
+    choices:[
+      { label:"Xông vào bí cảnh", effect:(s)=>{
+          if(Math.random() < 0.55){
+            const g=reqNow()*0.8; gainCultivation(s,g);
+            return {text:"Bất chấp hiểm nguy, ngươi xông thẳng vào trong. May mắn thay, cơ duyên bên trong bí cảnh không phụ lòng người, một khối tinh hoa cổ xưa được thu nạp trọn vẹn.", deltas:["Tu Vi +"+fmt(g)]};
+          } else {
+            const g=reqNow()*0.25; s.cultivation=Math.max(0,s.cultivation-g); const t=s.thoNguyenMax*0.025; loseTho(t);
+            return {text:"Vừa bước vào trong, một cơ quan cổ xưa lập tức kích hoạt. Ngươi phải chật vật thoát thân trong đường tơ kẽ tóc, thân thể mang đầy thương tích.", deltas:["Tu Vi -"+fmt(g), "Thọ Nguyên -"+fmt(t)]};
+          }
+        }},
+      { label:"Rời đi, không mạo hiểm", effect:()=>({text:"Ngươi cân nhắc thiệt hơn rồi lặng lẽ rời khỏi, giữ trọn vẹn bình an nhưng trong lòng không khỏi thoáng chút tiếc nuối.", deltas:[]}) }
+    ]},
+
+  { title:"Tà Tu Bị Thương", weight:0.8,
+    text:"Một tu sĩ mặc y phục đen rách nát ngã quỵ bên đường, hơi thở yếu ớt, trên người phảng phất tà khí nhưng ánh mắt lại lộ rõ vẻ van cầu sự giúp đỡ.",
+    choices:[
+      { label:"Ra tay cứu giúp", effect:(s)=>{
+          addStat('daoTam',1);
+          if(Math.random()<0.4){ addHoDaoDan(1); return {text:"Ngươi không màng thân phận chính tà, ra tay chữa trị cho hắn. Trước khi rời đi trong đêm, người ấy để lại một viên đan dược như một lời cảm tạ thầm lặng.", deltas:["Đạo Tâm +1","Nhận được: Hộ Đạo Đan x1"]}; }
+          return {text:"Ngươi không màng thân phận chính tà, ra tay chữa trị cho hắn. Khi tỉnh dậy, người ấy chỉ lặng lẽ cúi đầu rồi rời đi không một lời từ biệt, nhưng đạo tâm của ngươi lại vững vàng hơn trước.", deltas:["Đạo Tâm +1"]};
+        }},
+      { label:"Bỏ mặc, giữ mình", effect:(s)=>{ addStat('daoTam',-1); return {text:"Ngươi chọn cách giữ mình an toàn, lặng lẽ rời đi. Bước chân tuy vững nhưng trong lòng lại gợn lên một tia bất an khó gọi tên.", deltas:["Đạo Tâm -1"]}; } }
+    ]},
+
+  { title:"Kho Báu Phong Ấn", weight:0.7,
+    text:"Trong một hốc đá sâu hun hút, một rương gỗ cổ xưa phát ra ánh sáng yếu ớt. Xung quanh phủ một lớp trận pháp phòng hộ đơn giản nhưng vẫn đủ nguy hiểm với kẻ bất cẩn.",
+    choices:[
+      { label:"Cường công phá trận", effect:(s)=>{
+          if(Math.random()<0.5){ const g=reqNow()*0.6; gainCultivation(s,g); addHoDaoDan(1); return {text:"Một quyền đánh thẳng vào tâm trận, trận pháp vỡ tan trong tiếng nổ lớn. Rương báu lộ ra nguyên vẹn, bên trong là một khối tinh hoa quý giá.", deltas:["Tu Vi +"+fmt(g), "Nhận được: Hộ Đạo Đan x1"]}; }
+          const g=reqNow()*0.3; s.cultivation=Math.max(0,s.cultivation-g);
+          return {text:"Trận pháp phản phệ dữ dội ngay khi vừa động thủ, một luồng kình lực vô hình đánh bật ngươi ra xa. Rương báu vỡ tan cùng phần tinh hoa bên trong.", deltas:["Tu Vi -"+fmt(g)]};
+        }},
+      { label:"Tìm cách hóa giải an toàn", effect:(s)=>{ const g=reqNow()*0.22; gainCultivation(s,g); return {text:"Ngươi kiên nhẫn quan sát từng đường nét của trận pháp, mất kha khá thời gian mới tìm ra một khe hở nhỏ để hóa giải an toàn. Phần thưởng không lớn nhưng chắc chắn.", deltas:["Tu Vi +"+fmt(g)]}; } }
+    ]},
+
+  { title:"Yêu Vương Khiêu Chiến", weight:0.5,
+    text:"Một con yêu thú khổng lồ mang huyết thống cổ xưa hiện thân giữa rừng sâu, ánh mắt như dò xét, dường như đang muốn thử sức với vị đạo hữu nhỏ bé đứng trước mặt nó.",
+    choices:[
+      { label:"Ứng chiến", effect:(s)=>{
+          const chance = clamp(0.3 + (s.stats.daoTam + s.stats.theChat)*0.01, 0.2, 0.75);
+          if(Math.random()<chance){ const g=reqNow()*1.0; gainCultivation(s,g); addHoDaoDan(1); return {text:"Một trận ác chiến kinh thiên động địa nổ ra. Sau cùng, ngươi dồn hết sức lực tung ra một chiêu quyết định, yêu vương gầm lên một tiếng rồi bỏ chạy, để lại nội đan rơi vãi trên mặt đất.", deltas:["Tu Vi +"+fmt(g), "Nhận được: Hộ Đạo Đan x1"]}; }
+          const g=reqNow()*0.3; s.cultivation=Math.max(0,s.cultivation-g); const t=s.thoNguyenMax*0.04; loseTho(t);
+          return {text:"Thực lực bất túc, chỉ vài chiêu ngươi đã lâm vào thế hạ phong. May mắn thoát được thân trong đường tơ kẽ tóc, nhưng thương thế không nhẹ.", deltas:["Tu Vi -"+fmt(g), "Thọ Nguyên -"+fmt(t)]};
+        }},
+      { label:"Từ chối, lặng lẽ rời đi", effect:()=>({text:"Ngươi cúi đầu thi lễ rồi lặng lẽ lùi bước, tự biết thực lực chưa đủ để tranh phong. Yêu vương khẽ gầm một tiếng rồi quay đầu biến mất vào rừng sâu.", deltas:[]}) }
+    ]},
+
+  { title:"Ngã Ba Đạo Lộ", weight:0.9,
+    text:"Con đường phía trước chia làm hai nhánh: một bên phảng phất khí tức ôn hòa chính đại, một bên lại cuộn trào ma khí mãnh liệt đầy cám dỗ, hứa hẹn sức mạnh nhanh chóng nhưng ẩn chứa hiểm họa khôn lường.",
+    choices:[
+      { label:"Chọn Chính Đạo", effect:(s)=>{ addStat('daoTam',2); return {text:"Ngươi bước theo con đường ôn hòa, từng bước tuy chậm rãi nhưng vững chãi. Đạo tâm theo đó mà kiên định hơn rất nhiều.", deltas:["Đạo Tâm +2"]}; } },
+      { label:"Chọn Ma Đạo", effect:(s)=>{ const g=reqNow()*0.7; gainCultivation(s,g); addStat('daoTam',-1); return {text:"Ngươi dấn thân vào con đường mãnh liệt, để ma khí cuồn cuộn tràn vào cơ thể. Tu vi tăng vọt nhanh chóng, nhưng đạo tâm cũng theo đó mà gợn sóng bất an.", deltas:["Tu Vi +"+fmt(g), "Đạo Tâm -1"]}; } }
+    ]},
+
+  { title:"Lão Giả Bí Ẩn", weight:0.5,
+    text:"Một lão nhân áo xám không rõ lai lịch ngồi lặng lẽ bên đường, ánh mắt sâu thẳm như đã nhìn thấu ngàn năm dâu bể. Lão khẽ mở lời, đề nghị dùng một phần thọ nguyên của ngươi để đổi lấy một đạo lực lượng khổng lồ đang ẩn giấu trong người.",
+    choices:[
+      { label:"Đồng ý trao đổi", effect:(s)=>{ const t=s.thoNguyenMax*0.12; loseTho(t); const g=reqNow()*1.2; gainCultivation(s,g); return {text:"Lão nhân khẽ gật đầu, đặt một ngón tay lên trán ngươi. Một luồng sức mạnh khổng lồ tràn vào cơ thể, nhưng đồng thời ngươi cũng cảm nhận được sinh mệnh của mình đang vơi đi.", deltas:["Tu Vi +"+fmt(g), "Thọ Nguyên -"+fmt(t)]}; } },
+      { label:"Từ chối", effect:()=>({text:"Ngươi lắc đầu từ chối lời đề nghị. Lão nhân chỉ khẽ mỉm cười, ánh mắt thoáng chút tán thưởng, rồi hóa thành một làn khói mờ tan biến vào không trung.", deltas:[]}) }
+    ]},
+
+  { title:"Tẩy Tủy Trì Cổ Xưa", weight:0.4,
+    text:"Giữa một hang động ẩn mình sau thác nước, một ao nước trong vắt tỏa ra linh khí nồng đậm hiếm thấy. Tương truyền đây chính là Tẩy Tủy Trì thượng cổ, có khả năng thoát thai hoán cốt cho kẻ có duyên phận.",
+    choices:[
+      { label:"Bước vào tẩy tủy", effect:(s)=>{
+          if(Math.random()<0.45){ addStat('ngoTinh',1); addStat('coDuyen',1); addStat('daoTam',1); addStat('theChat',1); return {text:"Dòng nước linh khí thấm sâu vào từng tấc xương cốt, gột rửa sạch sẽ những trọc khí tích tụ bấy lâu. Toàn thân ngươi như được tái sinh, căn cơ vững vàng hơn hẳn.", deltas:["Tứ Đại Thuộc Tính đều +1"]}; }
+          const g=reqNow()*0.2; s.cultivation=Math.max(0,s.cultivation-g);
+          return {text:"Linh khí trong ao quá đỗi tinh khiết, cơ thể ngươi không kịp thích nghi mà xảy ra phản phệ nhẹ, một phần tu vi bị đẩy ngược ra ngoài.", deltas:["Tu Vi -"+fmt(g)]};
+        }},
+      { label:"Không dám mạo hiểm", effect:()=>({text:"Ngươi đứng bên bờ ao ngắm nhìn hồi lâu, cuối cùng vẫn chọn cách rời đi trong thận trọng, để lại cơ duyên ấy cho người hữu duyên khác.", deltas:[]}) }
+    ]},
+
+  { title:"Hồ Gương Tâm Ma", weight:0.5,
+    text:"Mặt hồ phẳng lặng không phản chiếu dung mạo của ngươi, mà là một bóng hình đen tối mang gương mặt giống hệt ngươi, ánh mắt đầy dục vọng và oán hận đang lặng lẽ nhìn lại.",
+    choices:[
+      { label:"Đối diện tâm ma", effect:(s)=>{
+          if(Math.random()<0.6){ addStat('daoTam',2); return {text:"Ngươi bước thẳng đến bên hồ, nhìn thẳng vào đôi mắt của tâm ma mà không hề né tránh. Bóng hình đen tối dần tan biến như sương khói, đạo tâm nhờ đó mà kiên cố hơn bao giờ hết.", deltas:["Đạo Tâm +2"]}; }
+          const g=reqNow()*0.15; s.cultivation=Math.max(0,s.cultivation-g);
+          return {text:"Trong khoảnh khắc đối mặt, một tia dao động khẽ lướt qua tâm trí, tâm ma thừa cơ xâm nhập khiến chân khí rối loạn trong chốc lát.", deltas:["Tu Vi -"+fmt(g)]};
+        }},
+      { label:"Tránh né, rời khỏi hồ", effect:()=>({text:"Ngươi quay lưng bước đi, không dám đối diện với phần bóng tối trong chính mình. Mặt hồ sau lưng dần trở lại phẳng lặng như chưa từng có gì xảy ra.", deltas:[]}) }
+    ]}
+];
+
+/* ================= EXTREME EVENTS (chỉ xuất hiện từ cảnh giới cao) =================
+   "Được ăn cả, ngã về không": phần thưởng là % max EXP của cảnh giới HIỆN TẠI (reqNow()),
+   hình phạt là % thọ nguyên lớn hoặc tụt hẳn vài tầng tu vi — đúng tinh thần khổ tu cực đoan
+   mà chỉ lộ diện khi đạo hạnh đã đủ sâu (minRealm = ngưỡng đại cảnh giới tối thiểu). */
+const EXTREME_EVENTS = [
+  { title:"Đan Dược Thượng Cổ", weight:0.6, minRealm:16,
+    text:"Trong một động phủ hoang phế giữa mây mù, một viên đan dược thượng cổ tỏa hào quang kỳ dị nằm lẫn trong đống linh thảo mục nát. Khí tức từ nó vừa mang theo sinh cơ mãnh liệt, vừa ẩn chứa một tia hủy diệt khó lường — được ăn cả, ngã về không.",
+    choices:[
+      { label:"Mạo hiểm húp đan dược", effect:(s)=>{
+          if(Math.random()<0.5){
+            const pct = 0.05 + Math.random()*0.05;
+            const g = reqNow()*pct;
+            gainCultivation(s,g);
+            return {text:"Đan dược tan chảy trong cổ họng, một dòng sinh cơ cuồn cuộn bùng nổ khắp tứ chi bách hài. Tu vi tăng vọt trong tích tắc, vượt xa những gì khổ luyện nhiều năm mới đạt được.", deltas:["Tu Vi +"+fmt(g)+" ("+Math.round(pct*100)+"% max hiện tại)"]};
+          }
+          if(Math.random()<0.5){
+            const t = s.thoNguyen*0.3;
+            loseTho(t);
+            return {text:"Đan dược hóa thành kịch độc ngay khi vừa nuốt xuống, tam hồn thất phách chấn động dữ dội. Thọ nguyên tổn hại nghiêm trọng, phải mất rất lâu mới có thể ổn định lại thân thể.", deltas:["Thọ Nguyên -"+fmt(t)+" (30%)"]};
+          }
+          const dmg = 1+Math.floor(Math.random()*3);
+          demoteTang(dmg);
+          return {text:"Chân khí nghịch chuyển dữ dội, đan điền như bị một bàn tay vô hình bóp nát. Tu vi tích lũy bấy lâu sụp đổ, cảnh giới tụt lùi thảm hại.", deltas:["Tụt "+dmg+" Tầng Tu Vi"]};
+        }},
+      { label:"Không mạo hiểm, bỏ đi", effect:()=>({text:"Ngươi nhìn viên đan dược hồi lâu, cuối cùng vẫn chọn rời đi. Cơ duyên hay hiểm họa, có lẽ tốt nhất nên để nó ngủ yên nơi đây.", deltas:[]}) }
+    ]},
+
+  { title:"Tàn Kiếp Nghịch Thiên", weight:0.5, minRealm:16,
+    text:"Giữa không trung nứt toác một khe hở không-thời gian, tàn dư của một trận thiên kiếp từ vô lượng năm trước vẫn còn cuộn trào nơi đó — vừa là sinh cơ tối thượng, vừa là hố sâu hủy diệt đang chờ nuốt chửng kẻ cả gan bén mảng.",
+    choices:[
+      { label:"Dấn thân hấp thụ tàn kiếp", effect:(s)=>{
+          if(Math.random()<0.45){
+            const pct = 0.06 + Math.random()*0.04;
+            const g = reqNow()*pct;
+            gainCultivation(s,g);
+            return {text:"Ngươi lao thẳng vào khe nứt, để năng lượng thiên kiếp tàn dư tàn phá lẫn tôi luyện thân xác. Khi bước ra, tu vi trong người đã dâng lên một tầng không tưởng.", deltas:["Tu Vi +"+fmt(g)+" ("+Math.round(pct*100)+"% max hiện tại)"]};
+          }
+          if(Math.random()<0.5){
+            const t = s.thoNguyen*(0.25+Math.random()*0.1);
+            loseTho(t);
+            return {text:"Sét trời tàn dư đánh thẳng vào thiên linh cái, sinh cơ trong cơ thể vỡ vụn từng mảng. Thọ nguyên tổn thất nặng nề, phải dưỡng thương rất lâu.", deltas:["Thọ Nguyên -"+fmt(t)]};
+          }
+          const dmg = 2+Math.floor(Math.random()*3);
+          demoteTang(dmg);
+          return {text:"Cảnh giới trong người bị sức mạnh nghịch thiên nghiền ép, đạo hạnh bao năm gây dựng sụp đổ trong chớp mắt.", deltas:["Tụt "+dmg+" Tầng Tu Vi"]};
+        }},
+      { label:"Không dám lại gần", effect:()=>({text:"Ngươi đứng từ xa quan sát khe nứt không-thời gian, cuối cùng chọn cách lùi lại. Có những cơ duyên, mạng nhỏ không gánh nổi.", deltas:[]}) }
+    ]},
+
+  { title:"Hắc Ám Chi Môn", weight:0.4, minRealm:20,
+    text:"Một cánh cửa đen tuyền không đáy hiện ra giữa hư không, không ai biết bên trong là thiên đường hay địa ngục. Truyền thuyết kể rằng đã có vô số kỳ tài bước vào, nhưng chưa từng có ai trở ra kể lại chuyện gì đã xảy ra.",
+    choices:[
+      { label:"Bước qua cánh cửa", effect:(s)=>{
+          if(Math.random()<0.4){
+            const pct = 0.07 + Math.random()*0.03;
+            const g = reqNow()*pct;
+            gainCultivation(s,g);
+            return {text:"Bên trong cánh cửa là một cõi hỗn độn không tên, tràn ngập tinh hoa nguyên thủy. Ngươi liều mình thu nạp trọn vẹn trước khi cánh cửa khép lại sau lưng.", deltas:["Tu Vi +"+fmt(g)+" ("+Math.round(pct*100)+"% max hiện tại)"]};
+          }
+          const dmg = 2+Math.floor(Math.random()*4);
+          demoteTang(dmg);
+          return {text:"Cánh cửa nuốt trọn thân ảnh của ngươi vào một khoảng không vô tận, khi thoát ra được thì đạo hạnh đã hao tổn thảm khốc, cảnh giới tụt lùi không phanh.", deltas:["Tụt "+dmg+" Tầng Tu Vi"]};
+        }},
+      { label:"Quay lưng rời đi", effect:()=>({text:"Ngươi nhìn cánh cửa đen tuyền hồi lâu rồi quyết định quay lưng. Có những bí ẩn, tốt nhất nên mãi mãi là bí ẩn.", deltas:[]}) }
+    ]},
+
+  { title:"Đạo Ấn Cổ Xưa", weight:0.4, minRealm:24,
+    text:"Một dấu ấn đại đạo cổ xưa lơ lửng giữa không trung, bên trong ẩn chứa một tia quy tắc nguyên thủy của trời đất. Chạm vào có thể đốn ngộ chớp nhoáng, cũng có thể bị chính quy tắc ấy nghiền nát thần hồn.",
+    choices:[
+      { label:"Dùng thần hồn cảm ứng ấn ký", effect:(s)=>{
+          if(Math.random()<0.45){
+            const pct = 0.06 + Math.random()*0.04;
+            const g = reqNow()*pct;
+            gainCultivation(s,g);
+            return {text:"Thần hồn chạm vào đạo ấn, vô số quy tắc nguyên thủy tuôn chảy thẳng vào hải để. Một tia đốn ngộ chớp qua, tu vi lập tức thăng hoa.", deltas:["Tu Vi +"+fmt(g)+" ("+Math.round(pct*100)+"% max hiện tại)"]};
+          }
+          const t = s.thoNguyen*(0.25+Math.random()*0.1);
+          loseTho(t);
+          return {text:"Quy tắc nguyên thủy quá mức thâm sâu, thần hồn không kịp phòng bị mà bị nghiền ép nặng nề. Thọ nguyên vì thế mà hao tổn nghiêm trọng.", deltas:["Thọ Nguyên -"+fmt(t)]};
+        }},
+      { label:"Không dám động vào", effect:()=>({text:"Ngươi thu hồi tâm niệm, không dám mạo hiểm thần hồn của mình trước một đạo ấn không rõ lai lịch.", deltas:[]}) }
+    ]},
+
+  { title:"Cấm Địa Hồng Mông", weight:0.35, minRealm:31,
+    text:"Một vùng hỗn độn nguyên thủy còn sót lại từ thuở khai thiên lập địa cuộn trào trước mắt, hắc bạch chưa phân, sinh diệt đan xen liên miên bất tận. Đây là cơ duyên tối thượng mà cũng là vực thẳm tuyệt lộ, chỉ dành cho kẻ dám đánh cược cả sinh mệnh lẫn đạo hạnh.",
+    choices:[
+      { label:"Dung nhập hỗn độn", effect:(s)=>{
+          if(Math.random()<0.35){
+            const pct = 0.08 + Math.random()*0.02;
+            const g = reqNow()*pct;
+            gainCultivation(s,g);
+            return {text:"Ngươi buông bỏ mọi phòng bị, để thân thể hòa vào dòng hỗn độn nguyên thủy. Sinh diệt luân chuyển ngay trong từng tế bào, tu vi bùng nổ đến mức chính ngươi cũng phải kinh hãi.", deltas:["Tu Vi +"+fmt(g)+" ("+Math.round(pct*100)+"% max hiện tại)"]};
+          }
+          if(Math.random()<0.5){
+            const t = s.thoNguyen*(0.35+Math.random()*0.05);
+            loseTho(t);
+            return {text:"Hỗn độn nguyên thủy không phân biệt bạn thù, sinh cơ và sát cơ cùng lúc tràn vào cơ thể. Thọ nguyên gần như bị rút cạn trong khoảnh khắc.", deltas:["Thọ Nguyên -"+fmt(t)]};
+          }
+          const dmg = 3+Math.floor(Math.random()*4);
+          demoteTang(dmg);
+          return {text:"Trật tự hỗn độn nghiền nát toàn bộ đạo cơ trong người, đạo hạnh bao kiếp tu luyện sụp đổ tan tành chỉ trong một khoảnh khắc dung nhập.", deltas:["Tụt "+dmg+" Tầng Tu Vi"]};
+        }},
+      { label:"Kính nhi viễn chi", effect:()=>({text:"Ngươi cúi đầu hành lễ với vùng hỗn độn nguyên thủy rồi lặng lẽ lui bước. Có những cơ duyên, chỉ kẻ đã chuẩn bị đủ mới xứng được chạm vào.", deltas:[]}) }
+    ]}
+];
+
+/* Chọn pool sự kiện khám phá phù hợp: luôn có EXPLORE_EVENTS làm nền,
+   cộng thêm các EXTREME_EVENTS đã đủ điều kiện minRealm theo cảnh giới hiện tại. */
+function eligibleExploreEvents(){
+  const pool = EXPLORE_EVENTS.slice().concat(GEAR_DROP_EVENTS);
+  EXTREME_EVENTS.forEach(function(ev){
+    if(state.realmIdx >= (ev.minRealm||0)) pool.push(ev);
+  });
+  return pool;
+}
+
+/* ================= EQUIPMENT, PILLS & COMBAT STATS ================= */
+/* type: 'weapon' | 'armor' | 'phapBao' (3 ô trang bị, tối đa 1 món/ô) | 'pill' (tiêu hao, cộng vĩnh viễn
+   vào pillBonuses) | 'material' (nguyên liệu sưu tầm, chưa có công dụng trực tiếp — dành cho hệ thống
+   luyện chế mở rộng sau này). tocDoTuLuyen trên trang bị/đan dược là số THẬP PHÂN (0.05 = +5%). */
+const ITEM_DB = {
+  pham_kiem:      { name:"Phàm Kiếm",            type:"weapon", rarity:"common",    atk:8 },
+  linh_kiem:      { name:"Linh Kiếm",             type:"weapon", rarity:"rare",      atk:22, tocDoTuLuyen:0.03 },
+  huyet_dao:      { name:"Huyết Đao",             type:"weapon", rarity:"rare",      atk:30, def:-3 },
+  thanh_phong_kiem:{ name:"Thanh Phong Kiếm",     type:"weapon", rarity:"epic",      atk:55, tocDoTuLuyen:0.06 },
+  thai_co_kiem:   { name:"Thái Cổ Thần Kiếm",     type:"weapon", rarity:"legendary", atk:120, hp:40, tocDoTuLuyen:0.12 },
+
+  bo_giap_vai:    { name:"Bố Giáp",               type:"armor",  rarity:"common",    def:6, hp:20 },
+  huyen_thiet_giap:{ name:"Huyền Thiết Giáp",     type:"armor",  rarity:"rare",      def:18, hp:60 },
+  long_lan_giap:  { name:"Long Lân Giáp",         type:"armor",  rarity:"epic",      def:40, hp:150, tocDoTuLuyen:0.04 },
+  hon_thien_giap: { name:"Hỗn Thiên Thần Giáp",   type:"armor",  rarity:"legendary", def:90, hp:400, tocDoTuLuyen:0.08 },
+
+  tu_chan_ngoc_bai:{ name:"Tu Chân Ngọc Bài",     type:"phapBao",rarity:"common",    tocDoTuLuyen:0.05 },
+  van_dao_la_ban: { name:"Vạn Đạo La Bàn",        type:"phapBao",rarity:"rare",      tocDoTuLuyen:0.10, def:8 },
+  hon_don_linh_chau:{ name:"Hỗn Độn Linh Châu",   type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.25, atk:30, def:30, hp:100 },
+
+  tu_khi_dan:     { name:"Tụ Khí Đan",            type:"pill",   rarity:"common",    tocDoTuLuyen:0.02 },
+  cuong_the_dan:  { name:"Cường Thể Đan",         type:"pill",   rarity:"common",    hp:15, atk:3 },
+  pha_giap_dan:   { name:"Phá Giáp Đan",          type:"pill",   rarity:"uncommon",  atk:10 },
+  huyen_thiet_dan:{ name:"Huyền Thiết Đan",       type:"pill",   rarity:"uncommon",  def:10 },
+  dai_bo_linh_dan:{ name:"Đại Bổ Linh Đan",       type:"pill",   rarity:"rare",      tocDoTuLuyen:0.05, hp:30 },
+  cuu_chuyen_kim_dan:{ name:"Cửu Chuyển Kim Đan", type:"pill",   rarity:"legendary", tocDoTuLuyen:0.15, atk:20, def:20, hp:80 },
+
+  linh_thao:      { name:"Linh Thảo",             type:"material", rarity:"common" },
+  yeu_dan:        { name:"Yêu Đan",               type:"material", rarity:"uncommon" },
+  thien_nien_linh_chi:{ name:"Thiên Niên Linh Chi", type:"material", rarity:"rare" },
+  hon_mang_thach: { name:"Hỗn Mang Thạch",        type:"material", rarity:"legendary" }
+};
+
+function addItem(s, itemId, n){
+  n = n || 1;
+  s.inventory = s.inventory || {};
+  s.inventory[itemId] = (s.inventory[itemId] || 0) + n;
+}
+
+function equippedSpeedBonusPct(s){
+  let pct = 0;
+  ['weapon','armor','phapBao'].forEach(function(slot){
+    const id = s.equipped && s.equipped[slot];
+    const it = id && ITEM_DB[id];
+    if(it && it.tocDoTuLuyen) pct += it.tocDoTuLuyen;
+  });
+  if(s.pillBonuses && s.pillBonuses.tocDoTuLuyen) pct += s.pillBonuses.tocDoTuLuyen;
+  return pct;
+}
+
+/* Dùng chung cho cả nhân vật của mình (state) LẪN dữ liệu ghost của đối thủ lấy từ JSONBin —
+   miễn đối tượng truyền vào có đủ realmIdx/subIdx/tang/stats/equipped/pillBonuses là tính được. */
+function computeCombatStats(s){
+  const fi = flatIndex(s.realmIdx||0, s.subIdx||0, s.tang||1);
+  const stats = s.stats || {ngoTinh:10,coDuyen:10,daoTam:10,theChat:10};
+  let hp = 80 + fi*4 + (stats.theChat||10)*8;
+  let atk = 10 + fi*1.1 + (stats.daoTam||10)*1.5 + (stats.ngoTinh||10)*0.8;
+  let def = 5 + fi*0.7 + (stats.theChat||10)*1.8;
+
+  ['weapon','armor','phapBao'].forEach(function(slot){
+    const id = s.equipped && s.equipped[slot];
+    const it = id && ITEM_DB[id];
+    if(it){ atk += it.atk||0; def += it.def||0; hp += it.hp||0; }
+  });
+  if(s.pillBonuses){
+    atk += s.pillBonuses.atk||0;
+    def += s.pillBonuses.def||0;
+    hp += s.pillBonuses.hp||0;
+  }
+  hp = Math.max(1, Math.round(hp));
+  atk = Math.max(1, Math.round(atk));
+  def = Math.max(0, Math.round(def));
+  const combatPower = Math.round(atk*3 + def*2 + hp*0.3);
+  return { hp: hp, atk: atk, def: def, combatPower: combatPower };
+}
+
+function equipItem(itemId){
+  const it = ITEM_DB[itemId];
+  if(!state || !it || !state.inventory || !state.inventory[itemId]) return;
+  if(it.type!=='weapon' && it.type!=='armor' && it.type!=='phapBao') return;
+  state.equipped = state.equipped || {weapon:null,armor:null,phapBao:null};
+  state.equipped[it.type] = itemId;
+  addLogNode({type:'neutral', title:'Trang Bị', text: state.name+' trang bị '+it.name+', khí tức toàn thân theo đó biến đổi rõ rệt.', deltas:[]});
+  updateUI();
+  syncSave({force:true});
+}
+function unequipItem(slot){
+  if(!state || !state.equipped) return;
+  state.equipped[slot] = null;
+  updateUI();
+  syncSave({force:true});
+}
+function consumePill(itemId){
+  const it = ITEM_DB[itemId];
+  if(!state || !it || it.type!=='pill' || !state.inventory || !state.inventory[itemId]) return;
+  state.inventory[itemId]--;
+  if(state.inventory[itemId] <= 0) delete state.inventory[itemId];
+  state.pillBonuses = state.pillBonuses || {atk:0,def:0,hp:0,tocDoTuLuyen:0};
+  state.pillBonuses.atk += it.atk||0;
+  state.pillBonuses.def += it.def||0;
+  state.pillBonuses.hp += it.hp||0;
+  state.pillBonuses.tocDoTuLuyen += it.tocDoTuLuyen||0;
+  const deltas = [];
+  if(it.tocDoTuLuyen) deltas.push('Tốc Độ Tu Luyện +'+Math.round(it.tocDoTuLuyen*100)+'% (vĩnh viễn)');
+  if(it.atk) deltas.push('ATK +'+it.atk+' (vĩnh viễn)');
+  if(it.def) deltas.push('DEF +'+it.def+' (vĩnh viễn)');
+  if(it.hp) deltas.push('HP +'+it.hp+' (vĩnh viễn)');
+  addLogNode({type:'success', title:'Dùng Đan Dược', text: state.name+' vận công hóa giải, để dược lực của '+it.name+' thẩm thấu toàn thân, hóa thành sức mạnh vĩnh cửu.', deltas:deltas});
+  updateUI();
+  syncSave({force:true});
+}
+
+const GEAR_DROP_EVENTS = [
+  { title:"Xác Tán Tu Bỏ Lại", tone:"gain", weight:0.6,
+    text:"Giữa hoang dã, một bộ hài cốt phủ đầy bụi thời gian vẫn còn ôm chặt lấy một thanh vũ khí gỉ sét. Có lẽ đây là di vật cuối cùng của một tán tu vô danh.",
+    effect:(s)=>{ addItem(s,'pham_kiem',1); return ["Nhặt được: Phàm Kiếm"]; } },
+  { title:"Hang Ổ Yêu Thú Bỏ Hoang", tone:"gain", weight:0.5,
+    text:"Một hang động ẩm thấp từng là sào huyệt của yêu thú, trong góc tối vẫn còn sót lại một mảnh giáp da cũ chưa kịp phân hủy.",
+    effect:(s)=>{ addItem(s,'bo_giap_vai',1); return ["Nhặt được: Bố Giáp"]; } },
+  { title:"Trận Địa Tàn Cuộc", tone:"gain", weight:0.35,
+    text:"Dấu vết một trận đại chiến năm xưa còn hằn sâu trên mặt đất, giữa ngổn ngang binh khí gãy nát, một thanh Linh Kiếm vẫn còn nguyên vẹn kỳ lạ.",
+    effect:(s)=>{ addItem(s,'linh_kiem',1); return ["Nhặt được: Linh Kiếm"]; } },
+  { title:"Bảo Khố Ẩn Giấu", tone:"gain", weight:0.2,
+    text:"Sau một cánh cửa đá được ngụy trang khéo léo, một gian bảo khố nhỏ hiện ra, bên trong là một món pháp bảo còn vương linh khí ấm áp.",
+    effect:(s)=>{ addItem(s,'tu_chan_ngoc_bai',1); return ["Nhặt được: Tu Chân Ngọc Bài"]; } }
+];
+
+const IDLE_LOOT_EVENTS = [
+  { title:"Nhặt Được Linh Thảo", tone:"gain", weight:1,
+    text:"Trong lúc nhập định, một cơn gió nhẹ cuốn theo vài cọng linh thảo rơi ngay trước gối, tiện tay thu vào túi trữ vật.",
+    effect:(s)=>{ addItem(s,'linh_thao',1); return ["Nhận: Linh Thảo x1"]; } },
+  { title:"Cảm Ứng Yêu Đan", tone:"gain", weight:0.7,
+    text:"Một mùi tanh nồng thoáng qua, hóa ra là yêu đan của một con dã thú nhỏ chết gần đó từ lâu, tinh hoa vẫn chưa tan hết.",
+    effect:(s)=>{ addItem(s,'yeu_dan',1); return ["Nhận: Yêu Đan x1"]; } },
+  { title:"Mảnh Bí Tịch Rơi Rớt", tone:"gain", weight:0.5,
+    text:"Không rõ từ đâu, một mảnh giấy da cũ kỹ ghi vài dòng khẩu quyết bay lạc tới, tuy không trọn vẹn nhưng cũng đáng để nghiền ngẫm.",
+    effect:(s)=>{ addStat('ngoTinh',1); return ["Ngộ Tính +1"]; } },
+  { title:"Đan Lô Tồn Dư", tone:"gain", weight:0.4,
+    text:"Phát hiện một lò luyện đan bỏ hoang gần đó còn sót lại vài viên Tụ Khí Đan chưa kịp mang đi.",
+    effect:(s)=>{ addItem(s,'tu_khi_dan',1); return ["Nhận: Tụ Khí Đan x1"]; } },
+  { title:"Linh Khí Tản Mát", tone:"neutral", weight:1,
+    text:"Một luồng linh khí tản mát trong không gian tụ lại thoáng chốc trước khi biến mất, chỉ kịp hấp thụ một chút ít.",
+    effect:(s)=>{ const g=reqNow()*0.02; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } }
+];
+
+/* ================= BREAKTHROUGH TEXTS ================= */
+const BREAKTHROUGH_SUCCESS = [
+  (from,to)=>"Sét vàng chín tầng chợt giáng xuống bầu trời, tụ thành hình chim Phượng Hoàng lượn quanh đỉnh đầu. Khí tức "+from+" trong cơ thể bùng nổ dữ dội rồi lột xác hoàn toàn, chính thức bước vào cảnh giới "+to+"!",
+  (from,to)=>"Một tiếng long ngâm vang vọng cửu thiên, kinh mạch toàn thân như sông băng tan chảy, linh khí cuồn cuộn đổ về đan điền. Chướng ngại ngàn năm vỡ tan trong khoảnh khắc, đạo hạnh chính thức tấn thân "+to+"!",
+  (from,to)=>"Thiên địa run rẩy, mây ngũ sắc tụ lại thành hình đạo văn cổ xưa lơ lửng giữa không trung. Trong tiếng gầm thét của chân khí bộc phát, cảnh giới "+from+" sụp đổ hoàn toàn, một sinh mệnh mới mang danh "+to+" chính thức ra đời!"
+];
+const BREAKTHROUGH_FAIL = [
+  (from,to)=>"Ngay khi sắp chạm tới ranh giới "+to+", một luồng nghịch khí đột ngột bộc phát trong kinh mạch. Đạo hạnh "+from+" không thể trấn áp nổi, buộc phải rút lui, khí huyết đảo lộn, tu vi tổn thất nặng nề.",
+  (from,to)=>"Thiên kiếp vô hình đè xuống nặng nề hơn dự tính, đan điền rung chuyển dữ dội rồi vỡ tan một góc. Nỗ lực xung kích "+to+" thất bại, phải mất một khoảng thời gian dài mới có thể hồi phục.",
+  (from,to)=>"Đạo tâm dao động ngay tại khoảnh khắc mấu chốt, huyễn cảnh tâm ma ập đến khiến toàn thân run rẩy. Cánh cửa dẫn tới "+to+" khép lại trong tiếc nuối, để lại vết thương âm ỉ nơi ngũ tạng."
+];
+
+/* Thử Thách Đột Phá: mỗi lần đột phá đối mặt NGẪU NHIÊN với một trong hai hình thức kiếp nạn cổ điển. */
+const TRIAL_INTROS = [
+  ()=>"Giữa không trung, mây đen cuồn cuộn kéo tới, một tia Lôi Kiếp tím thẫm chậm rãi ngưng tụ, chuẩn bị giáng xuống thử thách đạo cơ. ",
+  ()=>"Trong khoảnh khắc vận công đề tụ toàn bộ tu vi, một bóng hình đen tối tách ra từ chính tâm thức — Tâm Ma xuất hiện, thì thầm những lời cám dỗ đầy mê hoặc. "
+];
+
+/* Phần thưởng trấn phái khi đột phá thành công, chia theo bậc cảnh giới vừa đạt được. */
+function breakthroughRewardItem(newRealmIdx){
+  if(newRealmIdx >= 31) return pickRandom(['thai_co_kiem','hon_thien_giap','hon_don_linh_chau','cuu_chuyen_kim_dan']);
+  if(newRealmIdx >= 24) return pickRandom(['thanh_phong_kiem','long_lan_giap','van_dao_la_ban','dai_bo_linh_dan']);
+  if(newRealmIdx >= 11) return pickRandom(['linh_kiem','huyen_thiet_giap','tu_chan_ngoc_bai','huyen_thiet_dan']);
+  return pickRandom(['pham_kiem','bo_giap_vai','tu_khi_dan','cuong_the_dan']);
+}
+
+/* ================= CORE ACTIONS ================= */
+/* Tốc độ tiêu hao thọ nguyên khi cày cuốc: tính theo % thọ nguyên TỐI ĐA thay vì số cố định,
+   để áp lực luôn tỉ lệ thuận với cảnh giới hiện tại chứ không bị "lạm phát" nuốt chửng. */
+function grindDecay(basePct){
+  const theChatReduction = 1 / (1 + state.stats.theChat*0.04);
+  return state.thoNguyenMax * basePct * theChatReduction;
+}
+
+/* ĐÓNG BĂNG TỐC ĐỘ TU LUYỆN TỰ NHIÊN:
+   Hàm này TUYỆT ĐỐI KHÔNG được phép đọc realmIdx/subIdx/tang/flatIndex — cảnh giới càng cao
+   chỉ khiến requiredCultivation() phình to hơn, còn tốc độ hấp thụ linh khí mỗi giây của bản thân
+   đạo hữu thì đứng yên tuyệt đối. Muốn tăng tốc, con đường DUY NHẤT là Ngộ Tính (tăng chậm qua
+   kỳ ngộ) và trang bị/đan dược (equippedSpeedBonus/pillBonuses) — đúng tinh thần "Đan Dược Là
+   Chìa Khóa". Buff Kiếp Nạn (luân hồi) vẫn được giữ vì nó không đến từ việc "lên cảnh giới". */
+const BASE_TU_LUYEN_SPEED = 6; // EXP/giây gốc, cố định vĩnh viễn cho MỌI cảnh giới
+function computeTocDoTuLuyen(s){
+  const ngoTinhBonus = 1 + s.stats.ngoTinh * 0.02;
+  const itemPct = equippedSpeedBonusPct(s);
+  const kiepNanMult = 1 + kiepNanBuff;
+  return BASE_TU_LUYEN_SPEED * ngoTinhBonus * (1 + itemPct) * kiepNanMult;
+}
+
+/* Click "Tăng Tu Vi" = một đợt tinh tấn chủ động, quy đổi bằng vài giây tốc độ hiện tại —
+   vẫn hữu ích để tương tác chủ động, nhưng KHÔNG còn là nguồn tu vi chính; nguồn chính là
+   vòng lặp treo máy computeTocDoTuLuyen() chạy mỗi giây bên dưới (startIdleLoop). */
+const CLICK_BURST_SECONDS = 4;
+function tuLuyen(){
+  if(!state || state.isDead) return;
+  state.ngayTu++;
+  const g = computeTocDoTuLuyen(state) * CLICK_BURST_SECONDS;
+  gainCultivation(state, g);
+  checkTangUp();
+  loseTho(grindDecay(0.0012));
+  if(!state.isDead && Math.random() < 0.05){
+    triggerEvent(CULTIVATION_EVENTS);
+  }
+  updateUI();
+}
+
+let idleTickHandle = null;
+function startIdleLoop(){
+  if(idleTickHandle) clearInterval(idleTickHandle);
+  idleTickHandle = setInterval(function(){
+    if(!state || state.isDead) return;
+    const g = computeTocDoTuLuyen(state);
+    gainCultivation(state, g);
+    checkTangUp();
+    loseTho(grindDecay(0.00018)); // rất nhỏ mỗi giây, nhưng cộng dồn theo thời gian treo máy thực
+    if(!state.isDead && Math.random() < 0.015){
+      triggerEvent(IDLE_LOOT_EVENTS);
+    }
+    updateUI();
+  }, 1000);
+}
+
+function checkTangUp(){
+  let subUps = 0;
+  let safety = 0;
+  while(safety < 200){
+    safety++;
+    if(isAtBreakthroughGate()){
+      const req = reqNow();
+      if(state.cultivation > req) state.cultivation = req;
+      break;
+    }
+    const req = reqNow();
+    if(state.cultivation < req) break;
+    state.cultivation -= req;
+    state.tang++;
+    if(state.tang > TANG_PER_SUB){
+      state.tang = 1;
+      state.subIdx++;
+      subUps++;
+    }
+  }
+  if(subUps > 0){
+    state.gateNotified = false;
+    addLogNode({
+      type:'levelup', title:'Cảnh Giới Thăng Tiến',
+      text: state.name+" đã tu luyện viên mãn, chính thức bước vào "+SUB_REALMS[state.subIdx]+" của "+MAJOR_REALMS[state.realmIdx]+".",
+      deltas:[]
+    });
+  }
+  if(isAtBreakthroughGate() && state.cultivation >= reqNow() - 0.001 && !state.gateNotified){
+    state.gateNotified = true;
+    const nextName = MAJOR_REALMS[state.realmIdx+1] || "cực hạn của vạn cổ trường hà";
+    addLogNode({
+      type:'gate', title:'Bế Quan Đỉnh Phong',
+      text:"Tu vi tại Viên Mãn Tầng 10 đã tròn đầy như trăng rằm. "+state.name+" cảm nhận một tầng thiên kiếp vô hình đang chờ đợi, chỉ cần một niệm Đột Phá là có thể xung kích "+nextName+".",
+      deltas:[]
+    });
+  }
+}
+
+function dotPha(){
+  if(!state || state.isDead) return;
+  state.ngayTu++;
+  if(!isAtBreakthroughGate()){
+    addLogNode({type:'neutral', title:'Chưa Đủ Điều Kiện', text:'Ngươi cần tu luyện đến đỉnh phong Viên Mãn Tầng 10 của Đại Cảnh Giới hiện tại thì mới có thể thử đột phá lên cảnh giới cao hơn.', deltas:[]});
+    updateUI();
+    return;
+  }
+  const req = reqNow();
+  if(state.cultivation < req - 0.001){
+    addLogNode({type:'neutral', title:'Tu Vi Chưa Viên Mãn', text:'Tu vi vẫn còn thiếu hụt so với yêu cầu của đỉnh phong này, cần tiếp tục tu luyện thêm trước khi thử đột phá.', deltas:[]});
+    updateUI();
+    return;
+  }
+  if(state.realmIdx >= MAJOR_REALMS.length - 1){
+    addLogNode({type:'legend', title:'Đại Đạo Chi Đỉnh', text: state.name+" đã đứng trên đỉnh của vạn cổ trường hà, không còn cảnh giới nào để tiến thêm nữa. Thời gian và không gian dường như đều quy phục dưới chân người.", deltas:[]});
+    updateUI();
+    return;
+  }
+
+  /* HARDCORE: tỷ lệ thành công luôn bị ép chặt trong khoảng 30%-50%, không có "vùng an toàn" ở cảnh giới thấp.
+     Đạo Tâm chỉ có thể kéo chance lên gần mép trên, không bao giờ vượt qua nó nhiều. */
+  const majorIdx = state.realmIdx;
+  let baseChance = 0.50 - majorIdx*0.006;
+  baseChance = Math.max(0.30, baseChance);
+  const daoTamBonus = state.stats.daoTam * 0.003;
+  let chance = Math.min(0.50, baseChance + daoTamBonus);
+  let usedDan = false;
+  if(state.hoDaoDan > 0){
+    chance = Math.min(0.65, chance + 0.15);
+    state.hoDaoDan--;
+    usedDan = true;
+  }
+
+  const fromName = MAJOR_REALMS[majorIdx];
+  const toName = MAJOR_REALMS[majorIdx+1];
+  const roll = Math.random();
+  const trialIntro = pickRandom(TRIAL_INTROS)();
+
+  if(roll < chance){
+    state.cultivation = 0;
+    state.realmIdx++;
+    state.subIdx = 0;
+    state.tang = 1;
+    state.gateNotified = false;
+    const thoBonus = Math.round(40 * Math.pow(1.42, state.realmIdx));
+    state.thoNguyenMax += thoBonus;
+    state.thoNguyen += thoBonus;
+    addStat('ngoTinh',1); addStat('coDuyen',1); addStat('daoTam',1); addStat('theChat',1);
+    const rewardId = breakthroughRewardItem(state.realmIdx);
+    addItem(state, rewardId, 1);
+    let text = trialIntro + pickRandom(BREAKTHROUGH_SUCCESS)(fromName, toName);
+    if(usedDan) text += " Một viên Hộ Đạo Đan vừa hóa thành tro bụi, âm thầm trợ lực trong khoảnh khắc sinh tử.";
+    addLogNode({type:'success', title:'ĐỘT PHÁ THÀNH CÔNG!', text, deltas:["Thọ Nguyên +"+thoBonus, "Tứ Đại Thuộc Tính đều +1", "Phần thưởng trấn phái: "+ITEM_DB[rewardId].name]});
+  } else {
+    /* Trừng phạt tàn nhẫn: mất 30%-50% tiến độ tu vi hiện tại VÀ 20%-40% tổng thọ nguyên hiện tại (không phải số lẻ vô hại). */
+    const expLossPct = 0.3 + Math.random()*0.2;
+    const loss = state.cultivation * expLossPct;
+    state.cultivation = Math.max(0, state.cultivation - loss);
+    const thoLossPct = 0.2 + Math.random()*0.2;
+    const thoLoss = state.thoNguyen * thoLossPct;
+    loseTho(thoLoss);
+    let text = trialIntro + pickRandom(BREAKTHROUGH_FAIL)(fromName, toName);
+    if(usedDan) text += " Đáng tiếc, dù có Hộ Đạo Đan trợ lực vẫn không đủ để xoay chuyển cục diện.";
+    addLogNode({type:'fail', title:'ĐỘT PHÁ THẤT BẠI', text, deltas:["Tu Vi -"+fmt(loss)+" ("+Math.round(expLossPct*100)+"%)", "Thọ Nguyên -"+fmt(thoLoss)+" ("+Math.round(thoLossPct*100)+"%)"]});
+  }
+  updateUI();
+  syncSave({force:true}); // đồng bộ mây sau mỗi lần đột phá (thành công lẫn thất bại), theo yêu cầu đồng bộ
+}
+
+function khamPha(){
+  if(!state || state.isDead) return;
+  state.ngayTu++;
+  loseTho(grindDecay(0.001)); // dấn thân hồng trần cũng bào mòn thọ nguyên, dù nhẹ hơn bế quan tu luyện
+  if(!state.isDead) triggerEvent(eligibleExploreEvents());
+  updateUI();
+}
+
+/* ================= UI RENDER ================= */
+const el = {
+  orbWrap: document.getElementById('orbWrap'),
+  charName: document.getElementById('charName'),
+  charKiep: document.getElementById('charKiep'),
+  realmMajor: document.getElementById('realmMajor'),
+  realmSub: document.getElementById('realmSub'),
+  tuViLabel: document.getElementById('tuViLabel'),
+  tuViFill: document.getElementById('tuViFill'),
+  tuViNums: document.getElementById('tuViNums'),
+  thoLabel: document.getElementById('thoLabel'),
+  thoFill: document.getElementById('thoFill'),
+  thoNums: document.getElementById('thoNums'),
+  linhThachVal: document.getElementById('linhThachVal'),
+  hoDaoDanVal: document.getElementById('hoDaoDanVal'),
+  statNgoTinh: document.getElementById('statNgoTinh'),
+  statCoDuyen: document.getElementById('statCoDuyen'),
+  statDaoTam: document.getElementById('statDaoTam'),
+  statTheChat: document.getElementById('statTheChat'),
+  statusLine: document.getElementById('statusLine'),
+  btnTuLuyen: document.getElementById('btnTuLuyen'),
+  btnDotPha: document.getElementById('btnDotPha'),
+  btnKhamPha: document.getElementById('btnKhamPha'),
+  journeyFill: document.getElementById('journeyFill'),
+  journeyPct: document.getElementById('journeyPct'),
+  roadmapRow: document.getElementById('roadmapRow'),
+  deathModal: document.getElementById('deathModal'),
+  deathTitle: document.getElementById('deathTitle'),
+  deathText: document.getElementById('deathText'),
+  deathSummary: document.getElementById('deathSummary'),
+  btnCancelReincarnate: document.getElementById('btnCancelReincarnate'),
+  kiepNanRow: document.getElementById('kiepNanRow'),
+  kiepNanVal: document.getElementById('kiepNanVal'),
+  totalExpVal: document.getElementById('totalExpVal'),
+  powerVal: document.getElementById('powerVal'),
+  danhVongVal: document.getElementById('danhVongVal'),
+  syncStatus: document.getElementById('syncStatus'),
+  playerIdVal: document.getElementById('playerIdVal'),
+  leaderboardModal: document.getElementById('leaderboardModal'),
+  lbSyncStatus: document.getElementById('lbSyncStatus'),
+  lbList: document.getElementById('lbList'),
+  statHP: document.getElementById('statHP'),
+  statATK: document.getElementById('statATK'),
+  statDEF: document.getElementById('statDEF'),
+  speedVal: document.getElementById('speedVal'),
+  inventoryModal: document.getElementById('inventoryModal'),
+  invSlots: document.getElementById('invSlots'),
+  invList: document.getElementById('invList'),
+  combatModal: document.getElementById('combatModal'),
+  combatMeName: document.getElementById('combatMeName'),
+  combatMeRealm: document.getElementById('combatMeRealm'),
+  combatMeHpFill: document.getElementById('combatMeHpFill'),
+  combatMeHpNums: document.getElementById('combatMeHpNums'),
+  combatOppName: document.getElementById('combatOppName'),
+  combatOppRealm: document.getElementById('combatOppRealm'),
+  combatOppHpFill: document.getElementById('combatOppHpFill'),
+  combatOppHpNums: document.getElementById('combatOppHpNums'),
+  combatResultBanner: document.getElementById('combatResultBanner'),
+  combatLog: document.getElementById('combatLog'),
+  btnCloseCombat: document.getElementById('btnCloseCombat')
+};
+
+function tierClass(realmIdx){
+  if(realmIdx >= 31) return 'tier-3';
+  if(realmIdx >= 11) return 'tier-2';
+  if(realmIdx >= 1) return 'tier-1';
+  return 'tier-0';
+}
+
+function buildRoadmap(){
+  el.roadmapRow.innerHTML = '';
+  MAJOR_REALMS.forEach((name, idx)=>{
+    const chip = document.createElement('span');
+    chip.className = 'rm-chip';
+    chip.textContent = (idx+1)+'. '+name;
+    chip.id = 'rmchip-'+idx;
+    el.roadmapRow.appendChild(chip);
+  });
+}
+
+function updateRoadmap(){
+  MAJOR_REALMS.forEach((name, idx)=>{
+    const chip = document.getElementById('rmchip-'+idx);
+    if(!chip) return;
+    chip.className = 'rm-chip' + (idx < state.realmIdx ? ' done' : (idx === state.realmIdx ? ' current' : ''));
+  });
+}
+
+function updateUI(){
+  if(!state) return;
+
+  el.charName.textContent = state.name;
+  el.charKiep.textContent = 'Kiếp thứ '+state.kiepSo+' · Ngày tu luyện thứ '+state.ngayTu;
+  el.realmMajor.textContent = MAJOR_REALMS[state.realmIdx];
+  el.realmSub.textContent = SUB_REALMS[state.subIdx]+' · Tầng '+state.tang+'/'+TANG_PER_SUB;
+
+  el.orbWrap.className = 'orb-wrap ' + tierClass(state.realmIdx);
+
+  const req = reqNow();
+  const pct = clamp((state.cultivation/req)*100, 0, 100);
+  el.tuViLabel.textContent = pct.toFixed(1)+'%';
+  el.tuViFill.style.width = pct+'%';
+  el.tuViFill.className = 'bar-fill' + (isAtBreakthroughGate() && pct>=99.9 ? ' gate-ready' : '');
+  el.tuViNums.textContent = fmt(state.cultivation)+' / '+fmt(req);
+
+  const thoPct = clamp((state.thoNguyen/state.thoNguyenMax)*100, 0, 100);
+  el.thoLabel.textContent = thoPct.toFixed(1)+'%';
+  el.thoFill.style.width = thoPct+'%';
+  el.thoNums.textContent = fmt(state.thoNguyen)+' / '+fmt(state.thoNguyenMax)+' năm';
+
+  el.linhThachVal.textContent = fmt(state.linhThach);
+  el.hoDaoDanVal.textContent = state.hoDaoDan;
+  el.totalExpVal.textContent = fmt(state.totalExpEarned || 0);
+  const combat = computeCombatStats(state);
+  el.statHP.textContent = fmt(combat.hp);
+  el.statATK.textContent = fmt(combat.atk);
+  el.statDEF.textContent = fmt(combat.def);
+  el.speedVal.textContent = fmt(computeTocDoTuLuyen(state)) + '/s';
+  el.powerVal.textContent = fmt(combat.combatPower);
+  el.danhVongVal.textContent = fmt(state.danhVong || 0);
+  el.playerIdVal.textContent = myPlayerId || '—';
+  if(kiepNanBuff > 0){
+    el.kiepNanRow.classList.remove('hidden');
+    el.kiepNanVal.textContent = '+'+Math.round(kiepNanBuff*100)+'%';
+  } else {
+    el.kiepNanRow.classList.add('hidden');
+  }
+
+  el.statNgoTinh.textContent = state.stats.ngoTinh;
+  el.statCoDuyen.textContent = state.stats.coDuyen;
+  el.statDaoTam.textContent = state.stats.daoTam;
+  el.statTheChat.textContent = state.stats.theChat;
+
+  const fi = flatIndex(state.realmIdx, state.subIdx, state.tang) + (state.cultivation/req);
+  const journeyPct = clamp((fi/TOTAL_FLAT)*100, 0, 100);
+  el.journeyFill.style.width = journeyPct+'%';
+  el.journeyPct.textContent = journeyPct.toFixed(2)+'%';
+
+  updateRoadmap();
+
+  const ready = isAtBreakthroughGate() && state.cultivation >= req - 0.001;
+  el.btnDotPha.classList.toggle('ready', ready && !state.isDead);
+  el.btnTuLuyen.disabled = state.isDead;
+  el.btnKhamPha.disabled = state.isDead;
+  el.btnDotPha.disabled = state.isDead;
+
+  if(state.isDead){
+    el.statusLine.innerHTML = 'Thọ nguyên đã tận, huyễn cảnh trước mắt dần nhạt nhòa...';
+  } else if(state.realmIdx >= MAJOR_REALMS.length-1 && isAtBreakthroughGate() && ready){
+    el.statusLine.innerHTML = '<b>'+state.name+'</b> đã chạm đến cực hạn của Đại Đạo — không còn cảnh giới nào cao hơn để vươn tới nữa.';
+  } else if(ready){
+    el.statusLine.innerHTML = 'Tu vi đã viên mãn tại đỉnh phong! Có thể bấm <b>Đột Phá Cảnh Giới</b> để xung kích lên <b>'+(MAJOR_REALMS[state.realmIdx+1]||'cực hạn')+'</b>.';
+  } else {
+    el.statusLine.innerHTML = 'Đang tu luyện tại <b>'+MAJOR_REALMS[state.realmIdx]+' - '+SUB_REALMS[state.subIdx]+' Tầng '+state.tang+'</b>. Tiếp tục tích lũy tu vi hoặc rời động phủ để tìm kỳ ngộ.';
+  }
+
+  if(state.thoNguyen <= 0 && !state.isDead){
+    state.isDead = true;
+  }
+  if(state.isDead && !deathModalShown){
+    deathModalShown = true;
+    openReincarnateModal(true);
+  }
+}
+
+/* ================= CLOUD SYNC (JSONBin.io) =================
+   LƯU Ý BẢO MẬT (đọc kỹ trước khi phát tán file này):
+   Khóa X-Master-Key bên dưới có toàn quyền đọc/ghi lên Bin này và bị nhúng thẳng vào mã nguồn
+   phía client — bất kỳ ai mở "View Page Source" hoặc DevTools trên file HTML này đều nhìn thấy
+   và có thể tự do đọc/ghi/xóa dữ liệu của mọi người chơi, kể cả xóa sạch cả bảng xếp hạng.
+   Đây KHÔNG phải lỗi trong đoạn mã dưới đây, mà là giới hạn cố hữu của việc dùng Master Key trong
+   một ứng dụng tĩnh chạy hoàn toàn phía client — chính JSONBin.io cũng khuyến cáo trong tài liệu
+   của họ rằng Master Key chỉ nên dùng ở backend; với ứng dụng JS lộ mã nguồn như thế này, họ
+   khuyên dùng "X-Access-Key" (khóa được giới hạn quyền, tạo trong mục Access Keys) thay cho
+   Master Key, hoặc tốt nhất là đặt một backend nhỏ (serverless function...) làm trung gian giữ
+   khóa bí mật thật sự. Phần tích hợp dưới đây vẫn dùng đúng khóa được cung cấp theo yêu cầu,
+   nhưng nếu định phát hành file này công khai, hãy cân nhắc thay Master Key bằng Access Key
+   giới hạn quyền (chỉ đọc + chỉ cập nhật, không xóa/không đổi quyền riêng tư) trước khi chia sẻ. */
+
+const JSONBIN_API_KEY = "$2a$10$GxWYKRP4h18Jqfy0NivGVufkdUfCApQGLYhaEMxs1S6bWwuYdlsZ.";
+const JSONBIN_BIN_ID = "6a74257dda38895dfec0108e";
+const JSONBIN_BASE = "https://api.jsonbin.io/v3/b/" + JSONBIN_BIN_ID;
+const SYNC_MIN_INTERVAL_MS = 5000; // chặn đồng bộ dồn dập, tránh chạm giới hạn request của JSONBin
+
+let myPlayerId = null;
+let cachedBinData = null;   // bản sao gần nhất của TOÀN BỘ bin (mọi người chơi) — dùng để merge an toàn
+let lastSyncAt = 0;
+let syncInFlight = false;
+let lbAutoTimer = null;
+
+function slugify(str){
+  const noDiacritics = (str||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d');
+  const slug = noDiacritics.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,16);
+  return slug || 'daohuu';
+}
+function genPlayerId(name){
+  return slugify(name) + '-' + Math.random().toString(36).slice(2,7);
+}
+
+function setSyncStatus(kind, extra){
+  if(!el.syncStatus) return;
+  el.syncStatus.classList.remove('syncing','ok','error');
+  if(kind==='syncing'){
+    el.syncStatus.classList.add('syncing');
+    el.syncStatus.textContent = 'Đang đồng bộ mây...';
+  } else if(kind==='ok'){
+    el.syncStatus.classList.add('ok');
+    const t = new Date();
+    const hh = String(t.getHours()).padStart(2,'0'), mm = String(t.getMinutes()).padStart(2,'0');
+    el.syncStatus.textContent = 'Đã đồng bộ lúc '+hh+':'+mm;
+  } else if(kind==='error'){
+    el.syncStatus.classList.add('error');
+    el.syncStatus.textContent = 'Lỗi đồng bộ mây'+(extra?(' ('+extra+')'):'');
+  } else {
+    el.syncStatus.textContent = 'Chưa đồng bộ';
+  }
+}
+
+/* Đọc TOÀN BỘ bin (tất cả người chơi). X-Bin-Meta:false để nhận thẳng JSON gốc, không bọc metadata. */
+async function jsonbinReadAll(){
+  const res = await fetch(JSONBIN_BASE + '/latest', {
+    method: 'GET',
+    headers: { 'X-Master-Key': JSONBIN_API_KEY, 'X-Bin-Meta': 'false' }
+  });
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  const data = await res.json();
+  const record = (data && typeof data==='object' && 'record' in data && 'metadata' in data) ? data.record : data;
+  if(!record || typeof record !== 'object' || Array.isArray(record)) return { players: {} };
+  if(!record.players || typeof record.players !== 'object') record.players = {};
+  return record;
+}
+
+/* Ghi đè TOÀN BỘ bin — luôn phải là bản đã merge đầy đủ dữ liệu mọi người chơi, không chỉ riêng mình,
+   nếu không sẽ xóa mất dữ liệu của những người chơi khác đang dùng chung Bin này. */
+async function jsonbinWriteAll(fullData, keepalive){
+  const res = await fetch(JSONBIN_BASE, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+    body: JSON.stringify(fullData),
+    keepalive: !!keepalive
+  });
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  return true;
+}
+
+function playerSnapshot(){
+  const combat = computeCombatStats(state);
+  return {
+    id: myPlayerId,
+    name: state.name,
+    realmIdx: state.realmIdx, subIdx: state.subIdx, tang: state.tang,
+    cultivation: state.cultivation,
+    totalExpEarned: state.totalExpEarned || 0,
+    linhThach: state.linhThach,
+    thoNguyen: state.thoNguyen, thoNguyenMax: state.thoNguyenMax,
+    hoDaoDan: state.hoDaoDan,
+    stats: { ngoTinh: state.stats.ngoTinh, coDuyen: state.stats.coDuyen, daoTam: state.stats.daoTam, theChat: state.stats.theChat },
+    kiepNanBuff: kiepNanBuff,
+    kiepSo: state.kiepSo,
+    danhVong: state.danhVong || 0,
+    pvpWins: state.pvpWins || 0,
+    pvpLosses: state.pvpLosses || 0,
+    inventory: state.inventory || {},
+    equipped: state.equipped || {weapon:null,armor:null,phapBao:null},
+    pillBonuses: state.pillBonuses || {atk:0,def:0,hp:0,tocDoTuLuyen:0},
+    pvpCooldowns: state.pvpCooldowns || {},
+    raidLog: state.raidLog || [],
+    hp: combat.hp, atk: combat.atk, def: combat.def, combatPower: combat.combatPower,
+    power: combat.combatPower, // giữ tương thích ngược với dữ liệu bản cũ từng dùng khóa "power"
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function restoreStateFromSnapshot(snap, name){
+  const s = freshState(name || snap.name);
+  s.realmIdx = snap.realmIdx||0; s.subIdx = snap.subIdx||0; s.tang = snap.tang||1;
+  s.cultivation = snap.cultivation||0;
+  s.totalExpEarned = snap.totalExpEarned||0;
+  s.linhThach = (typeof snap.linhThach==='number') ? snap.linhThach : 20;
+  s.thoNguyen = (typeof snap.thoNguyen==='number') ? snap.thoNguyen : s.thoNguyen;
+  s.thoNguyenMax = (typeof snap.thoNguyenMax==='number') ? snap.thoNguyenMax : s.thoNguyenMax;
+  s.hoDaoDan = snap.hoDaoDan||0;
+  if(snap.stats){
+    s.stats.ngoTinh = snap.stats.ngoTinh||10;
+    s.stats.coDuyen = snap.stats.coDuyen||10;
+    s.stats.daoTam = snap.stats.daoTam||10;
+    s.stats.theChat = snap.stats.theChat||10;
+  }
+  s.kiepSo = snap.kiepSo||1;
+  s.danhVong = snap.danhVong||0;
+  s.pvpWins = snap.pvpWins||0;
+  s.pvpLosses = snap.pvpLosses||0;
+  s.inventory = snap.inventory || {};
+  s.equipped = snap.equipped || {weapon:null,armor:null,phapBao:null};
+  s.pillBonuses = snap.pillBonuses || {atk:0,def:0,hp:0,tocDoTuLuyen:0};
+  s.pvpCooldowns = snap.pvpCooldowns || {};
+  s.raidLog = snap.raidLog || [];
+  return s;
+}
+
+/* Lưu trạng thái lên mây. Luôn merge với bản mới nhất trước khi ghi (đọc-sửa-ghi) để không đè mất
+   dữ liệu của người chơi khác — TRỪ lúc thoát trang (exit=true), khi đó dùng luôn bản cache gần nhất
+   để kịp gửi request trước khi tab đóng hẳn (không có thời gian chờ một vòng GET nữa). */
+async function syncSave(opts){
+  opts = opts || {};
+  if(!state || !myPlayerId) return;
+  if(opts.exit && !cachedBinData) return; // chưa từng tải bản đầy đủ -> không an toàn để ghi đè lúc thoát
+
+  const now = Date.now();
+  if(!opts.force && (now - lastSyncAt) < SYNC_MIN_INTERVAL_MS) return;
+  if(syncInFlight && !opts.exit) return;
+
+  syncInFlight = true;
+  if(!opts.exit) setSyncStatus('syncing');
+  try{
+    const all = opts.exit ? cachedBinData : await jsonbinReadAll();
+    all.players = all.players || {};
+    all.players[myPlayerId] = playerSnapshot();
+    cachedBinData = all;
+    await jsonbinWriteAll(all, opts.exit);
+    lastSyncAt = Date.now();
+    if(!opts.exit) setSyncStatus('ok');
+  }catch(err){
+    if(!opts.exit) setSyncStatus('error', err && err.message);
+  }finally{
+    syncInFlight = false;
+  }
+}
+
+async function fetchAllPlayers(){
+  const all = await jsonbinReadAll();
+  cachedBinData = all;
+  return all;
+}
+
+/* ---------- Bảng xếp hạng ---------- */
+function renderLeaderboard(all){
+  const players = Object.values(all.players||{});
+  if(players.length===0){
+    el.lbList.innerHTML = '';
+    const empty = document.createElement('div');
+    empty.className='lb-empty';
+    empty.textContent = 'Chưa có đạo hữu nào đồng bộ dữ liệu lên máy chủ.';
+    el.lbList.appendChild(empty);
+    return;
+  }
+  // Sắp xếp theo Cảnh Giới (flatIndex) trước, Tổng EXP làm tiêu chí phụ khi đồng cảnh giới
+  players.sort(function(a,b){
+    const fa = flatIndex(a.realmIdx||0, a.subIdx||0, a.tang||1);
+    const fb = flatIndex(b.realmIdx||0, b.subIdx||0, b.tang||1);
+    if(fb !== fa) return fb - fa;
+    return (b.totalExpEarned||0) - (a.totalExpEarned||0);
+  });
+
+  el.lbList.innerHTML = '';
+  players.slice(0,50).forEach(function(p, idx){
+    const row = document.createElement('div');
+    row.className = 'lb-row' + (p.id===myPlayerId ? ' me' : '');
+
+    const rank = document.createElement('div');
+    rank.className = 'lb-rank';
+    rank.textContent = '#'+(idx+1);
+
+    const info = document.createElement('div');
+    info.className = 'lb-info';
+    const nameEl = document.createElement('div');
+    nameEl.className = 'lb-name';
+    nameEl.textContent = (p.name||'Vô Danh') + (p.id===myPlayerId ? ' (Ngươi)' : '');
+    const realmEl = document.createElement('div');
+    realmEl.className = 'lb-realm';
+    const rIdx = clamp(p.realmIdx||0, 0, MAJOR_REALMS.length-1);
+    const sIdx = clamp(p.subIdx||0, 0, SUB_REALMS.length-1);
+    realmEl.textContent = MAJOR_REALMS[rIdx]+' - '+SUB_REALMS[sIdx]+' Tầng '+(p.tang||1);
+    info.appendChild(nameEl); info.appendChild(realmEl);
+
+    const stats = document.createElement('div');
+    stats.className = 'lb-stats';
+    const cp = (typeof p.combatPower==='number') ? p.combatPower : (p.power||0);
+    stats.innerHTML = 'Lực Chiến: '+fmt(cp)+'<br>Danh Vọng: '+fmt(p.danhVong||0);
+
+    row.appendChild(rank); row.appendChild(info); row.appendChild(stats);
+
+    if(p.id !== myPlayerId){
+      const btn = document.createElement('button');
+      btn.className = 'lb-fight-btn';
+      const gateOk = realmGateOk(state.realmIdx, p.realmIdx||0);
+      const cdRemain = pvpCooldownRemaining(p.id);
+      if(!gateOk){
+        btn.textContent = 'Chênh Cảnh Giới';
+        btn.disabled = true;
+        btn.classList.add('gated');
+      } else if(cdRemain > 0){
+        btn.textContent = 'Chờ '+Math.ceil(cdRemain/60000)+' phút';
+        btn.disabled = true;
+        btn.classList.add('gated');
+      } else {
+        btn.textContent = 'Tỉ Thí';
+        btn.addEventListener('click', function(){ tiThi(p.id, p.name); });
+      }
+      row.appendChild(btn);
+    }
+
+    el.lbList.appendChild(row);
+  });
+}
+
+async function loadLeaderboard(){
+  el.lbSyncStatus.classList.remove('ok','error');
+  el.lbSyncStatus.classList.add('syncing');
+  el.lbSyncStatus.textContent = 'Đang tải bảng xếp hạng...';
+  try{
+    const all = await fetchAllPlayers();
+    renderLeaderboard(all);
+    el.lbSyncStatus.classList.remove('syncing');
+    el.lbSyncStatus.classList.add('ok');
+    const t = new Date();
+    el.lbSyncStatus.textContent = 'Cập nhật lúc '+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0')+' · '+Object.keys(all.players||{}).length+' đạo hữu';
+  }catch(err){
+    el.lbSyncStatus.classList.remove('syncing');
+    el.lbSyncStatus.classList.add('error');
+    el.lbSyncStatus.textContent = 'Không thể tải bảng xếp hạng ('+(err&&err.message)+')';
+  }
+}
+
+function openLeaderboard(){
+  el.leaderboardModal.classList.remove('hidden');
+  loadLeaderboard();
+  if(lbAutoTimer) clearInterval(lbAutoTimer);
+  lbAutoTimer = setInterval(loadLeaderboard, 45000); // làm mới nhẹ nhàng trong lúc mở bảng, tránh dội API
+}
+function closeLeaderboard(){
+  el.leaderboardModal.classList.add('hidden');
+  if(lbAutoTimer){ clearInterval(lbAutoTimer); lbAutoTimer = null; }
+}
+
+/* ---------- Túi Đồ & Trang Bị ---------- */
+function rarityClass(rarity){ return 'rarity-'+(rarity||'common'); }
+function rarityLabel(rarity){
+  const map = {common:'Phàm Phẩm', uncommon:'Tinh Phẩm', rare:'Hiếm Có', epic:'Trân Quý', legendary:'Tuyệt Thế'};
+  return map[rarity] || 'Phàm Phẩm';
+}
+function itemStatSummary(it){
+  const parts = [];
+  if(it.atk) parts.push('ATK '+(it.atk>0?'+':'')+it.atk);
+  if(it.def) parts.push('DEF '+(it.def>0?'+':'')+it.def);
+  if(it.hp) parts.push('HP '+(it.hp>0?'+':'')+it.hp);
+  if(it.tocDoTuLuyen) parts.push('Tốc Độ +'+Math.round(it.tocDoTuLuyen*100)+'%');
+  return parts.length ? parts.join(', ') : 'Nguyên liệu sưu tầm';
+}
+function renderInventory(){
+  el.invSlots.innerHTML = '';
+  const slotLabels = { weapon:'Vũ Khí', armor:'Giáp', phapBao:'Pháp Bảo' };
+  ['weapon','armor','phapBao'].forEach(function(slot){
+    const box = document.createElement('div');
+    box.className = 'inv-slot';
+    const label = document.createElement('div'); label.className='slot-label'; label.textContent = slotLabels[slot].toUpperCase();
+    const itemId = state.equipped && state.equipped[slot];
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'slot-item' + (itemId ? '' : ' empty');
+    itemDiv.textContent = itemId && ITEM_DB[itemId] ? ITEM_DB[itemId].name : 'Trống';
+    const btn = document.createElement('button');
+    btn.textContent = 'Tháo';
+    btn.disabled = !itemId;
+    btn.addEventListener('click', function(){ unequipItem(slot); renderInventory(); });
+    box.appendChild(label); box.appendChild(itemDiv); box.appendChild(btn);
+    el.invSlots.appendChild(box);
+  });
+
+  el.invList.innerHTML = '';
+  const inv = state.inventory || {};
+  const ids = Object.keys(inv).filter(function(id){ return inv[id] > 0 && ITEM_DB[id]; });
+  if(ids.length === 0){
+    const empty = document.createElement('div'); empty.className = 'lb-empty'; empty.textContent = 'Túi trữ vật trống rỗng.';
+    el.invList.appendChild(empty);
+    return;
+  }
+  ids.forEach(function(itemId){
+    const it = ITEM_DB[itemId];
+    const row = document.createElement('div'); row.className = 'inv-item-row';
+    const dot = document.createElement('div'); dot.className = 'rarity-dot ' + rarityClass(it.rarity);
+    const info = document.createElement('div'); info.className = 'inv-item-info';
+    const nm = document.createElement('div'); nm.className = 'inv-item-name'; nm.textContent = it.name + ' x' + inv[itemId];
+    const meta = document.createElement('div'); meta.className = 'inv-item-meta';
+    meta.textContent = rarityLabel(it.rarity) + ' · ' + itemStatSummary(it);
+    info.appendChild(nm); info.appendChild(meta);
+    row.appendChild(dot); row.appendChild(info);
+
+    if(it.type==='weapon' || it.type==='armor' || it.type==='phapBao'){
+      const btn = document.createElement('button');
+      const isEquipped = state.equipped && state.equipped[it.type] === itemId;
+      btn.textContent = isEquipped ? 'Đã Trang Bị' : 'Trang Bị';
+      btn.disabled = isEquipped;
+      btn.addEventListener('click', function(){ equipItem(itemId); renderInventory(); });
+      row.appendChild(btn);
+    } else if(it.type === 'pill'){
+      const btn = document.createElement('button');
+      btn.textContent = 'Sử Dụng';
+      btn.addEventListener('click', function(){ consumePill(itemId); renderInventory(); });
+      row.appendChild(btn);
+    }
+    el.invList.appendChild(row);
+  });
+}
+function openInventory(){ renderInventory(); el.inventoryModal.classList.remove('hidden'); }
+function closeInventory(){ el.inventoryModal.classList.add('hidden'); }
+
+/* ---------- Tỉ Thí (PvP bất đồng bộ, cân bằng theo cảnh giới, có hoạt cảnh chiến đấu) ---------- */
+const PVP_REALM_GATE = 1; // chỉ được khiêu chiến người chênh tối đa 1 bậc đại cảnh giới (cả trên lẫn dưới)
+const PVP_PER_OPPONENT_COOLDOWN_MS = 8 * 60 * 1000; // 8 phút/đối thủ cụ thể — nằm trong khung 5-10 phút yêu cầu
+
+function realmGateOk(myRealmIdx, oppRealmIdx){
+  return Math.abs((myRealmIdx||0) - (oppRealmIdx||0)) <= PVP_REALM_GATE;
+}
+function pvpCooldownRemaining(opponentId){
+  if(!state || !state.pvpCooldowns) return 0;
+  const last = state.pvpCooldowns[opponentId] || 0;
+  return Math.max(0, PVP_PER_OPPONENT_COOLDOWN_MS - (Date.now()-last));
+}
+
+function sleep(ms){ return new Promise(function(resolve){ setTimeout(resolve, ms); }); }
+function addCombatLogLine(text, cls){
+  const line = document.createElement('div');
+  line.className = 'combat-log-line' + (cls ? (' '+cls) : '');
+  line.textContent = text;
+  el.combatLog.appendChild(line);
+  el.combatLog.scrollTop = el.combatLog.scrollHeight;
+}
+
+/* Hoạt cảnh chiến đấu thời gian thực: hai bên luân phiên ra chiêu, thanh HP cập nhật ngay từng vòng,
+   dùng async/await + setTimeout để tạo độ trễ giữa các lượt như yêu cầu. */
+async function runCombatUI(myFighter, oppFighter){
+  el.combatModal.classList.remove('hidden');
+  el.combatLog.innerHTML = '';
+  el.combatResultBanner.classList.add('hidden');
+  el.btnCloseCombat.classList.add('hidden');
+
+  el.combatMeName.textContent = myFighter.name;
+  el.combatMeRealm.textContent = myFighter.realmLabel;
+  el.combatOppName.textContent = oppFighter.name;
+  el.combatOppRealm.textContent = oppFighter.realmLabel;
+
+  let meHp = myFighter.hp, oppHp = oppFighter.hp;
+  const meMax = myFighter.hp, oppMax = oppFighter.hp;
+
+  function renderHp(){
+    el.combatMeHpFill.style.width = clamp((meHp/meMax)*100, 0, 100) + '%';
+    el.combatOppHpFill.style.width = clamp((oppHp/oppMax)*100, 0, 100) + '%';
+    el.combatMeHpNums.textContent = Math.max(0,Math.round(meHp)) + '/' + meMax;
+    el.combatOppHpNums.textContent = Math.max(0,Math.round(oppHp)) + '/' + oppMax;
+  }
+  renderHp();
+  addCombatLogLine('Trận tỉ thí bắt đầu!');
+  await sleep(500);
+
+  let round = 1;
+  const MAX_ROUNDS = 15;
+  while(meHp > 0 && oppHp > 0 && round <= MAX_ROUNDS){
+    const myDmg = Math.max(1, Math.round(myFighter.atk - oppFighter.def*0.5 + (Math.random()*0.3-0.15)*myFighter.atk));
+    oppHp -= myDmg;
+    addCombatLogLine('Vòng '+round+': '+myFighter.name+' tung chiêu, gây '+myDmg+' sát thương!', 'me');
+    renderHp();
+    await sleep(650);
+    if(oppHp <= 0) break;
+
+    const oppDmg = Math.max(1, Math.round(oppFighter.atk - myFighter.def*0.5 + (Math.random()*0.3-0.15)*oppFighter.atk));
+    meHp -= oppDmg;
+    addCombatLogLine('Vòng '+round+': '+oppFighter.name+' phản công, gây '+oppDmg+' sát thương!', 'enemy');
+    renderHp();
+    await sleep(650);
+
+    round++;
+  }
+
+  let win;
+  if(meHp <= 0 && oppHp <= 0){ win = myFighter.atk >= oppFighter.atk; }
+  else if(meHp <= 0){ win = false; }
+  else if(oppHp <= 0){ win = true; }
+  else { win = (meHp/meMax) >= (oppHp/oppMax); }
+
+  addCombatLogLine(win ? (myFighter.name+' đã đánh bại '+oppFighter.name+'!') : (myFighter.name+' đã bại trận trước '+oppFighter.name+'.'));
+  el.combatResultBanner.classList.remove('hidden');
+  el.combatResultBanner.classList.add(win ? 'win' : 'lose');
+  el.combatResultBanner.textContent = win ? 'THẮNG LỢI' : 'THẤT BẠI';
+  el.btnCloseCombat.classList.remove('hidden');
+
+  return { win: win };
+}
+
+async function tiThi(opponentId, opponentNameHint){
+  if(!state || state.isDead) return;
+
+  const cdRemain = pvpCooldownRemaining(opponentId);
+  if(cdRemain > 0){
+    const mins = Math.ceil(cdRemain/60000);
+    addLogNode({type:'neutral', title:'Cần Điều Tức', text:'Vừa tỉ thí với đạo hữu này không lâu, cần thêm khoảng '+mins+' phút nữa mới có thể khiêu chiến lại đúng người đó.', deltas:[]});
+    return;
+  }
+
+  closeLeaderboard();
+  addLogNode({type:'neutral', title:'Khởi Trình Tỉ Thí', text:'Đang lấy bản sao đạo ảnh mới nhất của '+(opponentNameHint||'đối thủ')+' từ Vân Đài Ký Sự để so tài...', deltas:[]});
+
+  let all, opp;
+  try{
+    all = await fetchAllPlayers(); // luôn lấy bản MỚI NHẤT của đối thủ theo đúng yêu cầu
+    opp = all.players && all.players[opponentId];
+  }catch(err){
+    addLogNode({type:'fail', title:'Tỉ Thí Gián Đoạn', text:'Kết nối tới Vân Đài Ký Sự bị gián đoạn giữa chừng, trận tỉ thí không thể diễn ra. Hãy thử lại sau.', deltas:[]});
+    return;
+  }
+  if(!opp){
+    addLogNode({type:'fail', title:'Không Tìm Thấy Đối Thủ', text:'Đạo ảnh của đối thủ đã mờ nhạt tan biến, có lẽ dữ liệu đã bị xóa khỏi Vân Đài Ký Sự. Trận tỉ thí buộc phải hủy bỏ.', deltas:[]});
+    return;
+  }
+  if(!realmGateOk(state.realmIdx, opp.realmIdx||0)){
+    addLogNode({type:'neutral', title:'Chênh Lệch Cảnh Giới', text:'Cảnh giới hai bên chênh lệch quá xa (chỉ được phép chênh tối đa 1 bậc đại cảnh giới), trận tỉ thí bị hủy để đảm bảo công bằng.', deltas:[]});
+    return;
+  }
+
+  const myCombat = computeCombatStats(state);
+  const oppCombat = computeCombatStats(opp);
+  const myFighter = { name: state.name, realmLabel: MAJOR_REALMS[state.realmIdx]+' - '+SUB_REALMS[state.subIdx]+' T'+state.tang, hp: myCombat.hp, atk: myCombat.atk, def: myCombat.def };
+  const oppRIdx = clamp(opp.realmIdx||0, 0, MAJOR_REALMS.length-1), oppSIdx = clamp(opp.subIdx||0, 0, SUB_REALMS.length-1);
+  const oppFighter = { name: opp.name||'Vô Danh', realmLabel: MAJOR_REALMS[oppRIdx]+' - '+SUB_REALMS[oppSIdx]+' T'+(opp.tang||1), hp: oppCombat.hp, atk: oppCombat.atk, def: oppCombat.def };
+
+  const result = await runCombatUI(myFighter, oppFighter);
+
+  state.pvpCooldowns = state.pvpCooldowns || {};
+  state.pvpCooldowns[opponentId] = Date.now();
+
+  const deltas = [];
+  let narrative;
+  if(result.win){
+    /* Thắng: cướp trực tiếp một phần EXP của đối thủ, ghi ngược "Nhật ký bị cướp" vào bản ghi của họ. */
+    const stealPct = 0.05 + Math.random()*0.05;
+    const stolen = Math.max(0, Math.floor((opp.totalExpEarned||0) * stealPct));
+    if(stolen > 0){
+      gainCultivation(state, stolen);
+      opp.totalExpEarned = Math.max(0, (opp.totalExpEarned||0) - stolen);
+      opp.cultivation = Math.min(opp.cultivation||0, opp.totalExpEarned);
+      opp.raidLog = (opp.raidLog||[]).slice(-9);
+      opp.raidLog.push({ by: state.name, amount: stolen, at: new Date().toISOString(), type:'exp' });
+    }
+    const danhVongGain = 10 + Math.round(Math.random()*15);
+    state.danhVong = (state.danhVong||0) + danhVongGain;
+    state.pvpWins = (state.pvpWins||0) + 1;
+    if(stolen > 0) deltas.push('Cướp được Tu Vi: +'+fmt(stolen));
+    deltas.push('Danh Vọng +'+danhVongGain);
+    narrative = state.name+' đã đánh bại '+oppFighter.name+' trong trận tỉ thí, thu hoạch được một phần tu vi và danh vọng từ đối phương.';
+    addLogNode({type:'success', title:'TỈ THÍ THẮNG LỢI', text:narrative, deltas:deltas});
+  } else {
+    /* Thua: trả giá bằng một phần tu vi hiện có và chút danh vọng, KHÔNG động tới dữ liệu đối thủ. */
+    const lossPct = 0.03 + Math.random()*0.04;
+    const loss = Math.floor(state.cultivation * lossPct);
+    state.cultivation = Math.max(0, state.cultivation - loss);
+    const danhVongLoss = Math.min(state.danhVong||0, 5+Math.round(Math.random()*10));
+    state.danhVong = Math.max(0, (state.danhVong||0) - danhVongLoss);
+    state.pvpLosses = (state.pvpLosses||0) + 1;
+    if(loss > 0) deltas.push('Tu Vi -'+fmt(loss));
+    if(danhVongLoss > 0) deltas.push('Danh Vọng -'+danhVongLoss);
+    narrative = state.name+' đã bại trận trước '+oppFighter.name+', phải trả giá bằng một phần tu vi và danh vọng.';
+    addLogNode({type:'fail', title:'TỈ THÍ THẤT BẠI', text:narrative, deltas:deltas});
+  }
+
+  updateUI();
+
+  /* Ghi ngược CẢ HAI bản ghi (của mình và của đối thủ) trong cùng một lần PUT — đây là điểm khác biệt
+     so với syncSave() thông thường (vốn chỉ đụng tới đúng bản ghi của mình). Vẫn theo mô hình đọc-sửa-ghi
+     đã tải ở all phía trên, nên không ảnh hưởng tới những người chơi khác không liên quan tới trận này. */
+  all.players[myPlayerId] = playerSnapshot();
+  all.players[opponentId] = opp;
+  cachedBinData = all;
+  try{
+    await jsonbinWriteAll(all);
+    lastSyncAt = Date.now();
+    setSyncStatus('ok');
+  }catch(err){
+    setSyncStatus('error', err && err.message);
+  }
+}
+
+
+/* Modal xác nhận dùng chung cho cả 2 luồng:
+   - forced = true  : thọ nguyên về 0, bắt buộc chuyển sinh, không có nút Hủy Bỏ.
+   - forced = false : người chơi chủ động bấm nút chuyển sinh khi vẫn còn sống, có thể Hủy Bỏ. */
+function openReincarnateModal(forced){
+  const totalEarned = (state.totalExpEarned || 0);
+  const carry = totalEarned * 0.10;
+  const nextPct = Math.round((kiepNanBuff + 0.15) * 100);
+
+  if(forced){
+    el.deathTitle.textContent = 'Thọ Nguyên Đã Tận';
+    el.deathText.textContent = state.name+' đã đi hết một kiếp tu hành. Dẫu đạo hạnh có cao thâm đến đâu, cũng khó lòng thoát khỏi quy luật sinh lão bệnh tử của trời đất. Nhưng luân hồi vốn không có điểm dừng — một kiếp mới đang chờ đợi phía trước.';
+    el.btnCancelReincarnate.classList.add('hidden');
+  } else {
+    el.deathTitle.textContent = 'Chủ Động Luân Hồi?';
+    el.deathText.textContent = state.name+' có chắc muốn tự tay dứt bỏ nhục thân hiện tại để bước vào vòng luân hồi? Cảnh giới và thọ nguyên của kiếp này sẽ mất đi vĩnh viễn, chỉ một phần đạo hạnh được lưu giữ lại cho kiếp sau.';
+    el.btnCancelReincarnate.classList.remove('hidden');
+  }
+
+  el.deathSummary.innerHTML =
+    'Cảnh giới hiện tại: <b style="color:var(--gold)">'+MAJOR_REALMS[state.realmIdx]+' - '+SUB_REALMS[state.subIdx]+' Tầng '+state.tang+'</b><br>'+
+    'Số kiếp đã trải qua: <b>'+state.kiepSo+'</b><br>'+
+    'Tổng EXP tích lũy kiếp này: <b>'+fmt(totalEarned)+'</b><br>'+
+    'EXP mang sang kiếp sau (10%): <b style="color:var(--teal-soft)">'+fmt(carry)+'</b><br>'+
+    'Buff Kiếp Nạn sau khi chuyển sinh: <b style="color:var(--gold)">+'+nextPct+'% tốc độ tu luyện</b> (cộng dồn vĩnh viễn)';
+
+  el.deathModal.classList.remove('hidden');
+}
+
+function closeReincarnateModal(){
+  el.deathModal.classList.add('hidden');
+}
+
+function reincarnate(){
+  const totalEarned = state.totalExpEarned || 0;
+  const carryOverExp = totalEarned * 0.10; // (1) quy đổi chính xác 10% tổng EXP tích lũy kiếp trước
+
+  lifeCount++;
+  eternalBonus += 1;      // thưởng nhỏ hiện có, giữ nguyên: +1 tứ đại thuộc tính khởi điểm mỗi kiếp
+  kiepNanBuff += 0.15;    // (3) Buff Kiếp Nạn +15% tốc độ tu luyện, cộng dồn vĩnh viễn mỗi lần chuyển sinh
+
+  const name = state.name;
+  state = freshState(name);           // (1) reset về Phàm Nhân - Sơ Kỳ - Tầng 1
+  state.cultivation = carryOverExp;   // (1) điểm khởi đầu = 10% EXP mang sang
+  state.totalExpEarned = carryOverExp; // ledger kiếp mới bắt đầu từ đúng phần được mang sang
+  // (4) thoNguyen/thoNguyenMax đã được freshState() cấp lại 100%/100% cho vòng đời mới
+
+  deathModalShown = false;
+  closeReincarnateModal();
+
+  checkTangUp(); // giải quyết ngay các tầng "nhảy cóc" nhờ EXP mang sang (dừng lại tự nhiên ở cổng đột phá đại cảnh giới)
+
+  updateUI();
+
+  const startDesc = (state.realmIdx>0 || state.subIdx>0 || state.tang>1)
+    ? ' Nhờ đó, kiếp này khởi đầu thẳng tại '+MAJOR_REALMS[state.realmIdx]+' - '+SUB_REALMS[state.subIdx]+' Tầng '+state.tang+' thay vì từ con số không.'
+    : '';
+  addLogNode({
+    type:'legend', title:'Luân Hồi Chuyển Thế',
+    text:'Một sinh mệnh mới bắt đầu giữa cõi hồng trần. Ký ức tiền kiếp hóa thành '+fmt(carryOverExp)+' điểm đạo hạnh tiềm ẩn nơi đáy linh hồn.'+startDesc,
+    deltas:['EXP khởi đầu: '+fmt(carryOverExp), 'Buff Kiếp Nạn: +'+Math.round(kiepNanBuff*100)+'% tốc độ tu luyện', 'Thọ Nguyên: 100%']
+  });
+  syncSave({force:true});
+}
+
+/* ================= INIT & EVENTS ================= */
+buildRoadmap();
+
+document.getElementById('btnTuLuyen').addEventListener('click', tuLuyen);
+document.getElementById('btnDotPha').addEventListener('click', dotPha);
+document.getElementById('btnKhamPha').addEventListener('click', khamPha);
+document.getElementById('btnReincarnate').addEventListener('click', reincarnate);
+document.getElementById('btnCancelReincarnate').addEventListener('click', closeReincarnateModal);
+
+document.getElementById('btnManualReincarnate').addEventListener('click', function(){
+  if(!state || state.isDead) return;
+  // Chặn khai thác: phải đột phá thành công ít nhất 1 lần mới đủ tư cách chủ động luân hồi,
+  // tránh vòng lặp "luân hồi cày buff" gần như miễn phí ngay từ vạch xuất phát.
+  if(state.realmIdx < 1){
+    addLogNode({type:'neutral', title:'Đạo Hạnh Còn Non Nớt', text:'Chưa từng trải qua một lần đột phá đại cảnh giới nào, luân hồi lúc này chỉ là uổng phí một kiếp người. Hãy đột phá ít nhất một lần trước đã.', deltas:[]});
+    updateUI();
+    return;
+  }
+  openReincarnateModal(false);
+});
+
+document.getElementById('btnLeaderboard').addEventListener('click', openLeaderboard);
+document.getElementById('btnCloseLeaderboard').addEventListener('click', closeLeaderboard);
+document.getElementById('btnLbRefresh').addEventListener('click', loadLeaderboard);
+document.getElementById('btnInventory').addEventListener('click', openInventory);
+document.getElementById('btnCloseInventory').addEventListener('click', closeInventory);
+document.getElementById('btnCloseCombat').addEventListener('click', function(){ el.combatModal.classList.add('hidden'); });
+
+/* Đồng bộ khi thoát game: fetch với keepalive:true để trình duyệt cố gắng gửi nốt request
+   ngay cả sau khi trang bắt đầu đóng. Đây là kỹ thuật tốt nhất hiện có cho tác vụ lúc unload,
+   nhưng KHÔNG được đảm bảo 100% (trình duyệt có thể vẫn hủy nếu tab đóng quá đột ngột). */
+window.addEventListener('pagehide', function(){
+  if(state && !state.isDead && myPlayerId){
+    syncSave({force:true, exit:true});
+  }
+});
+
+const startModal = document.getElementById('startModal');
+const nameInput = document.getElementById('nameInput');
+const resumeIdInput = document.getElementById('resumeIdInput');
+const btnStart = document.getElementById('btnStart');
+
+function beginLocalGame(freshName){
+  state = freshState(freshName);
+  myPlayerId = genPlayerId(freshName);
+  startModal.classList.add('hidden');
+  updateUI();
+  startIdleLoop();
+  addLogNode({
+    type:'neutral', title:'Khởi Đầu Đạo Đồ',
+    text: freshName+' chính thức bước những bước chân đầu tiên trên con đường tu tiên vạn dặm, mang theo một tia linh căn mờ nhạt và một trái tim khát khao trường sinh.',
+    deltas:['Mã Đạo Hữu: '+myPlayerId+' (hãy ghi nhớ để tiếp tục ở lần chơi sau)']
+  });
+  // Khởi động nền: đồng bộ nhân vật mới lên mây + làm ấm cache cho lần thoát trang sau này.
+  syncSave({force:true});
+}
+
+btnStart.addEventListener('click', async function(){
+  const typedName = nameInput.value.trim() || 'Vô Danh Đạo Nhân';
+  const resumeId = resumeIdInput.value.trim();
+
+  if(!resumeId){
+    beginLocalGame(typedName);
+    return;
+  }
+
+  btnStart.disabled = true;
+  const originalLabel = btnStart.textContent;
+  btnStart.textContent = 'Đang kết nối Vân Đài Ký Sự...';
+  try{
+    const all = await fetchAllPlayers();
+    const existing = all.players && all.players[resumeId];
+    if(existing){
+      myPlayerId = resumeId;
+      state = restoreStateFromSnapshot(existing, existing.name || typedName);
+      kiepNanBuff = (typeof existing.kiepNanBuff==='number') ? existing.kiepNanBuff : kiepNanBuff;
+      startModal.classList.add('hidden');
+      updateUI();
+      startIdleLoop();
+      addLogNode({
+        type:'legend', title:'Tiếp Tục Đạo Đồ',
+        text: state.name+' quay trở lại cõi hồng trần, tiếp nối hành trình còn dang dở từ '+MAJOR_REALMS[state.realmIdx]+' - '+SUB_REALMS[state.subIdx]+' Tầng '+state.tang+'.',
+        deltas:['Mã Đạo Hữu: '+myPlayerId]
+      });
+      if(state.raidLog && state.raidLog.length){
+        state.raidLog.forEach(function(entry){
+          addLogNode({
+            type:'fail', title:'Bị Cướp Trong Lúc Vắng Mặt',
+            text:'Trong lúc '+state.name+' vắng mặt, đạo hữu '+(entry.by||'một kẻ vô danh')+' đã tìm đến khiêu chiến và giành chiến thắng, cướp đi một phần tu vi.',
+            deltas:['Tu Vi bị cướp: -'+fmt(entry.amount||0)]
+          });
+        });
+        state.raidLog = []; // đã hiển thị xong, sẽ được đồng bộ xóa sạch ở lần lưu mây kế tiếp
+        updateUI();
+      }
+    } else {
+      addLogNodePreStart('Không Tìm Thấy Mã Đạo Hữu', 'Không tìm thấy dữ liệu khớp với mã "'+resumeId+'" trên Vân Đài Ký Sự. Một đạo đồ hoàn toàn mới sẽ được bắt đầu thay thế.');
+      beginLocalGame(typedName);
+    }
+  }catch(err){
+    addLogNodePreStart('Không Thể Kết Nối Vân Đài', 'Không thể kết nối tới máy chủ dữ liệu lúc này, đạo đồ sẽ bắt đầu ở chế độ cục bộ. Ngươi vẫn có thể chơi bình thường và thử đồng bộ lại sau.');
+    beginLocalGame(typedName);
+  }finally{
+    btnStart.disabled = false;
+    btnStart.textContent = originalLabel;
+  }
+});
+
+/* addLogNode cần state đã tồn tại (dùng state.ngayTu) — hàm phụ này cho phép ghi log AN TOÀN
+   ngay cả khi được gọi trước khi state khởi tạo xong (ví dụ: báo lỗi tra cứu Mã Đạo Hữu). */
+function addLogNodePreStart(title, text){
+  if(state){ addLogNode({type:'neutral', title:title, text:text, deltas:[]}); return; }
+  const card = document.createElement('div');
+  card.className = 'log-entry log-neutral';
+  const h = document.createElement('div'); h.className='log-title'; h.textContent = title;
+  const p = document.createElement('div'); p.className='log-text'; p.textContent = text;
+  card.appendChild(h); card.appendChild(p);
+  logContainer.insertBefore(card, logContainer.firstChild);
+}
+
+nameInput.addEventListener('keydown', function(e){
+  if(e.key === 'Enter') btnStart.click();
+});
+resumeIdInput.addEventListener('keydown', function(e){
+  if(e.key === 'Enter') btnStart.click();
+});
 
 })();
 </script>
-
 </body>
 </html>
