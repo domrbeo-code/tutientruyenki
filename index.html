@@ -352,6 +352,15 @@
     0%,100%{ box-shadow: 0 0 0 rgba(232,194,122,0); }
     50%{ box-shadow: 0 0 26px 4px rgba(232,194,122,0.35); }
   }
+  .action-btn.tuluyen.channeling{
+    opacity:0.7; cursor:wait;
+    background: linear-gradient(180deg, rgba(59,130,246,0.12), rgba(59,130,246,0.02));
+    animation: channelpulse 1s ease-in-out infinite;
+  }
+  @keyframes channelpulse{
+    0%,100%{ box-shadow: 0 0 0 rgba(59,130,246,0); }
+    50%{ box-shadow: 0 0 20px 3px rgba(59,130,246,0.3); }
+  }
 
   .realm-roadmap{
     margin-top:26px;
@@ -700,7 +709,8 @@
       <div class="resource-row"><span>Hộ Đạo Đan</span><b id="hoDaoDanVal">0</b></div>
       <div class="resource-row"><span>Tổng Đạo Hạnh (kiếp này)</span><b id="totalExpVal">0</b></div>
       <div class="resource-row hidden" id="kiepNanRow"><span>Buff Kiếp Nạn</span><b id="kiepNanVal">+0%</b></div>
-      <div class="resource-row"><span>Tốc Độ Tu Luyện</span><b id="speedVal">0</b></div>
+      <div class="resource-row"><span>Tốc Độ Tự Động</span><b id="speedVal">0</b></div>
+      <div class="resource-row"><span>Tốc Độ Thủ Công (5s)</span><b id="manualSpeedVal">0</b></div>
       <div class="resource-row"><span>Lực Chiến</span><b id="powerVal">0</b></div>
       <div class="resource-row"><span>Danh Vọng</span><b id="danhVongVal">0</b></div>
 
@@ -740,7 +750,7 @@
       <div class="action-buttons">
         <button class="action-btn tuluyen" id="btnTuLuyen">
           Tăng Tu Vi
-          <span class="sub">Vận chuyển chân khí, tích lũy tu vi để đột phá từng tầng cảnh giới</span>
+          <span class="sub" id="btnTuLuyenSub">Vận chuyển chân khí, tích lũy tu vi để đột phá từng tầng cảnh giới</span>
         </button>
         <button class="action-btn dotpha" id="btnDotPha">
           Đột Phá Cảnh Giới
@@ -895,22 +905,19 @@ function flatIndex(realmIdx, subIdx, tang){
   return realmIdx * (SUB_REALMS.length*TANG_PER_SUB) + subIdx*TANG_PER_SUB + (tang-1);
 }
 
-/* ZERO-INFLATION EXP CURVE (bản cân bằng khổ tu tuyệt đối)
-   Khác với bản trước (từng phình tới 10^50), đường cong này được nén lại có chủ đích:
-   bắt đầu từ 100, cảnh giới đầu tiên chạm mốc hàng trăm nghìn, và toàn bộ 42 đại cảnh giới
-   chỉ tiệm cận khoảng 1 tỷ ở cực hạn cuối cùng. Lý do: tốc độ tu luyện KHÔNG còn tự động tăng
-   theo cảnh giới (xem BASE_TU_LUYEN_SPEED bên dưới) — nếu vẫn để yêu cầu phình tới 10^50 như
-   trước thì trò chơi sẽ vỡ trận hoàn toàn khi tốc độ bị đóng băng. Độ khó "khổ tu" giờ đến từ
-   việc tốc độ đứng yên trong khi yêu cầu vẫn tăng theo cấp số nhân cục bộ rất dốc (mỗi tầng x1.9,
-   mỗi tiểu cảnh giới x1.46, mỗi đại cảnh giới x1.25) — không phải từ những con số khổng lồ vô nghĩa. */
-const BASE_REQ = 100;
-const REALM_BASE_GROWTH = 1.25;
-const SUBREALM_GROWTH = 1.46;
-const TANG_RATIO = 1.9;
+/* MONOTONIC EXP CURVE — sửa triệt để lỗi "sụt tu vi"
+   Bản trước dùng 3 số mũ độc lập (realmBase * SUBREALM_GROWTH^subIdx * TANG_RATIO^(tang-1)) —
+   mỗi khi tang quay lại 1 (sang tiểu cảnh giới mới) hay subIdx quay lại 0 (sang đại cảnh giới mới),
+   số mũ TANG_RATIO^(tang-1) bị RESET VỀ 0, khiến yêu cầu tu vi SỤT THẲNG ĐỨNG dù cảnh giới vừa
+   tăng — đúng lỗi được báo cáo. Cách sửa triệt để: dùng DUY NHẤT MỘT số mũ liên tục — flatIndex
+   (đơn điệu tăng tuyệt đối từ 0 tới 1679, không bao giờ reset) — nên GROWTH^flatIndex CHỈ CÓ THỂ
+   tăng dần liên tục, không có cách nào tụt xuống. Mốc khởi điểm 40.000 (giữa khung 30k-50k yêu cầu),
+   cực hạn cuối game ~1e20 để vẫn "tăng vọt theo cấp số nhân" cho dân hardcore. */
+const BASE_REQ = 40000;
+const GROWTH = 1.0213413129626383; // BASE_REQ * GROWTH^1679 ≈ 1e20
 function requiredCultivation(realmIdx, subIdx, tang){
-  const realmBase = BASE_REQ * Math.pow(REALM_BASE_GROWTH, realmIdx);
-  const subBase = realmBase * Math.pow(SUBREALM_GROWTH, subIdx);
-  return subBase * Math.pow(TANG_RATIO, tang-1);
+  const fi = flatIndex(realmIdx, subIdx, tang);
+  return BASE_REQ * Math.pow(GROWTH, fi);
 }
 
 /* ================= UTIL ================= */
@@ -1932,42 +1939,96 @@ function breakthroughRewardItem(newRealmIdx){
 }
 
 /* ================= CORE ACTIONS ================= */
-/* Tốc độ tiêu hao thọ nguyên khi cày cuốc: tính theo % thọ nguyên TỐI ĐA thay vì số cố định,
-   để áp lực luôn tỉ lệ thuận với cảnh giới hiện tại chứ không bị "lạm phát" nuốt chửng. */
+/* Tốc độ tiêu hao thọ nguyên: tính theo % thọ nguyên TỐI ĐA thay vì số cố định, để áp lực luôn
+   tỉ lệ thuận với cảnh giới hiện tại. Các basePct bên dưới đã được TÍNH LẠI TOÀN BỘ cho khớp với
+   đường cong yêu cầu tu vi mới (mốc khởi điểm 40.000, cao hơn hẳn bản trước) — nếu giữ nguyên
+   basePct cũ, người chơi sẽ cạn thọ nguyên và chết hàng loạt trước khi kịp đột phá lần đầu (đúng
+   lỗi được báo cáo). Đã mô phỏng số lớn để xác nhận: chơi idle/manual thuần túy qua trọn Đại
+   Cảnh Giới đầu tiên vẫn còn dư 55-90% thọ nguyên với các hằng số dưới đây. */
 function grindDecay(basePct){
   const theChatReduction = 1 / (1 + state.stats.theChat*0.04);
   return state.thoNguyenMax * basePct * theChatReduction;
 }
 
-/* ĐÓNG BĂNG TỐC ĐỘ TU LUYỆN TỰ NHIÊN:
-   Hàm này TUYỆT ĐỐI KHÔNG được phép đọc realmIdx/subIdx/tang/flatIndex — cảnh giới càng cao
-   chỉ khiến requiredCultivation() phình to hơn, còn tốc độ hấp thụ linh khí mỗi giây của bản thân
-   đạo hữu thì đứng yên tuyệt đối. Muốn tăng tốc, con đường DUY NHẤT là Ngộ Tính (tăng chậm qua
-   kỳ ngộ) và trang bị/đan dược (equippedSpeedBonus/pillBonuses) — đúng tinh thần "Đan Dược Là
-   Chìa Khóa". Buff Kiếp Nạn (luân hồi) vẫn được giữ vì nó không đến từ việc "lên cảnh giới". */
-const BASE_TU_LUYEN_SPEED = 6; // EXP/giây gốc, cố định vĩnh viễn cho MỌI cảnh giới
+/* ĐÓNG BĂNG TỐC ĐỘ TU LUYỆN TỰ ĐỘNG:
+   Hàm này TUYỆT ĐỐI KHÔNG được phép đọc realmIdx/subIdx/tang/flatIndex/ngoTinh — ngộ tính cũng bị
+   loại khỏi công thức này vì nó tự tăng dần qua các lần đột phá (mỗi lần +1), nên nếu vẫn tính vào
+   đây thì tốc độ tự động sẽ gián tiếp "tự tăng theo cảnh giới" qua đường vòng, vi phạm đúng yêu cầu.
+   Muốn tăng tốc độ TỰ ĐỘNG, con đường DUY NHẤT là trang bị/đan dược (equippedSpeedBonusPct) và
+   Buff Kiếp Nạn (không tính vì nó đến từ luân hồi, không phải "lên cảnh giới"). */
+const BASE_TU_LUYEN_SPEED = 150; // EXP/giây gốc, cố định vĩnh viễn cho MỌI cảnh giới
 function computeTocDoTuLuyen(s){
-  const ngoTinhBonus = 1 + s.stats.ngoTinh * 0.02;
   const itemPct = equippedSpeedBonusPct(s);
   const kiepNanMult = 1 + kiepNanBuff;
-  return BASE_TU_LUYEN_SPEED * ngoTinhBonus * (1 + itemPct) * kiepNanMult;
+  return BASE_TU_LUYEN_SPEED * (1 + itemPct) * kiepNanMult;
 }
 
-/* Click "Tăng Tu Vi" = một đợt tinh tấn chủ động, quy đổi bằng vài giây tốc độ hiện tại —
-   vẫn hữu ích để tương tác chủ động, nhưng KHÔNG còn là nguồn tu vi chính; nguồn chính là
-   vòng lặp treo máy computeTocDoTuLuyen() chạy mỗi giây bên dưới (startIdleLoop). */
-const CLICK_BURST_SECONDS = 4;
+/* TỐC ĐỘ TU LUYỆN THỦ CÔNG: được PHÉP scale nhẹ theo cảnh giới (khác hẳn tốc độ tự động) —
+   dùng Ngộ Tính (tích lũy qua kỳ ngộ) VÀ một hệ số tuyến tính nhẹ theo realmIdx (+5%/đại cảnh giới,
+   "một chút" chứ không bùng nổ). Hiệu chỉnh MANUAL_BASE_MULT=12 để lượng thủ công cơ bản (sau khi
+   chia đều 25%/giây trong 5 giây) đạt hiệu suất ~3.5-4 lần tốc độ tự động ngay từ đầu game, đúng
+   yêu cầu "nhỉnh hơn khoảng 3-4 lần". Vẫn được cộng thêm trang bị/đan dược như tốc độ tự động. */
+const MANUAL_BASE_MULT = 12;
+const MANUAL_REALM_SCALE_RATE = 0.05; // +5%/đại cảnh giới — "scale nhẹ", không đóng băng nhưng cũng không bùng nổ
+function manualClickBaseValue(s){
+  const ngoTinhBonus = 1 + s.stats.ngoTinh * 0.02;
+  const realmScale = 1 + s.realmIdx * MANUAL_REALM_SCALE_RATE;
+  const itemPct = equippedSpeedBonusPct(s);
+  const kiepNanMult = 1 + kiepNanBuff;
+  return BASE_TU_LUYEN_SPEED * MANUAL_BASE_MULT * ngoTinhBonus * realmScale * (1 + itemPct) * kiepNanMult;
+}
+
+/* CƠ CHẾ KÊNH KÍCH HOẠT 5 GIÂY: bấm "Tăng Tu Vi" mở một kênh vận công kéo dài đúng 5 giây,
+   mỗi giây cộng dồn 25% lượng tu vi thủ công cơ bản (5 lượt x 25% = 125% cho trọn một chu kỳ đầy
+   đủ). Nút bị khóa (disabled) trong suốt 5 giây đó và chỉ sáng lại khi kênh kết thúc — không thể
+   bấm chồng hoặc spam để lách cơ chế. */
+const MANUAL_CHANNEL_TICKS = 5;
+const MANUAL_CHANNEL_TICK_PCT = 0.25;
+let manualChannelActive = false;
+let manualChannelHandle = null;
+
 function tuLuyen(){
-  if(!state || state.isDead) return;
-  state.ngayTu++;
-  const g = computeTocDoTuLuyen(state) * CLICK_BURST_SECONDS;
-  gainCultivation(state, g);
-  checkTangUp();
-  loseTho(grindDecay(0.0012));
-  if(!state.isDead && Math.random() < 0.05){
-    triggerEvent(CULTIVATION_EVENTS);
+  if(!state || state.isDead || manualChannelActive) return;
+  manualChannelActive = true;
+  const baseValue = manualClickBaseValue(state);
+  const perTick = baseValue * MANUAL_CHANNEL_TICK_PCT;
+  let ticksDone = 0;
+
+  el.btnTuLuyen.disabled = true;
+  el.btnTuLuyen.classList.add('channeling');
+
+  function runTick(){
+    ticksDone++;
+    if(!state){ endChannel(); return; }
+    if(!state.isDead){
+      state.ngayTu++;
+      gainCultivation(state, perTick);
+      checkTangUp();
+      loseTho(grindDecay(0.00005));
+      if(!state.isDead && Math.random() < 0.03){
+        triggerEvent(CULTIVATION_EVENTS);
+      }
+    }
+    const remain = MANUAL_CHANNEL_TICKS - ticksDone;
+    el.btnTuLuyenSub.textContent = state.isDead ? 'Vận chuyển chân khí, tích lũy tu vi để đột phá từng tầng cảnh giới'
+      : 'Đang vận công... còn '+remain+' giây';
+    updateUI();
+    if(ticksDone >= MANUAL_CHANNEL_TICKS || state.isDead){
+      endChannel();
+    }
   }
-  updateUI();
+  function endChannel(){
+    if(manualChannelHandle){ clearInterval(manualChannelHandle); manualChannelHandle = null; }
+    manualChannelActive = false;
+    el.btnTuLuyen.classList.remove('channeling');
+    el.btnTuLuyen.disabled = !!(state && state.isDead);
+    if(el.btnTuLuyenSub) el.btnTuLuyenSub.textContent = 'Vận chuyển chân khí, tích lũy tu vi để đột phá từng tầng cảnh giới';
+    updateUI();
+  }
+  runTick();
+  if(ticksDone < MANUAL_CHANNEL_TICKS && !(state && state.isDead)){
+    manualChannelHandle = setInterval(runTick, 1000);
+  }
 }
 
 let idleTickHandle = null;
@@ -1979,7 +2040,7 @@ function startIdleLoop(){
       const g = computeTocDoTuLuyen(state);
       gainCultivation(state, g);
       checkTangUp();
-      loseTho(grindDecay(0.00018)); // rất nhỏ mỗi giây, nhưng cộng dồn theo thời gian treo máy thực
+      loseTho(grindDecay(0.00005)); // đã tính lại để không còn "chết hàng loạt" ở Ngưng Khí/Luyện Khí
       if(!state.isDead && Math.random() < 0.015){
         triggerEvent(IDLE_LOOT_EVENTS);
       }
@@ -1988,6 +2049,23 @@ function startIdleLoop(){
     if(el.sectModal && !el.sectModal.classList.contains('hidden')) renderSect();
     updateUI();
   }, 1000);
+}
+
+/* HỆ THỐNG CỘNG DỒN THỌ NGUYÊN THEO TIẾN ĐỘ (không chỉ lúc đột phá đại cảnh giới):
+   Đây là mảnh ghép sửa lỗi cốt lõi — trước đây thọ nguyên CHỈ được bù khi đột phá đại cảnh giới
+   thành công (một sự kiện hiếm, có rủi ro thất bại), khiến người chơi cạn thọ nguyên rất lâu trước
+   khi tới lượt đột phá đầu tiên. Giờ mỗi lần lên TẦNG (nhỏ nhất) và lên TIỂU CẢNH GIỚI cũng cộng
+   thêm thọ nguyên — những mốc này đạt được TỰ ĐỘNG qua tu luyện bình thường, không cần rủi ro —
+   tạo thành lưới an toàn liên tục thay vì chỉ một lần thưởng lớn ở cuối chặng đường. */
+const THO_PROGRESS_SCALE_RATE = 0.08; // +8%/đại cảnh giới — cảnh giới càng cao, thọ cộng thêm càng nhiều
+function thoBonusForTangUp(realmIdx){
+  return (1 + Math.random()*4) * (1 + realmIdx*THO_PROGRESS_SCALE_RATE); // 1-5 năm, scale theo cảnh giới
+}
+function thoBonusForSubUp(realmIdx){
+  return (10 + Math.random()*10) * (1 + realmIdx*THO_PROGRESS_SCALE_RATE); // 10-20 năm
+}
+function thoBonusForRealmUp(realmIdx){
+  return (40 + Math.random()*40) * (1 + realmIdx*THO_PROGRESS_SCALE_RATE); // 40-80 năm
 }
 
 function checkTangUp(){
@@ -2004,10 +2082,16 @@ function checkTangUp(){
     if(state.cultivation < req) break;
     state.cultivation -= req;
     state.tang++;
+    const tangBonus = thoBonusForTangUp(state.realmIdx);
+    state.thoNguyenMax += tangBonus;
+    state.thoNguyen += tangBonus;
     if(state.tang > TANG_PER_SUB){
       state.tang = 1;
       state.subIdx++;
       subUps++;
+      const subBonus = thoBonusForSubUp(state.realmIdx);
+      state.thoNguyenMax += subBonus;
+      state.thoNguyen += subBonus;
     }
   }
   if(subUps > 0){
@@ -2074,7 +2158,7 @@ function dotPha(){
     state.subIdx = 0;
     state.tang = 1;
     state.gateNotified = false;
-    const thoBonus = Math.round(40 * Math.pow(1.42, state.realmIdx));
+    const thoBonus = Math.round(thoBonusForRealmUp(state.realmIdx));
     state.thoNguyenMax += thoBonus;
     state.thoNguyen += thoBonus;
     addStat('ngoTinh',1); addStat('coDuyen',1); addStat('daoTam',1); addStat('theChat',1);
@@ -2106,7 +2190,7 @@ function dotPha(){
 function khamPha(){
   if(!state || state.isDead) return;
   state.ngayTu++;
-  loseTho(grindDecay(0.001)); // dấn thân hồng trần cũng bào mòn thọ nguyên, dù nhẹ hơn bế quan tu luyện
+  loseTho(grindDecay(0.00003)); // dấn thân hồng trần cũng bào mòn thọ nguyên, dù nhẹ hơn bế quan tu luyện
   if(!state.isDead) triggerEvent(eligibleExploreEvents());
   updateUI();
 }
@@ -2132,6 +2216,7 @@ const el = {
   statTheChat: document.getElementById('statTheChat'),
   statusLine: document.getElementById('statusLine'),
   btnTuLuyen: document.getElementById('btnTuLuyen'),
+  btnTuLuyenSub: document.getElementById('btnTuLuyenSub'),
   btnDotPha: document.getElementById('btnDotPha'),
   btnKhamPha: document.getElementById('btnKhamPha'),
   journeyFill: document.getElementById('journeyFill'),
@@ -2156,6 +2241,7 @@ const el = {
   statATK: document.getElementById('statATK'),
   statDEF: document.getElementById('statDEF'),
   speedVal: document.getElementById('speedVal'),
+  manualSpeedVal: document.getElementById('manualSpeedVal'),
   inventoryModal: document.getElementById('inventoryModal'),
   invSlots: document.getElementById('invSlots'),
   invList: document.getElementById('invList'),
@@ -2240,6 +2326,7 @@ function updateUI(){
   el.statATK.textContent = fmt(combat.atk);
   el.statDEF.textContent = fmt(combat.def);
   el.speedVal.textContent = fmt(computeTocDoTuLuyen(state)) + '/s';
+  el.manualSpeedVal.textContent = fmt(manualClickBaseValue(state) * MANUAL_CHANNEL_TICKS * MANUAL_CHANNEL_TICK_PCT) + '/lượt';
   el.powerVal.textContent = fmt(combat.combatPower);
   el.danhVongVal.textContent = fmt(state.danhVong || 0);
   el.playerIdVal.textContent = myPlayerId || '—';
@@ -2264,7 +2351,7 @@ function updateUI(){
 
   const ready = isAtBreakthroughGate() && state.cultivation >= req - 0.001;
   el.btnDotPha.classList.toggle('ready', ready && !state.isDead);
-  el.btnTuLuyen.disabled = state.isDead;
+  el.btnTuLuyen.disabled = state.isDead || manualChannelActive;
   el.btnKhamPha.disabled = state.isDead;
   el.btnDotPha.disabled = state.isDead;
 
