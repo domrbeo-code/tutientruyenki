@@ -476,6 +476,14 @@
     margin-top:16px; border-left:3px solid var(--gold);
     padding:14px 16px;
   }
+  .sect-btn{
+    margin-top:16px; border-left:3px solid #c084fc;
+    padding:14px 16px;
+  }
+  .sect-btn:disabled{
+    opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none;
+  }
+  .sect-btn:disabled:hover{ transform:none; border-color: rgba(192,132,252,0.3); box-shadow:none; }
 
   .sync-status{
     margin-top:14px; font-size:10.5px; color:var(--text-faint);
@@ -587,6 +595,47 @@
   .combat-result-banner.win{ color:var(--success); background: rgba(79,219,160,0.08); }
   .combat-result-banner.lose{ color:var(--danger); background: rgba(242,131,122,0.08); }
 
+  /* ---------- Sect (Tông Môn) modal ---------- */
+  .sect-summary{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+    background: rgba(192,132,252,0.06); border:1px solid rgba(192,132,252,0.2);
+    border-radius:12px; padding:12px 14px; margin-bottom:14px;
+  }
+  .sect-summary .sect-stat{ font-size:12px; color:var(--text-dim); }
+  .sect-summary .sect-stat b{ color:#c084fc; font-family:var(--font-display); font-size:15px; }
+  .sect-recruit-btn{
+    font-size:12.5px; padding:9px 16px; border-radius:10px;
+    background: rgba(192,132,252,0.12); border:1px solid rgba(192,132,252,0.4);
+    color:#e0c3ff; cursor:pointer; font-weight:600;
+  }
+  .sect-recruit-btn:hover{ background: rgba(192,132,252,0.22); }
+  .sect-recruit-btn:disabled{ opacity:0.35; cursor:not-allowed; }
+  .disciple-list{ display:flex; flex-direction:column; gap:10px; max-height:48vh; overflow-y:auto; }
+  .disciple-card{
+    background: rgba(255,255,255,0.03); border:1px solid rgba(122,224,205,0.10);
+    border-radius:12px; padding:12px 14px;
+  }
+  .disciple-head{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
+  .disciple-name-row{ display:flex; align-items:center; gap:8px; }
+  .disciple-name{ font-size:13.5px; font-weight:700; color:var(--text-main); }
+  .quality-badge{ font-size:10px; padding:2px 8px; border-radius:20px; font-weight:600; letter-spacing:0.3px; }
+  .quality-pham{ background:rgba(143,168,179,0.15); color:#8fa8b3; }
+  .quality-hoang{ background:rgba(79,219,160,0.15); color:#4fdba0; }
+  .quality-dia{ background:rgba(96,165,250,0.15); color:#60a5fa; }
+  .quality-thien{ background:rgba(232,194,122,0.18); color:var(--gold); }
+  .disciple-sub{ font-size:11px; color:var(--text-faint); }
+  .disciple-bar-track{ height:7px; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid rgba(122,224,205,0.1); overflow:hidden; margin:6px 0; }
+  .disciple-bar-fill{ height:100%; background: linear-gradient(90deg,#c084fc,#e0c3ff); }
+  .disciple-actions{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .disc-action-btn{
+    font-size:10.5px; padding:5px 10px; border-radius:7px; cursor:pointer;
+    background: rgba(255,255,255,0.04); border:1px solid rgba(122,224,205,0.15);
+    color: var(--text-dim);
+  }
+  .disc-action-btn:hover{ background: rgba(45,212,191,0.1); color:var(--teal-soft); }
+  .disc-action-btn.task-active{ background: rgba(232,194,122,0.08); border-color: rgba(232,194,122,0.3); color: var(--gold); cursor:default; }
+  .disc-empty{ text-align:center; color:var(--text-faint); font-size:12.5px; padding:16px 0; }
+
   .hidden{ display:none !important; }
 
   @media (prefers-reduced-motion: reduce){
@@ -665,6 +714,11 @@
       <button class="action-btn inventory-btn" id="btnInventory">
         Túi Đồ &amp; Trang Bị
         <span class="sub">Trang bị vũ khí/giáp/pháp bảo, dùng đan dược để tăng tốc tu luyện vĩnh viễn</span>
+      </button>
+
+      <button class="action-btn sect-btn" id="btnSect">
+        Tông Môn &amp; Chiêu Mộ Đệ Tử
+        <span class="sub" id="sectBtnSub">Mở khóa tại cảnh giới Kim Đan / Nguyên Anh trở lên</span>
       </button>
 
       <button class="action-btn leaderboard-btn" id="btnLeaderboard">
@@ -793,6 +847,33 @@
   </div>
 </div>
 
+<!-- SECT MODAL -->
+<div class="modal-overlay hidden" id="sectModal">
+  <div class="modal-box wide">
+    <h2>Tông Môn</h2>
+    <div class="sect-summary">
+      <div class="sect-stat">Đệ Tử: <b id="sectDiscCount">0</b></div>
+      <div class="sect-stat">Tổng Lực Chiến Tông Môn: <b id="sectTotalPower">0</b></div>
+      <button class="sect-recruit-btn" id="btnRecruit">Chiêu Mộ Đệ Tử (— Linh Thạch)</button>
+    </div>
+    <div class="disciple-list" id="discipleList"><div class="disc-empty">Tông Môn chưa có đệ tử nào.</div></div>
+    <div style="text-align:center; margin-top:18px;">
+      <button class="modal-btn modal-btn-cancel" id="btnCloseSect">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- DISCIPLE NAMING MODAL (bắt buộc, không có nút hủy) -->
+<div class="modal-overlay hidden" id="discipleNameModal">
+  <div class="modal-box">
+    <h2>Đệ Tử Mới Bái Nhập</h2>
+    <p>Một đệ tử mới vừa được chiêu mộ, phẩm chất: <b id="discipleQualityPreview" style="color:var(--gold);">—</b>. Hãy đặt tên cho đệ tử này để chính thức ghi danh vào Tông Môn — bắt buộc phải có tên trước khi tiếp tục.</p>
+    <input type="text" id="discipleNameInput" maxlength="20" placeholder="Nhập tên đệ tử...">
+    <div id="discipleNameError" style="color:var(--danger); font-size:12px; margin-bottom:10px; display:none;">Tên đệ tử không được để trống.</div>
+    <div><button class="modal-btn" id="btnConfirmDiscipleName">Xác Nhận Ghi Danh</button></div>
+  </div>
+</div>
+
 <script>
 
 (function(){
@@ -888,7 +969,8 @@ function freshState(name){
     equipped: { weapon: null, armor: null, phapBao: null },
     pillBonuses: { atk: 0, def: 0, hp: 0, tocDoTuLuyen: 0 },
     pvpCooldowns: {},
-    raidLog: []
+    raidLog: [],
+    sect: { disciples: {} }
   };
 }
 
@@ -1358,7 +1440,13 @@ const ITEM_DB = {
   linh_thao:      { name:"Linh Thảo",             type:"material", rarity:"common" },
   yeu_dan:        { name:"Yêu Đan",               type:"material", rarity:"uncommon" },
   thien_nien_linh_chi:{ name:"Thiên Niên Linh Chi", type:"material", rarity:"rare" },
-  hon_mang_thach: { name:"Hỗn Mang Thạch",        type:"material", rarity:"legendary" }
+  hon_mang_thach: { name:"Hỗn Mang Thạch",        type:"material", rarity:"legendary" },
+
+  /* Công pháp: không tự dùng được, chỉ dùng để "truyền thụ" cho đệ tử (teachCongPhap) —
+     cộng vĩnh viễn vào tứ đại thuộc tính của đệ tử được chọn. */
+  so_cap_tam_phap:     { name:"Sơ Cấp Tâm Pháp",     type:"congphap", rarity:"common",   ngoTinh:2, daoTam:2 },
+  trung_cap_kiem_phap: { name:"Trung Cấp Kiếm Pháp", type:"congphap", rarity:"uncommon", daoTam:5, theChat:3 },
+  thuong_co_dao_thu:   { name:"Thượng Cổ Đạo Thư",   type:"congphap", rarity:"rare",     ngoTinh:8, coDuyen:8, daoTam:8, theChat:8 }
 };
 
 function addItem(s, itemId, n){
@@ -1473,6 +1561,350 @@ const IDLE_LOOT_EVENTS = [
     effect:(s)=>{ const g=reqNow()*0.02; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } }
 ];
 
+/* ================= TÔNG MÔN & CHIÊU MỘ ĐỆ TỬ ================= */
+const SECT_UNLOCK_REALM_IDX = 4; // Kết Đan (tương đương "Kim Đan") trở lên mới mở khóa Tông Môn
+
+const DISCIPLE_QUALITIES = ['pham','hoang','dia','thien'];
+const QUALITY_LABELS = { pham:'Phàm Phẩm', hoang:'Hoàng Phẩm', dia:'Địa Phẩm', thien:'Thiên Phẩm' };
+const QUALITY_WEIGHTS = { pham:50, hoang:30, dia:15, thien:5 };
+/* Thiên phú cao (dia/thien): tự tu luyện + tự độ kiếp theo thời gian thực, kể cả khi không mở game.
+   Thiên phú thấp (pham/hoang): tốc độ gần như đứng im, chuyên đi làm nhiệm vụ "cu li". */
+const DISCIPLE_BASE_SPEED = { thien:5.0, dia:2.5, hoang:0.05, pham:0.01 };
+const DISCIPLE_BASE_STATS = {
+  pham:  {ngoTinh:5,  coDuyen:5,  daoTam:5,  theChat:5},
+  hoang: {ngoTinh:8,  coDuyen:8,  daoTam:8,  theChat:8},
+  dia:   {ngoTinh:14, coDuyen:14, daoTam:14, theChat:14},
+  thien: {ngoTinh:22, coDuyen:22, daoTam:22, theChat:22}
+};
+function isHighTalent(quality){ return quality==='dia' || quality==='thien'; }
+function sectUnlocked(){ return !!state && state.realmIdx >= SECT_UNLOCK_REALM_IDX; }
+
+const SECT_TASK_TYPES = {
+  hai_duoc: { name:'Hái Dược Liệu', durationMs: 3*60*1000,
+    rewardFn: function(){ return { type:'item', itemId: pickRandom(['linh_thao','yeu_dan']), qty: 1+Math.floor(Math.random()*2) }; } },
+  khai_khoang: { name:'Khai Thác Linh Thạch', durationMs: 5*60*1000,
+    rewardFn: function(){ return { type:'linhThach', amount: 20+Math.floor(Math.random()*30) }; } },
+  tham_hiem: { name:'Thám Hiểm Bí Cảnh', durationMs: 8*60*1000,
+    rewardFn: function(){ return { type:'item', itemId: pickRandom(['pham_kiem','bo_giap_vai','tu_chan_ngoc_bai','tu_khi_dan']), qty:1 }; } }
+};
+
+function rollDiscipleQuality(){
+  const total = Object.values(QUALITY_WEIGHTS).reduce(function(a,b){return a+b;},0);
+  let r = Math.random()*total;
+  for(let i=0;i<DISCIPLE_QUALITIES.length;i++){
+    const q = DISCIPLE_QUALITIES[i];
+    r -= QUALITY_WEIGHTS[q];
+    if(r<=0) return q;
+  }
+  return 'pham';
+}
+function discipleRecruitCost(){
+  const n = Object.keys((state.sect && state.sect.disciples) || {}).length;
+  return 50 + n*30;
+}
+function genDiscipleId(name){
+  return 'disc-' + slugify(name) + '-' + Math.random().toString(36).slice(2,7);
+}
+
+function discIsAtGate(disc){ return disc.subIdx === SUB_REALMS.length-1 && disc.tang === TANG_PER_SUB; }
+
+function discipleCheckTangUp(disc){
+  let safety = 0;
+  while(safety < 200){
+    safety++;
+    if(discIsAtGate(disc)){
+      const req = requiredCultivation(disc.realmIdx, disc.subIdx, disc.tang);
+      if(disc.cultivation > req) disc.cultivation = req;
+      break;
+    }
+    const req = requiredCultivation(disc.realmIdx, disc.subIdx, disc.tang);
+    if(disc.cultivation < req) break;
+    disc.cultivation -= req;
+    disc.tang++;
+    if(disc.tang > TANG_PER_SUB){ disc.tang = 1; disc.subIdx++; }
+  }
+}
+/* Tự độ kiếp đơn giản hoá cho đệ tử (không cần thọ nguyên/Hộ Đạo Đan như nhân vật chính). */
+function discipleAutoBreakthrough(disc){
+  if(!discIsAtGate(disc)) return false;
+  const req = requiredCultivation(disc.realmIdx, disc.subIdx, disc.tang);
+  if(disc.cultivation < req - 0.001) return false;
+  if(disc.realmIdx >= MAJOR_REALMS.length-1) return false;
+  if(Math.random() < 0.45){
+    disc.realmIdx++; disc.subIdx = 0; disc.tang = 1; disc.cultivation = 0;
+    return true;
+  }
+  disc.cultivation *= 0.6;
+  return false;
+}
+function discipleSpeed(disc){
+  const base = DISCIPLE_BASE_SPEED[disc.quality] || 0.01;
+  const itemPct = equippedSpeedBonusPct(disc); // tái dùng hàm chung — đọc disc.equipped/disc.pillBonuses
+  return base * (1+itemPct);
+}
+/* Bù tiến độ tu luyện của đệ tử thiên phú cao theo THỜI GIAN THỰC ĐÃ TRÔI QUA (kể cả lúc đóng tab) —
+   trần 48 giờ mỗi lần bù để tránh số ảo phi lý nếu bỏ bê tài khoản quá lâu. */
+function advanceDiscipleCultivation(disc, nowTs){
+  if(!isHighTalent(disc.quality)) return;
+  const last = disc.lastTick || disc.recruitedAt || nowTs;
+  let elapsedSec = Math.max(0, (nowTs-last)/1000);
+  elapsedSec = Math.min(elapsedSec, 48*3600);
+  disc.cultivation += discipleSpeed(disc) * elapsedSec;
+  discipleCheckTangUp(disc);
+  let attempts = 0;
+  while(discIsAtGate(disc) && attempts < 5){
+    const req = requiredCultivation(disc.realmIdx, disc.subIdx, disc.tang);
+    if(disc.cultivation < req - 0.001) break;
+    const ok = discipleAutoBreakthrough(disc);
+    attempts++;
+    if(!ok) break;
+  }
+  disc.lastTick = nowTs;
+}
+function checkTaskCompletion(disc, nowTs){
+  if(!disc.task) return null;
+  const def = SECT_TASK_TYPES[disc.task.type];
+  if(!def){ disc.task = null; return null; }
+  if(nowTs - disc.task.startedAt < disc.task.durationMs) return null;
+  const reward = def.rewardFn();
+  disc.task = null;
+  if(reward.type === 'linhThach') addLinhThach(reward.amount);
+  else if(reward.type === 'item') addItem(state, reward.itemId, reward.qty||1);
+  return reward;
+}
+/* Gọi mỗi giây từ vòng lặp treo máy chung: vừa bù tu luyện đệ tử thiên phú cao,
+   vừa kiểm tra nhiệm vụ đã hoàn thành của đệ tử thiên phú thấp. */
+function tickAllDisciples(){
+  if(!state || !state.sect || !state.sect.disciples) return;
+  const now = Date.now();
+  Object.values(state.sect.disciples).forEach(function(disc){
+    if(isHighTalent(disc.quality)){
+      advanceDiscipleCultivation(disc, now);
+    } else if(disc.task){
+      const reward = checkTaskCompletion(disc, now);
+      if(reward){
+        const deltas = [];
+        if(reward.type==='linhThach') deltas.push('Linh Thạch +'+reward.amount);
+        else if(reward.type==='item') deltas.push('Nhận: '+(ITEM_DB[reward.itemId]?ITEM_DB[reward.itemId].name:reward.itemId)+' x'+(reward.qty||1));
+        addLogNode({type:'success', title:'Nhiệm Vụ Hoàn Thành', text: disc.name+' đã hoàn thành nhiệm vụ và trở về Tông Môn.', deltas:deltas});
+      }
+    }
+  });
+}
+
+let pendingDisciple = null; // { quality } — chờ người chơi đặt tên trước khi tạo đệ tử thật sự
+
+function startRecruit(){
+  if(!sectUnlocked()) return;
+  const cost = discipleRecruitCost();
+  if(state.linhThach < cost){
+    addLogNode({type:'neutral', title:'Không Đủ Linh Thạch', text:'Cần '+cost+' Linh Thạch để chiêu mộ thêm đệ tử, hiện tại túi trữ vật không đủ.', deltas:[]});
+    return;
+  }
+  addLinhThach(-cost);
+  const quality = rollDiscipleQuality();
+  pendingDisciple = { quality: quality };
+  el.discipleQualityPreview.textContent = QUALITY_LABELS[quality];
+  el.discipleNameInput.value = '';
+  el.discipleNameError.style.display = 'none';
+  el.discipleNameModal.classList.remove('hidden');
+  updateUI();
+}
+function confirmRecruitName(){
+  const name = el.discipleNameInput.value.trim();
+  if(!name){
+    el.discipleNameError.style.display = 'block';
+    return;
+  }
+  if(!pendingDisciple) return;
+  const quality = pendingDisciple.quality;
+  const id = genDiscipleId(name);
+  const disc = {
+    id: id, name: name, quality: quality,
+    realmIdx: 0, subIdx: 0, tang: 1, cultivation: 0,
+    stats: Object.assign({}, DISCIPLE_BASE_STATS[quality]),
+    equipped: { weapon: null, armor: null, phapBao: null },
+    task: null,
+    lastTick: Date.now(),
+    recruitedAt: Date.now()
+  };
+  state.sect = state.sect || { disciples: {} };
+  state.sect.disciples[id] = disc;
+  pendingDisciple = null;
+  el.discipleNameModal.classList.add('hidden');
+  addLogNode({type:'success', title:'Chiêu Mộ Thành Công', text: name+' chính thức bái nhập Tông Môn, phẩm chất '+QUALITY_LABELS[quality]+'.', deltas:[]});
+  renderSect();
+  updateUI();
+  syncSave({force:true});
+}
+
+function equipDisciple(discId, itemId){
+  const disc = state.sect && state.sect.disciples && state.sect.disciples[discId];
+  const it = ITEM_DB[itemId];
+  if(!disc || !it || !state.inventory || !state.inventory[itemId]) return;
+  if(it.type!=='weapon' && it.type!=='armor' && it.type!=='phapBao') return;
+  const oldId = disc.equipped[it.type];
+  if(oldId) addItem(state, oldId, 1); // trả trang bị cũ (nếu có) về túi đồ nhân vật chính
+  state.inventory[itemId]--;
+  if(state.inventory[itemId] <= 0) delete state.inventory[itemId];
+  disc.equipped[it.type] = itemId;
+  addLogNode({type:'neutral', title:'Giao Phó Trang Bị', text: state.name+' giao phó '+it.name+' cho đệ tử '+disc.name+'.', deltas:[]});
+  renderSect(); updateUI(); syncSave({force:true});
+}
+function unequipDiscipleSlot(discId, slot){
+  const disc = state.sect && state.sect.disciples && state.sect.disciples[discId];
+  if(!disc || !disc.equipped[slot]) return;
+  addItem(state, disc.equipped[slot], 1);
+  disc.equipped[slot] = null;
+  renderSect(); updateUI(); syncSave({force:true});
+}
+function teachCongPhap(discId, itemId){
+  const disc = state.sect && state.sect.disciples && state.sect.disciples[discId];
+  const it = ITEM_DB[itemId];
+  if(!disc || !it || it.type!=='congphap' || !state.inventory || !state.inventory[itemId]) return;
+  state.inventory[itemId]--;
+  if(state.inventory[itemId] <= 0) delete state.inventory[itemId];
+  disc.stats.ngoTinh += it.ngoTinh||0;
+  disc.stats.coDuyen += it.coDuyen||0;
+  disc.stats.daoTam += it.daoTam||0;
+  disc.stats.theChat += it.theChat||0;
+  addLogNode({type:'success', title:'Truyền Thụ Công Pháp', text: state.name+' truyền thụ '+it.name+' cho đệ tử '+disc.name+', tư chất theo đó thăng hoa.', deltas:[]});
+  renderSect(); updateUI(); syncSave({force:true});
+}
+function assignDiscipleTask(discId, taskType){
+  const disc = state.sect && state.sect.disciples && state.sect.disciples[discId];
+  const def = SECT_TASK_TYPES[taskType];
+  if(!disc || !def || isHighTalent(disc.quality) || disc.task) return;
+  disc.task = { type: taskType, startedAt: Date.now(), durationMs: def.durationMs };
+  addLogNode({type:'neutral', title:'Giao Việc', text: disc.name+' lên đường thực hiện nhiệm vụ "'+def.name+'".', deltas:[]});
+  renderSect(); updateUI(); syncSave({force:true});
+}
+
+function renderSect(){
+  if(!state || !state.sect) return;
+  const disciples = Object.values(state.sect.disciples || {});
+  el.sectDiscCount.textContent = disciples.length;
+  let totalPower = 0;
+  disciples.forEach(function(d){ totalPower += computeCombatStats(d).combatPower; });
+  el.sectTotalPower.textContent = fmt(totalPower);
+
+  const cost = discipleRecruitCost();
+  el.btnRecruit.textContent = 'Chiêu Mộ Đệ Tử ('+cost+' Linh Thạch)';
+  el.btnRecruit.disabled = state.linhThach < cost;
+
+  el.discipleList.innerHTML = '';
+  if(disciples.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'disc-empty';
+    empty.textContent = 'Tông Môn chưa có đệ tử nào. Hãy chiêu mộ đệ tử đầu tiên!';
+    el.discipleList.appendChild(empty);
+    return;
+  }
+
+  const ownedGear = Object.keys(state.inventory||{}).filter(function(id){
+    const it = ITEM_DB[id];
+    return it && (it.type==='weapon'||it.type==='armor'||it.type==='phapBao') && state.inventory[id]>0;
+  });
+  const ownedCongPhap = Object.keys(state.inventory||{}).filter(function(id){
+    const it = ITEM_DB[id];
+    return it && it.type==='congphap' && state.inventory[id]>0;
+  });
+
+  disciples.forEach(function(disc){
+    const card = document.createElement('div');
+    card.className = 'disciple-card';
+
+    const head = document.createElement('div');
+    head.className = 'disciple-head';
+    const nameRow = document.createElement('div');
+    nameRow.className = 'disciple-name-row';
+    const nm = document.createElement('span'); nm.className = 'disciple-name'; nm.textContent = disc.name;
+    const badge = document.createElement('span'); badge.className = 'quality-badge quality-'+disc.quality; badge.textContent = QUALITY_LABELS[disc.quality];
+    nameRow.appendChild(nm); nameRow.appendChild(badge);
+    const cp = computeCombatStats(disc);
+    const powerEl = document.createElement('div'); powerEl.className = 'disciple-sub'; powerEl.textContent = 'Lực Chiến: '+fmt(cp.combatPower);
+    head.appendChild(nameRow); head.appendChild(powerEl);
+    card.appendChild(head);
+
+    if(isHighTalent(disc.quality)){
+      const req = requiredCultivation(disc.realmIdx, disc.subIdx, disc.tang);
+      const pct = clamp((disc.cultivation/req)*100, 0, 100);
+      const sub = document.createElement('div');
+      sub.className = 'disciple-sub';
+      sub.textContent = MAJOR_REALMS[disc.realmIdx]+' - '+SUB_REALMS[disc.subIdx]+' Tầng '+disc.tang+' · Tự tu luyện '+fmt(discipleSpeed(disc))+'/s';
+      card.appendChild(sub);
+      const track = document.createElement('div'); track.className = 'disciple-bar-track';
+      const fill = document.createElement('div'); fill.className = 'disciple-bar-fill'; fill.style.width = pct+'%';
+      track.appendChild(fill); card.appendChild(track);
+    } else if(disc.task){
+      const def = SECT_TASK_TYPES[disc.task.type];
+      const remain = Math.max(0, disc.task.startedAt + disc.task.durationMs - Date.now());
+      const sub = document.createElement('div');
+      sub.className = 'disciple-sub';
+      sub.textContent = 'Đang làm nhiệm vụ: '+(def?def.name:disc.task.type)+' · còn '+Math.ceil(remain/60000)+' phút';
+      card.appendChild(sub);
+    } else {
+      const sub = document.createElement('div');
+      sub.className = 'disciple-sub';
+      sub.textContent = MAJOR_REALMS[disc.realmIdx]+' - '+SUB_REALMS[disc.subIdx]+' Tầng '+disc.tang+' · Nhàn rỗi tại Tông Môn';
+      card.appendChild(sub);
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'disciple-actions';
+
+    if(!isHighTalent(disc.quality)){
+      Object.keys(SECT_TASK_TYPES).forEach(function(taskType){
+        const def = SECT_TASK_TYPES[taskType];
+        const btn = document.createElement('button');
+        btn.className = 'disc-action-btn' + (disc.task ? ' task-active' : '');
+        btn.textContent = def.name;
+        btn.disabled = !!disc.task;
+        btn.addEventListener('click', function(){ assignDiscipleTask(disc.id, taskType); });
+        actions.appendChild(btn);
+      });
+    }
+
+    ['weapon','armor','phapBao'].forEach(function(slot){
+      const equippedId = disc.equipped[slot];
+      if(equippedId && ITEM_DB[equippedId]){
+        const btn = document.createElement('button');
+        btn.className = 'disc-action-btn';
+        btn.textContent = 'Thu Hồi: '+ITEM_DB[equippedId].name;
+        btn.addEventListener('click', function(){ unequipDiscipleSlot(disc.id, slot); });
+        actions.appendChild(btn);
+      }
+    });
+    ownedGear.forEach(function(itemId){
+      const it = ITEM_DB[itemId];
+      if(disc.equipped[it.type] === itemId) return;
+      const btn = document.createElement('button');
+      btn.className = 'disc-action-btn';
+      btn.textContent = 'Trang Bị: '+it.name;
+      btn.addEventListener('click', function(){ equipDisciple(disc.id, itemId); });
+      actions.appendChild(btn);
+    });
+    ownedCongPhap.forEach(function(itemId){
+      const it = ITEM_DB[itemId];
+      const btn = document.createElement('button');
+      btn.className = 'disc-action-btn';
+      btn.textContent = 'Dạy: '+it.name;
+      btn.addEventListener('click', function(){ teachCongPhap(disc.id, itemId); });
+      actions.appendChild(btn);
+    });
+
+    card.appendChild(actions);
+    el.discipleList.appendChild(card);
+  });
+}
+
+function openSect(){
+  if(!sectUnlocked()) return;
+  renderSect();
+  el.sectModal.classList.remove('hidden');
+}
+function closeSect(){ el.sectModal.classList.add('hidden'); }
+
 /* ================= BREAKTHROUGH TEXTS ================= */
 const BREAKTHROUGH_SUCCESS = [
   (from,to)=>"Sét vàng chín tầng chợt giáng xuống bầu trời, tụ thành hình chim Phượng Hoàng lượn quanh đỉnh đầu. Khí tức "+from+" trong cơ thể bùng nổ dữ dội rồi lột xác hoàn toàn, chính thức bước vào cảnh giới "+to+"!",
@@ -1493,10 +1925,10 @@ const TRIAL_INTROS = [
 
 /* Phần thưởng trấn phái khi đột phá thành công, chia theo bậc cảnh giới vừa đạt được. */
 function breakthroughRewardItem(newRealmIdx){
-  if(newRealmIdx >= 31) return pickRandom(['thai_co_kiem','hon_thien_giap','hon_don_linh_chau','cuu_chuyen_kim_dan']);
-  if(newRealmIdx >= 24) return pickRandom(['thanh_phong_kiem','long_lan_giap','van_dao_la_ban','dai_bo_linh_dan']);
-  if(newRealmIdx >= 11) return pickRandom(['linh_kiem','huyen_thiet_giap','tu_chan_ngoc_bai','huyen_thiet_dan']);
-  return pickRandom(['pham_kiem','bo_giap_vai','tu_khi_dan','cuong_the_dan']);
+  if(newRealmIdx >= 31) return pickRandom(['thai_co_kiem','hon_thien_giap','hon_don_linh_chau','cuu_chuyen_kim_dan','thuong_co_dao_thu']);
+  if(newRealmIdx >= 24) return pickRandom(['thanh_phong_kiem','long_lan_giap','van_dao_la_ban','dai_bo_linh_dan','thuong_co_dao_thu']);
+  if(newRealmIdx >= 11) return pickRandom(['linh_kiem','huyen_thiet_giap','tu_chan_ngoc_bai','huyen_thiet_dan','trung_cap_kiem_phap']);
+  return pickRandom(['pham_kiem','bo_giap_vai','tu_khi_dan','cuong_the_dan','so_cap_tam_phap']);
 }
 
 /* ================= CORE ACTIONS ================= */
@@ -1542,14 +1974,18 @@ let idleTickHandle = null;
 function startIdleLoop(){
   if(idleTickHandle) clearInterval(idleTickHandle);
   idleTickHandle = setInterval(function(){
-    if(!state || state.isDead) return;
-    const g = computeTocDoTuLuyen(state);
-    gainCultivation(state, g);
-    checkTangUp();
-    loseTho(grindDecay(0.00018)); // rất nhỏ mỗi giây, nhưng cộng dồn theo thời gian treo máy thực
-    if(!state.isDead && Math.random() < 0.015){
-      triggerEvent(IDLE_LOOT_EVENTS);
+    if(!state) return;
+    if(!state.isDead){
+      const g = computeTocDoTuLuyen(state);
+      gainCultivation(state, g);
+      checkTangUp();
+      loseTho(grindDecay(0.00018)); // rất nhỏ mỗi giây, nhưng cộng dồn theo thời gian treo máy thực
+      if(!state.isDead && Math.random() < 0.015){
+        triggerEvent(IDLE_LOOT_EVENTS);
+      }
     }
+    tickAllDisciples(); // đệ tử vẫn tự tu luyện/làm nhiệm vụ độc lập với sinh tử của nhân vật chính
+    if(el.sectModal && !el.sectModal.classList.contains('hidden')) renderSect();
     updateUI();
   }, 1000);
 }
@@ -1647,6 +2083,10 @@ function dotPha(){
     let text = trialIntro + pickRandom(BREAKTHROUGH_SUCCESS)(fromName, toName);
     if(usedDan) text += " Một viên Hộ Đạo Đan vừa hóa thành tro bụi, âm thầm trợ lực trong khoảnh khắc sinh tử.";
     addLogNode({type:'success', title:'ĐỘT PHÁ THÀNH CÔNG!', text, deltas:["Thọ Nguyên +"+thoBonus, "Tứ Đại Thuộc Tính đều +1", "Phần thưởng trấn phái: "+ITEM_DB[rewardId].name]});
+    if(state.realmIdx === SECT_UNLOCK_REALM_IDX){
+      addItem(state, 'so_cap_tam_phap', 1);
+      addLogNode({type:'legend', title:'Tông Môn Khai Tông', text: state.name+' đạo hạnh đã đạt tới '+MAJOR_REALMS[state.realmIdx]+', đủ tư cách khai lập môn phái, chiêu mộ đệ tử trong thiên hạ để mở rộng thanh thế.', deltas:['Mở khóa: Tông Môn & Chiêu Mộ Đệ Tử', 'Nhận: Sơ Cấp Tâm Pháp x1']});
+    }
   } else {
     /* Trừng phạt tàn nhẫn: mất 30%-50% tiến độ tu vi hiện tại VÀ 20%-40% tổng thọ nguyên hiện tại (không phải số lẻ vô hại). */
     const expLossPct = 0.3 + Math.random()*0.2;
@@ -1730,7 +2170,18 @@ const el = {
   combatOppHpNums: document.getElementById('combatOppHpNums'),
   combatResultBanner: document.getElementById('combatResultBanner'),
   combatLog: document.getElementById('combatLog'),
-  btnCloseCombat: document.getElementById('btnCloseCombat')
+  btnCloseCombat: document.getElementById('btnCloseCombat'),
+  btnSect: document.getElementById('btnSect'),
+  sectBtnSub: document.getElementById('sectBtnSub'),
+  sectModal: document.getElementById('sectModal'),
+  sectDiscCount: document.getElementById('sectDiscCount'),
+  sectTotalPower: document.getElementById('sectTotalPower'),
+  btnRecruit: document.getElementById('btnRecruit'),
+  discipleList: document.getElementById('discipleList'),
+  discipleNameModal: document.getElementById('discipleNameModal'),
+  discipleQualityPreview: document.getElementById('discipleQualityPreview'),
+  discipleNameInput: document.getElementById('discipleNameInput'),
+  discipleNameError: document.getElementById('discipleNameError')
 };
 
 function tierClass(realmIdx){
@@ -1816,6 +2267,12 @@ function updateUI(){
   el.btnTuLuyen.disabled = state.isDead;
   el.btnKhamPha.disabled = state.isDead;
   el.btnDotPha.disabled = state.isDead;
+
+  const sectOk = sectUnlocked();
+  el.btnSect.disabled = !sectOk;
+  el.sectBtnSub.textContent = sectOk
+    ? 'Chiêu mộ đệ tử, giao việc và quản lý Tông Môn'
+    : 'Mở khóa tại cảnh giới '+MAJOR_REALMS[SECT_UNLOCK_REALM_IDX]+' (tương đương Kim Đan) trở lên';
 
   if(state.isDead){
     el.statusLine.innerHTML = 'Thọ nguyên đã tận, huyễn cảnh trước mắt dần nhạt nhòa...';
@@ -1916,6 +2373,14 @@ async function jsonbinWriteAll(fullData, keepalive){
   return true;
 }
 
+/* LƯU Ý KỸ THUẬT (đóng gói dữ liệu toàn vẹn):
+   playerSnapshot() là ĐIỂM DUY NHẤT đóng gói toàn bộ trạng thái cần lưu — nhân vật chính (cảnh giới,
+   EXP, thọ nguyên, chỉ số...), TOÀN BỘ kho đồ/trang bị, VÀ toàn bộ danh sách đệ tử Tông Môn — thành
+   MỘT object phẳng duy nhất. syncSave()/saveData() sau đó ghi nguyên object này vào đúng một khóa
+   all.players[myPlayerId] rồi PUT toàn bộ bin lên JSONBin trong một request duy nhất — không có
+   request rời rạc nào ghi riêng lẻ nhân vật chính tách khỏi đệ tử/kho đồ, nên không thể xảy ra tình
+   trạng dữ liệu bị lệch pha giữa các phần (ví dụ: đệ tử được lưu nhưng trang bị vừa gắn cho đệ tử đó
+   lại bị mất vì một request khác ghi đè trước). */
 function playerSnapshot(){
   const combat = computeCombatStats(state);
   return {
@@ -1938,11 +2403,16 @@ function playerSnapshot(){
     pillBonuses: state.pillBonuses || {atk:0,def:0,hp:0,tocDoTuLuyen:0},
     pvpCooldowns: state.pvpCooldowns || {},
     raidLog: state.raidLog || [],
+    sect: state.sect || { disciples: {} },
     hp: combat.hp, atk: combat.atk, def: combat.def, combatPower: combat.combatPower,
     power: combat.combatPower, // giữ tương thích ngược với dữ liệu bản cũ từng dùng khóa "power"
     updatedAt: new Date().toISOString()
   };
 }
+
+/* Bí danh saveData đúng theo thuật ngữ được yêu cầu — chỉ gọi lại syncSave(), vốn đã dùng
+   playerSnapshot() ở trên làm nguồn duy nhất cho toàn bộ dữ liệu được đẩy lên JSONBin. */
+function saveData(opts){ return syncSave(opts); }
 
 function restoreStateFromSnapshot(snap, name){
   const s = freshState(name || snap.name);
@@ -1968,6 +2438,7 @@ function restoreStateFromSnapshot(snap, name){
   s.pillBonuses = snap.pillBonuses || {atk:0,def:0,hp:0,tocDoTuLuyen:0};
   s.pvpCooldowns = snap.pvpCooldowns || {};
   s.raidLog = snap.raidLog || [];
+  s.sect = snap.sect || { disciples: {} };
   return s;
 }
 
@@ -2443,6 +2914,13 @@ document.getElementById('btnLbRefresh').addEventListener('click', loadLeaderboar
 document.getElementById('btnInventory').addEventListener('click', openInventory);
 document.getElementById('btnCloseInventory').addEventListener('click', closeInventory);
 document.getElementById('btnCloseCombat').addEventListener('click', function(){ el.combatModal.classList.add('hidden'); });
+document.getElementById('btnSect').addEventListener('click', openSect);
+document.getElementById('btnCloseSect').addEventListener('click', closeSect);
+document.getElementById('btnRecruit').addEventListener('click', startRecruit);
+document.getElementById('btnConfirmDiscipleName').addEventListener('click', confirmRecruitName);
+document.getElementById('discipleNameInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') confirmRecruitName();
+});
 
 /* Đồng bộ khi thoát game: fetch với keepalive:true để trình duyệt cố gắng gửi nốt request
    ngay cả sau khi trang bắt đầu đóng. Đây là kỹ thuật tốt nhất hiện có cho tác vụ lúc unload,
@@ -2509,8 +2987,12 @@ btnStart.addEventListener('click', async function(){
           });
         });
         state.raidLog = []; // đã hiển thị xong, sẽ được đồng bộ xóa sạch ở lần lưu mây kế tiếp
-        updateUI();
       }
+      if(state.sect && state.sect.disciples && Object.keys(state.sect.disciples).length){
+        tickAllDisciples(); // bù ngay tiến độ tự tu luyện/nhiệm vụ của đệ tử trong lúc vắng mặt
+        addLogNode({type:'neutral', title:'Tông Môn Báo Cáo', text:'Trong lúc '+state.name+' vắng mặt, các đệ tử vẫn âm thầm tu luyện và thực hiện nhiệm vụ được giao. Hãy mở Tông Môn để xem chi tiết.', deltas:[]});
+      }
+      updateUI();
     } else {
       addLogNodePreStart('Không Tìm Thấy Mã Đạo Hữu', 'Không tìm thấy dữ liệu khớp với mã "'+resumeId+'" trên Vân Đài Ký Sự. Một đạo đồ hoàn toàn mới sẽ được bắt đầu thay thế.');
       beginLocalGame(typedName);
