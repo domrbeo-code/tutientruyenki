@@ -467,6 +467,11 @@
     color: var(--text-dim);
   }
   .modal-btn-cancel:hover{ background: rgba(255,255,255,0.09); color:var(--text-main); }
+  .modal-btn-danger{
+    background: linear-gradient(120deg, var(--danger), #ffb3ac);
+    color: #2a0a08;
+  }
+  .modal-btn-danger:hover{ filter:brightness(1.08); }
 
   .reincarnate-link{
     display:block; width:100%; margin-top:14px;
@@ -739,6 +744,7 @@
       <div class="sync-status" id="syncStatus">Chưa đồng bộ</div>
       <div class="player-id-row" id="playerIdRow">Mã Đạo Hữu: <b id="playerIdVal">—</b></div>
 
+      <button class="reincarnate-link" id="btnAccount">Quản Lý Tài Khoản…</button>
       <button class="reincarnate-link" id="btnManualReincarnate">Chủ Động Luân Hồi…</button>
     </div>
 
@@ -784,6 +790,7 @@
     <p>Một hài nhi phàm tục sinh ra giữa cõi hồng trần, mang trong mình một tia linh căn mờ nhạt. Từ hôm nay, ngươi sẽ dấn bước trên con đường nghịch thiên cải mệnh — tu luyện để trường sinh, khám phá để đổi đời. Hãy đặt cho mình một đạo hiệu.</p>
     <input type="text" id="nameInput" maxlength="20" placeholder="Nhập Đạo Hiệu của ngươi...">
     <input type="text" id="resumeIdInput" maxlength="40" placeholder="Mã Đạo Hữu cũ (bỏ trống nếu là đạo hữu mới)...">
+    <div id="startNameError" style="display:none; color:var(--danger); font-size:12px; margin:-6px 0 12px; text-align:left; line-height:1.5;"></div>
     <div><button class="modal-btn" id="btnStart">Bắt Đầu Tu Luyện</button></div>
     <p style="font-size:11.5px; margin-top:14px; margin-bottom:0; color:var(--text-faint);">Trò chơi không lưu tự động trong trình duyệt — sau khi tạo nhân vật, hãy ghi nhớ "Mã Đạo Hữu" hiển thị trong bảng thông tin để tiếp tục đúng nhân vật ở lần chơi sau.</p>
   </div>
@@ -881,6 +888,29 @@
     <input type="text" id="discipleNameInput" maxlength="20" placeholder="Nhập tên đệ tử...">
     <div id="discipleNameError" style="color:var(--danger); font-size:12px; margin-bottom:10px; display:none;">Tên đệ tử không được để trống.</div>
     <div><button class="modal-btn" id="btnConfirmDiscipleName">Xác Nhận Ghi Danh</button></div>
+  </div>
+</div>
+
+<!-- ACCOUNT MANAGEMENT MODAL -->
+<div class="modal-overlay hidden" id="accountModal">
+  <div class="modal-box">
+    <h2>Quản Lý Tài Khoản</h2>
+    <div class="stats-summary" id="accountInfo"></div>
+
+    <div id="accountDeleteStep1">
+      <button class="modal-btn modal-btn-danger" id="btnShowDeleteConfirm">Xóa / Hủy Bỏ Tài Khoản</button>
+    </div>
+    <div id="accountDeleteStep2" class="hidden">
+      <p style="color:var(--danger); font-size:12.5px; line-height:1.6;">Hành động này sẽ <b>XÓA VĨNH VIỄN</b> toàn bộ dữ liệu nhân vật này khỏi Vân Đài Ký Sự — cảnh giới, kho đồ, đệ tử Tông Môn, tất cả sẽ mất sạch và không thể khôi phục. Ngươi có chắc chắn muốn tiếp tục?</p>
+      <div class="modal-btn-row">
+        <button class="modal-btn modal-btn-cancel" id="btnCancelDelete">Hủy Bỏ</button>
+        <button class="modal-btn modal-btn-danger" id="btnConfirmDelete">Xác Nhận Xóa Vĩnh Viễn</button>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:14px;">
+      <button class="modal-btn modal-btn-cancel" id="btnCloseAccount">Đóng</button>
+    </div>
   </div>
 </div>
 
@@ -2267,7 +2297,12 @@ const el = {
   discipleNameModal: document.getElementById('discipleNameModal'),
   discipleQualityPreview: document.getElementById('discipleQualityPreview'),
   discipleNameInput: document.getElementById('discipleNameInput'),
-  discipleNameError: document.getElementById('discipleNameError')
+  discipleNameError: document.getElementById('discipleNameError'),
+  startNameError: document.getElementById('startNameError'),
+  accountModal: document.getElementById('accountModal'),
+  accountInfo: document.getElementById('accountInfo'),
+  accountDeleteStep1: document.getElementById('accountDeleteStep1'),
+  accountDeleteStep2: document.getElementById('accountDeleteStep2')
 };
 
 function tierClass(realmIdx){
@@ -2562,6 +2597,27 @@ async function fetchAllPlayers(){
   const all = await jsonbinReadAll();
   cachedBinData = all;
   return all;
+}
+
+/* Chống trùng tên/clone: tìm một người chơi khác đã dùng đúng đạo hiệu này (so sánh không phân
+   biệt hoa thường và khoảng trắng thừa). Trả về bản ghi trùng (nếu có) hoặc null. */
+function findPlayerByName(all, name){
+  const target = (name||'').trim().toLowerCase();
+  if(!target) return null;
+  const players = Object.values((all && all.players) || {});
+  for(let i=0;i<players.length;i++){
+    if((players[i].name||'').trim().toLowerCase() === target) return players[i];
+  }
+  return null;
+}
+function showStartNameError(msg){
+  if(!el.startNameError) return;
+  el.startNameError.textContent = msg;
+  el.startNameError.style.display = 'block';
+}
+function hideStartNameError(){
+  if(!el.startNameError) return;
+  el.startNameError.style.display = 'none';
 }
 
 /* ---------- Bảng xếp hạng ---------- */
@@ -3038,54 +3094,132 @@ function beginLocalGame(freshName){
   syncSave({force:true});
 }
 
+/* ================= QUẢN LÝ TÀI KHOẢN ================= */
+function openAccountModal(){
+  if(!state || !myPlayerId) return;
+  el.accountInfo.innerHTML =
+    'Đạo Hiệu: <b style="color:var(--gold)">'+state.name+'</b><br>'+
+    'Mã Đạo Hữu: <b style="color:var(--teal-soft)">'+myPlayerId+'</b><br>'+
+    'Cảnh Giới: <b>'+MAJOR_REALMS[state.realmIdx]+' - '+SUB_REALMS[state.subIdx]+' Tầng '+state.tang+'</b><br>'+
+    'Số Kiếp Đã Trải Qua: <b>'+state.kiepSo+'</b>';
+  el.accountDeleteStep1.classList.remove('hidden');
+  el.accountDeleteStep2.classList.add('hidden');
+  el.accountModal.classList.remove('hidden');
+}
+function closeAccountModal(){ el.accountModal.classList.add('hidden'); }
+
+/* Xóa vĩnh viễn bản ghi của MÌNH khỏi bin dùng chung — luôn đọc bản mới nhất trước khi xóa
+   (đọc-sửa-ghi) để không đụng tới dữ liệu của bất kỳ người chơi nào khác. */
+async function deleteAccountFromCloud(){
+  const all = await jsonbinReadAll();
+  if(all.players && myPlayerId && all.players[myPlayerId]){
+    delete all.players[myPlayerId];
+  }
+  cachedBinData = all;
+  await jsonbinWriteAll(all);
+}
+
+function resetToStartScreen(){
+  if(idleTickHandle){ clearInterval(idleTickHandle); idleTickHandle = null; }
+  if(lbAutoTimer){ clearInterval(lbAutoTimer); lbAutoTimer = null; }
+  if(manualChannelHandle){ clearInterval(manualChannelHandle); manualChannelHandle = null; }
+  manualChannelActive = false;
+  state = null;
+  myPlayerId = null;
+  cachedBinData = null;
+  deathModalShown = false;
+  el.deathModal.classList.add('hidden');
+  el.leaderboardModal.classList.add('hidden');
+  el.inventoryModal.classList.add('hidden');
+  el.sectModal.classList.add('hidden');
+  el.combatModal.classList.add('hidden');
+  el.accountModal.classList.add('hidden');
+  logContainer.innerHTML = '';
+  nameInput.value = '';
+  resumeIdInput.value = '';
+  hideStartNameError();
+  startModal.classList.remove('hidden');
+}
+
+async function confirmDeleteAccount(){
+  const btn = document.getElementById('btnConfirmDelete');
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Đang xóa...';
+  try{
+    await deleteAccountFromCloud();
+    closeAccountModal();
+    resetToStartScreen();
+  }catch(err){
+    addLogNode({type:'fail', title:'Xóa Tài Khoản Thất Bại', text:'Không thể kết nối tới Vân Đài Ký Sự để xóa dữ liệu lúc này. Hãy thử lại sau.', deltas:[]});
+  }finally{
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+}
+
 btnStart.addEventListener('click', async function(){
   const typedName = nameInput.value.trim() || 'Vô Danh Đạo Nhân';
   const resumeId = resumeIdInput.value.trim();
-
-  if(!resumeId){
-    beginLocalGame(typedName);
-    return;
-  }
+  hideStartNameError();
 
   btnStart.disabled = true;
   const originalLabel = btnStart.textContent;
   btnStart.textContent = 'Đang kết nối Vân Đài Ký Sự...';
+
   try{
-    const all = await fetchAllPlayers();
-    const existing = all.players && all.players[resumeId];
-    if(existing){
-      myPlayerId = resumeId;
-      state = restoreStateFromSnapshot(existing, existing.name || typedName);
-      kiepNanBuff = (typeof existing.kiepNanBuff==='number') ? existing.kiepNanBuff : kiepNanBuff;
-      startModal.classList.add('hidden');
-      updateUI();
-      startIdleLoop();
-      addLogNode({
-        type:'legend', title:'Tiếp Tục Đạo Đồ',
-        text: state.name+' quay trở lại cõi hồng trần, tiếp nối hành trình còn dang dở từ '+MAJOR_REALMS[state.realmIdx]+' - '+SUB_REALMS[state.subIdx]+' Tầng '+state.tang+'.',
-        deltas:['Mã Đạo Hữu: '+myPlayerId]
-      });
-      if(state.raidLog && state.raidLog.length){
-        state.raidLog.forEach(function(entry){
-          addLogNode({
-            type:'fail', title:'Bị Cướp Trong Lúc Vắng Mặt',
-            text:'Trong lúc '+state.name+' vắng mặt, đạo hữu '+(entry.by||'một kẻ vô danh')+' đã tìm đến khiêu chiến và giành chiến thắng, cướp đi một phần tu vi.',
-            deltas:['Tu Vi bị cướp: -'+fmt(entry.amount||0)]
-          });
+    let all = null;
+    try{ all = await fetchAllPlayers(); }catch(e){ all = null; }
+
+    if(resumeId && all){
+      const existing = all.players && all.players[resumeId];
+      if(existing){
+        myPlayerId = resumeId;
+        state = restoreStateFromSnapshot(existing, existing.name || typedName);
+        kiepNanBuff = (typeof existing.kiepNanBuff==='number') ? existing.kiepNanBuff : kiepNanBuff;
+        startModal.classList.add('hidden');
+        updateUI();
+        startIdleLoop();
+        addLogNode({
+          type:'legend', title:'Tiếp Tục Đạo Đồ',
+          text: state.name+' quay trở lại cõi hồng trần, tiếp nối hành trình còn dang dở từ '+MAJOR_REALMS[state.realmIdx]+' - '+SUB_REALMS[state.subIdx]+' Tầng '+state.tang+'.',
+          deltas:['Mã Đạo Hữu: '+myPlayerId]
         });
-        state.raidLog = []; // đã hiển thị xong, sẽ được đồng bộ xóa sạch ở lần lưu mây kế tiếp
+        if(state.raidLog && state.raidLog.length){
+          state.raidLog.forEach(function(entry){
+            addLogNode({
+              type:'fail', title:'Bị Cướp Trong Lúc Vắng Mặt',
+              text:'Trong lúc '+state.name+' vắng mặt, đạo hữu '+(entry.by||'một kẻ vô danh')+' đã tìm đến khiêu chiến và giành chiến thắng, cướp đi một phần tu vi.',
+              deltas:['Tu Vi bị cướp: -'+fmt(entry.amount||0)]
+            });
+          });
+          state.raidLog = []; // đã hiển thị xong, sẽ được đồng bộ xóa sạch ở lần lưu mây kế tiếp
+        }
+        if(state.sect && state.sect.disciples && Object.keys(state.sect.disciples).length){
+          tickAllDisciples(); // bù ngay tiến độ tự tu luyện/nhiệm vụ của đệ tử trong lúc vắng mặt
+          addLogNode({type:'neutral', title:'Tông Môn Báo Cáo', text:'Trong lúc '+state.name+' vắng mặt, các đệ tử vẫn âm thầm tu luyện và thực hiện nhiệm vụ được giao. Hãy mở Tông Môn để xem chi tiết.', deltas:[]});
+        }
+        updateUI();
+        return;
       }
-      if(state.sect && state.sect.disciples && Object.keys(state.sect.disciples).length){
-        tickAllDisciples(); // bù ngay tiến độ tự tu luyện/nhiệm vụ của đệ tử trong lúc vắng mặt
-        addLogNode({type:'neutral', title:'Tông Môn Báo Cáo', text:'Trong lúc '+state.name+' vắng mặt, các đệ tử vẫn âm thầm tu luyện và thực hiện nhiệm vụ được giao. Hãy mở Tông Môn để xem chi tiết.', deltas:[]});
-      }
-      updateUI();
-    } else {
-      addLogNodePreStart('Không Tìm Thấy Mã Đạo Hữu', 'Không tìm thấy dữ liệu khớp với mã "'+resumeId+'" trên Vân Đài Ký Sự. Một đạo đồ hoàn toàn mới sẽ được bắt đầu thay thế.');
-      beginLocalGame(typedName);
+      addLogNodePreStart('Không Tìm Thấy Mã Đạo Hữu', 'Không tìm thấy dữ liệu khớp với mã "'+resumeId+'" trên Vân Đài Ký Sự.');
+      // rơi xuống bên dưới để kiểm tra trùng tên trước khi cho tạo nhân vật mới thay thế
     }
-  }catch(err){
-    addLogNodePreStart('Không Thể Kết Nối Vân Đài', 'Không thể kết nối tới máy chủ dữ liệu lúc này, đạo đồ sẽ bắt đầu ở chế độ cục bộ. Ngươi vẫn có thể chơi bình thường và thử đồng bộ lại sau.');
+
+    if(!all){
+      addLogNodePreStart('Không Thể Kết Nối Vân Đài', 'Không thể kết nối tới máy chủ dữ liệu lúc này (không thể kiểm tra trùng đạo hiệu hoặc tra cứu Mã Đạo Hữu). Đạo đồ sẽ bắt đầu ở chế độ cục bộ, hãy thử đồng bộ lại sau.');
+      beginLocalGame(typedName);
+      return;
+    }
+
+    /* CHỐNG TRÙNG TÊN/CLONE: nếu đạo hiệu đã tồn tại trên Vân Đài Ký Sự, TUYỆT ĐỐI không tạo
+       nhân vật mới tinh — bắt buộc người chơi phải nhập đúng Mã Đạo Hữu cũ để khôi phục. */
+    const dup = findPlayerByName(all, typedName);
+    if(dup){
+      showStartNameError('Đạo hiệu "'+typedName+'" đã tồn tại trên Vân Đài Ký Sự. Nếu đây là nhân vật của chính ngươi, hãy nhập đúng Mã Đạo Hữu vào ô bên trên để khôi phục. Nếu không, hãy chọn một đạo hiệu khác.');
+      return;
+    }
+
     beginLocalGame(typedName);
   }finally{
     btnStart.disabled = false;
@@ -3104,6 +3238,18 @@ function addLogNodePreStart(title, text){
   card.appendChild(h); card.appendChild(p);
   logContainer.insertBefore(card, logContainer.firstChild);
 }
+
+document.getElementById('btnAccount').addEventListener('click', openAccountModal);
+document.getElementById('btnCloseAccount').addEventListener('click', closeAccountModal);
+document.getElementById('btnShowDeleteConfirm').addEventListener('click', function(){
+  el.accountDeleteStep1.classList.add('hidden');
+  el.accountDeleteStep2.classList.remove('hidden');
+});
+document.getElementById('btnCancelDelete').addEventListener('click', function(){
+  el.accountDeleteStep2.classList.add('hidden');
+  el.accountDeleteStep1.classList.remove('hidden');
+});
+document.getElementById('btnConfirmDelete').addEventListener('click', confirmDeleteAccount);
 
 nameInput.addEventListener('keydown', function(e){
   if(e.key === 'Enter') btnStart.click();
