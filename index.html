@@ -490,6 +490,10 @@
     margin-top:16px; border-left:3px solid var(--gold);
     padding:14px 16px;
   }
+  .market-btn{
+    margin-top:16px; border-left:3px solid #4fdba0;
+    padding:14px 16px;
+  }
   .sect-btn{
     margin-top:16px; border-left:3px solid #c084fc;
     padding:14px 16px;
@@ -650,6 +654,89 @@
   .disc-action-btn.task-active{ background: rgba(232,194,122,0.08); border-color: rgba(232,194,122,0.3); color: var(--gold); cursor:default; }
   .disc-empty{ text-align:center; color:var(--text-faint); font-size:12.5px; padding:16px 0; }
 
+  /* ---------- Trading / Black Market modal ---------- */
+  .market-tabs{ display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
+  .market-tab-btn{
+    flex:1; min-width:110px; font-size:12.5px; font-weight:600; padding:10px 8px; border-radius:10px;
+    background: rgba(255,255,255,0.03); border:1px solid rgba(122,224,205,0.14);
+    color: var(--text-dim); cursor:pointer; text-align:center;
+  }
+  .market-tab-btn.active{
+    background: rgba(79,219,160,0.1); border-color: rgba(79,219,160,0.4); color:#4fdba0;
+  }
+  .market-tab-content.hidden{ display:none; }
+  .market-section-title{
+    font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint);
+    margin:14px 0 8px;
+  }
+  .shop-refresh-info{ text-transform:none; letter-spacing:0; color:var(--text-faint); font-size:10.5px; }
+  .shop-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:8px; }
+  .shop-item-card{
+    background: rgba(255,255,255,0.03); border:1px solid rgba(122,224,205,0.12);
+    border-radius:10px; padding:10px; text-align:center;
+  }
+  .shop-item-card.rare{ border-color: rgba(232,194,122,0.4); background: rgba(232,194,122,0.06); }
+  .shop-item-name{ font-size:12px; font-weight:600; color:var(--text-main); margin-bottom:2px; }
+  .shop-item-meta{ font-size:10px; color:var(--text-faint); margin-bottom:8px; }
+  .shop-buy-btn{
+    width:100%; font-size:11.5px; padding:7px; border-radius:8px; cursor:pointer;
+    background: rgba(45,212,191,0.1); border:1px solid rgba(45,212,191,0.35); color:var(--teal-soft);
+  }
+  .shop-buy-btn:disabled{ opacity:0.35; cursor:not-allowed; background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.08); color:var(--text-faint); }
+
+  .market-filters{
+    display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;
+    background: rgba(255,255,255,0.02); border:1px solid rgba(122,224,205,0.1);
+    border-radius:10px; padding:10px;
+  }
+  .market-filters select, .market-filters input{
+    background: rgba(255,255,255,0.04); border:1px solid rgba(122,224,205,0.2);
+    color: var(--text-main); border-radius:8px; padding:7px 9px; font-size:12px;
+    flex:1; min-width:90px;
+  }
+  .market-filters button{
+    font-size:12px; padding:7px 14px; border-radius:8px; cursor:pointer;
+    background: rgba(45,212,191,0.08); border:1px solid rgba(45,212,191,0.3); color:var(--teal-soft);
+  }
+  .market-listing-list{ display:flex; flex-direction:column; gap:8px; max-height:38vh; overflow-y:auto; }
+  .listing-row{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    background: rgba(255,255,255,0.03); border:1px solid rgba(122,224,205,0.1);
+    border-radius:10px; padding:10px 12px;
+  }
+  .listing-info{ flex:1; min-width:140px; }
+  .listing-name{ font-size:12.5px; font-weight:600; color:var(--text-main); }
+  .listing-meta{ font-size:10.5px; color:var(--text-faint); }
+  .listing-price{ font-size:13px; font-weight:700; color:var(--gold); white-space:nowrap; }
+  .listing-row button{
+    font-size:11.5px; padding:7px 12px; border-radius:8px; cursor:pointer; flex-shrink:0;
+    background: rgba(45,212,191,0.1); border:1px solid rgba(45,212,191,0.35); color:var(--teal-soft);
+  }
+  .listing-row button.cancel-btn{
+    background: rgba(242,131,122,0.1); border-color: rgba(242,131,122,0.35); color:#ffb3ac;
+  }
+  .listing-row button:disabled{ opacity:0.35; cursor:not-allowed; }
+  .new-listing-form{
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+    background: rgba(255,255,255,0.02); border:1px solid rgba(122,224,205,0.1);
+    border-radius:10px; padding:12px; margin-bottom:6px;
+  }
+  .new-listing-form select, .new-listing-form input{
+    background: rgba(255,255,255,0.04); border:1px solid rgba(122,224,205,0.2);
+    color: var(--text-main); border-radius:8px; padding:8px 9px; font-size:12.5px;
+  }
+  .new-listing-form select{ flex:2; min-width:160px; }
+  .new-listing-form input{ flex:1; min-width:70px; }
+  .new-listing-form button{
+    font-size:12.5px; font-weight:600; padding:8px 16px; border-radius:8px; cursor:pointer;
+    background: rgba(79,219,160,0.12); border:1px solid rgba(79,219,160,0.4); color:#4fdba0;
+  }
+
+  @media (max-width:640px){
+    .market-tab-btn{ min-width:90px; font-size:11.5px; }
+    .new-listing-form select, .new-listing-form input{ flex:1 1 100%; }
+  }
+
   .hidden{ display:none !important; }
 
   @media (prefers-reduced-motion: reduce){
@@ -729,6 +816,11 @@
       <button class="action-btn inventory-btn" id="btnInventory">
         Túi Đồ &amp; Trang Bị
         <span class="sub">Trang bị vũ khí/giáp/pháp bảo, dùng đan dược để tăng tốc tu luyện vĩnh viễn</span>
+      </button>
+
+      <button class="action-btn market-btn" id="btnMarket">
+        Giao Thương &amp; Chợ Đen
+        <span class="sub">Mua sắm tại Tiệm Tạp Hóa hoặc niêm yết/mua bán trực tiếp với đạo hữu khác</span>
       </button>
 
       <button class="action-btn sect-btn" id="btnSect">
@@ -910,6 +1002,69 @@
 
     <div style="text-align:center; margin-top:14px;">
       <button class="modal-btn modal-btn-cancel" id="btnCloseAccount">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRADING / BLACK MARKET MODAL -->
+<div class="modal-overlay hidden" id="marketModal">
+  <div class="modal-box wide">
+    <h2>Giao Thương &amp; Chợ Đen</h2>
+
+    <div class="market-tabs">
+      <button class="market-tab-btn active" id="tabShopBtn">Cửa Hàng</button>
+      <button class="market-tab-btn" id="tabMarketBtn">Sàn Giao Dịch</button>
+      <button class="market-tab-btn" id="tabMyListingsBtn">Đang Rao Bán</button>
+    </div>
+
+    <div class="market-tab-content" id="shopTabContent">
+      <div class="market-section-title">Vật Phẩm Cơ Bản (không giới hạn)</div>
+      <div class="shop-grid" id="shopBaseGrid"></div>
+      <div class="market-section-title">Hàng Luân Chuyển <span class="shop-refresh-info" id="shopRefreshInfo"></span></div>
+      <div class="shop-grid" id="shopRotatingGrid"></div>
+    </div>
+
+    <div class="market-tab-content hidden" id="marketTabContent">
+      <div class="market-filters">
+        <select id="marketFilterType">
+          <option value="all">Tất cả loại</option>
+          <option value="weapon">Vũ Khí</option>
+          <option value="armor">Giáp</option>
+          <option value="phapBao">Pháp Bảo</option>
+          <option value="pill">Đan Dược</option>
+          <option value="congphap">Công Pháp</option>
+          <option value="material">Nguyên Liệu</option>
+        </select>
+        <select id="marketFilterRarity">
+          <option value="all">Tất cả phẩm chất</option>
+          <option value="common">Phàm Phẩm</option>
+          <option value="uncommon">Tinh Phẩm</option>
+          <option value="rare">Hiếm Có</option>
+          <option value="epic">Trân Quý</option>
+          <option value="legendary">Tuyệt Thế</option>
+        </select>
+        <input type="number" id="marketFilterMinPrice" placeholder="Giá từ" min="0">
+        <input type="number" id="marketFilterMaxPrice" placeholder="Giá đến" min="0">
+        <button id="btnMarketRefresh">Làm Mới</button>
+      </div>
+      <div class="sync-status" id="marketSyncStatus" style="text-align:left; margin:0 0 10px;">Chưa tải dữ liệu</div>
+      <div class="market-listing-list" id="marketListingList"><div class="lb-empty">Bấm "Làm Mới" để tải Sàn Giao Dịch.</div></div>
+    </div>
+
+    <div class="market-tab-content hidden" id="myListingsTabContent">
+      <div class="market-section-title">Đăng Bán Vật Phẩm Mới</div>
+      <div class="new-listing-form">
+        <select id="newListingItemSelect"></select>
+        <input type="number" id="newListingQty" min="1" value="1" placeholder="Số lượng">
+        <input type="number" id="newListingPrice" min="1" placeholder="Giá/món">
+        <button id="btnCreateListing">Đăng Bán</button>
+      </div>
+      <div class="market-section-title">Niêm Yết Của Ngươi</div>
+      <div class="market-listing-list" id="myListingsList"><div class="lb-empty">Ngươi chưa rao bán món nào.</div></div>
+    </div>
+
+    <div style="text-align:center; margin-top:16px;">
+      <button class="modal-btn modal-btn-cancel" id="btnCloseMarket">Đóng</button>
     </div>
   </div>
 </div>
@@ -1483,7 +1638,13 @@ const ITEM_DB = {
      cộng vĩnh viễn vào tứ đại thuộc tính của đệ tử được chọn. */
   so_cap_tam_phap:     { name:"Sơ Cấp Tâm Pháp",     type:"congphap", rarity:"common",   ngoTinh:2, daoTam:2 },
   trung_cap_kiem_phap: { name:"Trung Cấp Kiếm Pháp", type:"congphap", rarity:"uncommon", daoTam:5, theChat:3 },
-  thuong_co_dao_thu:   { name:"Thượng Cổ Đạo Thư",   type:"congphap", rarity:"rare",     ngoTinh:8, coDuyen:8, daoTam:8, theChat:8 }
+  thuong_co_dao_thu:   { name:"Thượng Cổ Đạo Thư",   type:"congphap", rarity:"rare",     ngoTinh:8, coDuyen:8, daoTam:8, theChat:8 },
+
+  /* Đan dược cực phẩm — chỉ xuất hiện trong "Hàng Luân Chuyển" của Tiệm Tạp Hóa Tông Môn,
+     số lượng rất hạn chế mỗi lần cửa hàng làm mới. Hạo Đan có hiệu ứng ĐẶC BIỆT: cộng thẳng
+     vào thọ nguyên (xử lý riêng trong consumePill, không đi qua pillBonuses như các đan khác). */
+  do_kiep_dan: { name:"Độ Kiếp Đan",  type:"pill", rarity:"legendary", tocDoTuLuyen:0.2, atk:15, def:15, hp:60 },
+  hao_dan:     { name:"Hạo Đan",      type:"pill", rarity:"legendary", thoNguyen:200 }
 };
 
 function addItem(s, itemId, n){
@@ -1560,6 +1721,11 @@ function consumePill(itemId){
   if(it.atk) deltas.push('ATK +'+it.atk+' (vĩnh viễn)');
   if(it.def) deltas.push('DEF +'+it.def+' (vĩnh viễn)');
   if(it.hp) deltas.push('HP +'+it.hp+' (vĩnh viễn)');
+  if(it.thoNguyen){
+    state.thoNguyenMax += it.thoNguyen;
+    state.thoNguyen += it.thoNguyen;
+    deltas.push('Thọ Nguyên +'+it.thoNguyen+' năm');
+  }
   addLogNode({type:'success', title:'Dùng Đan Dược', text: state.name+' vận công hóa giải, để dược lực của '+it.name+' thẩm thấu toàn thân, hóa thành sức mạnh vĩnh cửu.', deltas:deltas});
   updateUI();
   syncSave({force:true});
@@ -2302,7 +2468,27 @@ const el = {
   accountModal: document.getElementById('accountModal'),
   accountInfo: document.getElementById('accountInfo'),
   accountDeleteStep1: document.getElementById('accountDeleteStep1'),
-  accountDeleteStep2: document.getElementById('accountDeleteStep2')
+  accountDeleteStep2: document.getElementById('accountDeleteStep2'),
+  marketModal: document.getElementById('marketModal'),
+  tabShopBtn: document.getElementById('tabShopBtn'),
+  tabMarketBtn: document.getElementById('tabMarketBtn'),
+  tabMyListingsBtn: document.getElementById('tabMyListingsBtn'),
+  shopTabContent: document.getElementById('shopTabContent'),
+  marketTabContent: document.getElementById('marketTabContent'),
+  myListingsTabContent: document.getElementById('myListingsTabContent'),
+  shopBaseGrid: document.getElementById('shopBaseGrid'),
+  shopRotatingGrid: document.getElementById('shopRotatingGrid'),
+  shopRefreshInfo: document.getElementById('shopRefreshInfo'),
+  marketFilterType: document.getElementById('marketFilterType'),
+  marketFilterRarity: document.getElementById('marketFilterRarity'),
+  marketFilterMinPrice: document.getElementById('marketFilterMinPrice'),
+  marketFilterMaxPrice: document.getElementById('marketFilterMaxPrice'),
+  marketSyncStatus: document.getElementById('marketSyncStatus'),
+  marketListingList: document.getElementById('marketListingList'),
+  newListingItemSelect: document.getElementById('newListingItemSelect'),
+  newListingQty: document.getElementById('newListingQty'),
+  newListingPrice: document.getElementById('newListingPrice'),
+  myListingsList: document.getElementById('myListingsList')
 };
 
 function tierClass(realmIdx){
@@ -2477,8 +2663,11 @@ async function jsonbinReadAll(){
   if(!res.ok) throw new Error('HTTP '+res.status);
   const data = await res.json();
   const record = (data && typeof data==='object' && 'record' in data && 'metadata' in data) ? data.record : data;
-  if(!record || typeof record !== 'object' || Array.isArray(record)) return { players: {} };
+  if(!record || typeof record !== 'object' || Array.isArray(record)) return { players: {}, shop: null, market: { listings: {} } };
   if(!record.players || typeof record.players !== 'object') record.players = {};
+  if(!record.market || typeof record.market !== 'object') record.market = { listings: {} };
+  if(!record.market.listings || typeof record.market.listings !== 'object') record.market.listings = {};
+  // record.shop giữ nguyên null/undefined nếu chưa có — ensureShopFresh() sẽ tự sinh khi cần
   return record;
 }
 
@@ -3030,6 +3219,439 @@ function reincarnate(){
   syncSave({force:true});
 }
 
+/* ================= GIAO THƯƠNG & CHỢ ĐEN ================= */
+
+/* ---------- Tiệm Tạp Hóa Tông Môn (NPC Shop) ---------- */
+const SHOP_REFRESH_INTERVAL_MS = 24*60*60*1000; // làm mới mỗi ngày
+const SHOP_BASE_ITEMS = [
+  {itemId:'linh_thao', price:15},
+  {itemId:'yeu_dan', price:30},
+  {itemId:'tu_khi_dan', price:40},
+  {itemId:'cuong_the_dan', price:50},
+  {itemId:'pham_kiem', price:80},
+  {itemId:'bo_giap_vai', price:80},
+  {itemId:'tu_chan_ngoc_bai', price:100},
+  {itemId:'so_cap_tam_phap', price:120}
+];
+const SHOP_ROTATING_POOL = [
+  {itemId:'linh_kiem', price:300, stock:6},
+  {itemId:'huyen_thiet_giap', price:320, stock:6},
+  {itemId:'van_dao_la_ban', price:400, stock:4},
+  {itemId:'pha_giap_dan', price:150, stock:8},
+  {itemId:'huyen_thiet_dan', price:150, stock:8},
+  {itemId:'thien_nien_linh_chi', price:250, stock:5},
+  {itemId:'trung_cap_kiem_phap', price:350, stock:4}
+];
+const SHOP_RARE_POOL = [
+  {itemId:'do_kiep_dan', price:2000, stock:1},
+  {itemId:'hao_dan', price:2500, stock:1}
+];
+const SHOP_RARE_CHANCE = 0.15;
+const SHOP_ROTATING_SLOT_COUNT = 4;
+
+function generateShopInventory(){
+  const pool = SHOP_ROTATING_POOL.slice();
+  const picked = [];
+  for(let i=0; i<SHOP_ROTATING_SLOT_COUNT && pool.length>0; i++){
+    const idx = Math.floor(Math.random()*pool.length);
+    const base = pool[idx];
+    picked.push({ itemId: base.itemId, price: base.price, stock: base.stock, remaining: base.stock, isRare:false });
+    pool.splice(idx,1);
+  }
+  if(Math.random() < SHOP_RARE_CHANCE){
+    const rare = pickRandom(SHOP_RARE_POOL);
+    picked.push({ itemId: rare.itemId, price: rare.price, stock: rare.stock, remaining: rare.stock, isRare:true });
+  }
+  return { refreshedAt: Date.now(), rotating: picked };
+}
+
+/* Nếu bản ghi shop chung chưa có hoặc đã quá hạn SHOP_REFRESH_INTERVAL_MS, sinh một danh sách mới
+   và ghi thẳng vào `all` (chưa PUT lên mạng — việc PUT do hàm gọi ensureShopFresh chịu trách nhiệm). */
+function ensureShopFresh(all){
+  const stale = !all.shop || typeof all.shop.refreshedAt !== 'number' || (Date.now() - all.shop.refreshedAt >= SHOP_REFRESH_INTERVAL_MS);
+  if(stale){
+    all.shop = generateShopInventory();
+  }
+  return all.shop;
+}
+
+async function buyFromShop(itemId, rotatingIndex){
+  if(!state) return;
+  let price;
+  const isRotating = (rotatingIndex !== null && rotatingIndex !== undefined);
+  if(!isRotating){
+    const base = SHOP_BASE_ITEMS.find(function(b){ return b.itemId===itemId; });
+    if(!base) return;
+    price = base.price;
+  }
+  setSyncStatus('syncing');
+  try{
+    const all = await jsonbinReadAll();
+    const shop = ensureShopFresh(all);
+    if(isRotating){
+      const slot = shop.rotating[rotatingIndex];
+      if(!slot || slot.itemId !== itemId || slot.remaining <= 0){
+        addLogNode({type:'fail', title:'Đã Hết Hàng', text:'Món đồ này vừa được người khác mua hết hoặc cửa hàng vừa làm mới danh sách. Hãy thử lại.', deltas:[]});
+        setSyncStatus('ok');
+        renderShopTab();
+        return;
+      }
+      price = slot.price;
+    }
+    if(state.linhThach < price){
+      addLogNode({type:'neutral', title:'Không Đủ Linh Thạch', text:'Cần '+price+' Linh Thạch để mua '+(ITEM_DB[itemId]?ITEM_DB[itemId].name:itemId)+'.', deltas:[]});
+      setSyncStatus('ok');
+      return;
+    }
+    addLinhThach(-price);
+    addItem(state, itemId, 1);
+    if(isRotating) shop.rotating[rotatingIndex].remaining--;
+    all.shop = shop;
+    all.players = all.players || {};
+    all.players[myPlayerId] = playerSnapshot();
+    try{
+      cachedBinData = all;
+      await jsonbinWriteAll(all);
+      setSyncStatus('ok');
+      addLogNode({type:'success', title:'Mua Sắm Thành Công', text: state.name+' đã mua '+(ITEM_DB[itemId]?ITEM_DB[itemId].name:itemId)+' từ Tiệm Tạp Hóa Tông Môn.', deltas:['Linh Thạch -'+price]});
+    }catch(writeErr){
+      addLinhThach(price);
+      if(state.inventory[itemId]) { state.inventory[itemId]--; if(state.inventory[itemId]<=0) delete state.inventory[itemId]; }
+      if(isRotating) shop.rotating[rotatingIndex].remaining++;
+      setSyncStatus('error', writeErr && writeErr.message);
+      addLogNode({type:'fail', title:'Giao Dịch Thất Bại', text:'Không thể kết nối tới Vân Đài Ký Sự, giao dịch đã được hoàn tác.', deltas:[]});
+    }
+    renderShopTab();
+    updateUI();
+  }catch(err){
+    setSyncStatus('error', err && err.message);
+    addLogNode({type:'fail', title:'Không Thể Kết Nối', text:'Không thể tải dữ liệu Tiệm Tạp Hóa lúc này.', deltas:[]});
+  }
+}
+
+function shopRefreshCountdownText(shop){
+  if(!shop || typeof shop.refreshedAt !== 'number') return '';
+  const remain = Math.max(0, SHOP_REFRESH_INTERVAL_MS - (Date.now()-shop.refreshedAt));
+  const h = Math.floor(remain/3600000), m = Math.floor((remain%3600000)/60000);
+  return '(làm mới sau '+h+'h'+m+'p)';
+}
+
+async function renderShopTab(){
+  el.shopBaseGrid.innerHTML = '';
+  SHOP_BASE_ITEMS.forEach(function(entry){
+    const it = ITEM_DB[entry.itemId];
+    if(!it) return;
+    const card = document.createElement('div');
+    card.className = 'shop-item-card';
+    const nm = document.createElement('div'); nm.className='shop-item-name'; nm.textContent = it.name;
+    const meta = document.createElement('div'); meta.className='shop-item-meta'; meta.textContent = itemStatSummary(it);
+    const btn = document.createElement('button'); btn.className='shop-buy-btn';
+    btn.textContent = 'Mua ('+entry.price+' LT)';
+    btn.disabled = !state || state.linhThach < entry.price;
+    btn.addEventListener('click', function(){ buyFromShop(entry.itemId, null); });
+    card.appendChild(nm); card.appendChild(meta); card.appendChild(btn);
+    el.shopBaseGrid.appendChild(card);
+  });
+
+  el.shopRefreshInfo.textContent = 'Đang tải...';
+  el.shopRotatingGrid.innerHTML = '';
+  try{
+    const all = await fetchAllPlayers();
+    const shop = ensureShopFresh(all);
+    // Nếu vừa mới sinh shop mới (do hết hạn), ghi lại ngay để những người chơi khác cũng thấy bản mới này.
+    if(all.shop === shop && (!cachedBinData || cachedBinData.shop !== shop)){
+      cachedBinData = all;
+      try{ await jsonbinWriteAll(all); }catch(e){ /* không sao, lần refresh sau sẽ thử lại */ }
+    }
+    el.shopRefreshInfo.textContent = shopRefreshCountdownText(shop);
+    shop.rotating.forEach(function(slot, idx){
+      const it = ITEM_DB[slot.itemId];
+      if(!it) return;
+      const card = document.createElement('div');
+      card.className = 'shop-item-card' + (slot.isRare ? ' rare' : '');
+      const nm = document.createElement('div'); nm.className='shop-item-name'; nm.textContent = it.name + (slot.isRare?' ★':'');
+      const meta = document.createElement('div'); meta.className='shop-item-meta'; meta.textContent = itemStatSummary(it) + ' · Còn '+slot.remaining+'/'+slot.stock;
+      const btn = document.createElement('button'); btn.className='shop-buy-btn';
+      btn.textContent = slot.remaining>0 ? 'Mua ('+slot.price+' LT)' : 'Hết Hàng';
+      btn.disabled = slot.remaining<=0 || !state || state.linhThach < slot.price;
+      btn.addEventListener('click', function(){ buyFromShop(slot.itemId, idx); });
+      card.appendChild(nm); card.appendChild(meta); card.appendChild(btn);
+      el.shopRotatingGrid.appendChild(card);
+    });
+  }catch(err){
+    el.shopRefreshInfo.textContent = '(không thể tải)';
+    el.shopRotatingGrid.innerHTML = '<div class="lb-empty">Không thể kết nối tới Tiệm Tạp Hóa lúc này.</div>';
+  }
+}
+
+/* ---------- Chợ Đen / Sàn Giao Dịch (P2P) ---------- */
+const MARKET_LISTING_FEE_PCT = 0.05; // 5% giá trị niêm yết
+const MARKET_LISTING_FEE_MIN = 5;
+let lastMarketListings = [];
+
+function genListingId(){ return 'lst-' + Math.random().toString(36).slice(2,10); }
+
+function populateNewListingSelect(){
+  el.newListingItemSelect.innerHTML = '';
+  const inv = (state && state.inventory) || {};
+  const ids = Object.keys(inv).filter(function(id){ return inv[id]>0 && ITEM_DB[id]; });
+  if(ids.length===0){
+    const opt = document.createElement('option');
+    opt.value = ''; opt.textContent = '(Không có vật phẩm để bán)';
+    el.newListingItemSelect.appendChild(opt);
+    return;
+  }
+  ids.forEach(function(id){
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = ITEM_DB[id].name + ' (x'+inv[id]+')';
+    el.newListingItemSelect.appendChild(opt);
+  });
+}
+
+async function createListing(){
+  if(!state) return;
+  const itemId = el.newListingItemSelect.value;
+  const qty = Math.max(1, Math.floor(Number(el.newListingQty.value)||1));
+  const pricePerUnit = Math.max(1, Math.floor(Number(el.newListingPrice.value)||0));
+  if(!itemId || !ITEM_DB[itemId]){
+    addLogNode({type:'neutral', title:'Chưa Chọn Vật Phẩm', text:'Hãy chọn một vật phẩm trong túi đồ để đăng bán.', deltas:[]});
+    return;
+  }
+  if(!pricePerUnit){
+    addLogNode({type:'neutral', title:'Chưa Đặt Giá', text:'Hãy nhập mức giá Linh Thạch cho mỗi món.', deltas:[]});
+    return;
+  }
+  const owned = (state.inventory && state.inventory[itemId]) || 0;
+  if(owned < qty){
+    addLogNode({type:'neutral', title:'Không Đủ Vật Phẩm', text:'Ngươi chỉ còn '+owned+' '+ITEM_DB[itemId].name+', không đủ để đăng bán '+qty+' món.', deltas:[]});
+    return;
+  }
+  const totalValue = qty*pricePerUnit;
+  const fee = Math.max(MARKET_LISTING_FEE_MIN, Math.round(totalValue*MARKET_LISTING_FEE_PCT));
+  if(state.linhThach < fee){
+    addLogNode({type:'neutral', title:'Không Đủ Phí Giao Dịch', text:'Cần '+fee+' Linh Thạch làm phí đăng bán (5% giá trị, tối thiểu '+MARKET_LISTING_FEE_MIN+' Linh Thạch).', deltas:[]});
+    return;
+  }
+
+  state.inventory[itemId] -= qty;
+  if(state.inventory[itemId] <= 0) delete state.inventory[itemId];
+  addLinhThach(-fee);
+  updateUI();
+
+  setSyncStatus('syncing');
+  try{
+    const all = await jsonbinReadAll();
+    const id = genListingId();
+    all.market = all.market || {listings:{}};
+    all.market.listings = all.market.listings || {};
+    all.market.listings[id] = {
+      id: id, sellerId: myPlayerId, sellerName: state.name,
+      itemId: itemId, qty: qty, pricePerUnit: pricePerUnit, listedAt: Date.now()
+    };
+    all.players = all.players || {};
+    all.players[myPlayerId] = playerSnapshot();
+    cachedBinData = all;
+    await jsonbinWriteAll(all);
+    setSyncStatus('ok');
+    addLogNode({type:'success', title:'Đăng Bán Thành Công', text: state.name+' đã niêm yết '+qty+'x '+ITEM_DB[itemId].name+' lên Chợ Đen với giá '+pricePerUnit+' Linh Thạch/món.', deltas:['Phí giao dịch: -'+fee+' Linh Thạch']});
+    el.newListingQty.value = '1';
+    el.newListingPrice.value = '';
+    populateNewListingSelect();
+    renderMyListingsTab();
+  }catch(err){
+    // Hoàn tác cục bộ vì giao dịch không thực sự ghi được lên máy chủ
+    state.inventory[itemId] = (state.inventory[itemId]||0) + qty;
+    addLinhThach(fee);
+    setSyncStatus('error', err && err.message);
+    addLogNode({type:'fail', title:'Đăng Bán Thất Bại', text:'Không thể kết nối tới Vân Đài Ký Sự, vật phẩm và phí đã được hoàn lại.', deltas:[]});
+  }
+  updateUI();
+}
+
+async function cancelListing(listingId){
+  setSyncStatus('syncing');
+  try{
+    const all = await jsonbinReadAll();
+    const listing = all.market && all.market.listings && all.market.listings[listingId];
+    if(!listing || listing.sellerId !== myPlayerId){
+      addLogNode({type:'neutral', title:'Không Thể Hủy', text:'Niêm yết này không tồn tại hoặc không thuộc về ngươi (có thể đã được người khác mua).', deltas:[]});
+      setSyncStatus('ok');
+      renderMyListingsTab();
+      return;
+    }
+    delete all.market.listings[listingId];
+    addItem(state, listing.itemId, listing.qty);
+    all.players = all.players || {};
+    all.players[myPlayerId] = playerSnapshot();
+    cachedBinData = all;
+    await jsonbinWriteAll(all);
+    setSyncStatus('ok');
+    addLogNode({type:'neutral', title:'Đã Hủy Niêm Yết', text: (ITEM_DB[listing.itemId]?ITEM_DB[listing.itemId].name:listing.itemId)+' đã được thu hồi về túi đồ (phí đăng bán không được hoàn lại).', deltas:[]});
+    populateNewListingSelect();
+    renderMyListingsTab();
+    updateUI();
+  }catch(err){
+    setSyncStatus('error', err && err.message);
+    addLogNode({type:'fail', title:'Hủy Niêm Yết Thất Bại', text:'Không thể kết nối tới Vân Đài Ký Sự lúc này.', deltas:[]});
+  }
+}
+
+async function buyListing(listingId){
+  if(!state) return;
+  setSyncStatus('syncing');
+  try{
+    const all = await jsonbinReadAll();
+    const listing = all.market && all.market.listings && all.market.listings[listingId];
+    if(!listing){
+      addLogNode({type:'fail', title:'Đã Được Bán', text:'Món đồ này vừa được người khác mua mất hoặc người bán đã hủy niêm yết.', deltas:[]});
+      setSyncStatus('ok');
+      renderMarketTab();
+      return;
+    }
+    if(listing.sellerId === myPlayerId){
+      addLogNode({type:'neutral', title:'Không Thể Tự Mua', text:'Ngươi không thể mua lại chính món đồ mình đang rao bán — hãy hủy niêm yết ở tab "Đang Rao Bán" nếu muốn lấy lại.', deltas:[]});
+      setSyncStatus('ok');
+      return;
+    }
+    const totalCost = listing.qty * listing.pricePerUnit;
+    if(state.linhThach < totalCost){
+      addLogNode({type:'neutral', title:'Không Đủ Linh Thạch', text:'Cần '+totalCost+' Linh Thạch để mua '+listing.qty+'x '+(ITEM_DB[listing.itemId]?ITEM_DB[listing.itemId].name:listing.itemId)+'.', deltas:[]});
+      setSyncStatus('ok');
+      return;
+    }
+
+    addLinhThach(-totalCost);
+    addItem(state, listing.itemId, listing.qty);
+    updateUI();
+
+    try{
+      delete all.market.listings[listingId];
+      const seller = all.players[listing.sellerId];
+      if(seller){
+        seller.linhThach = (seller.linhThach||0) + totalCost;
+        all.players[listing.sellerId] = seller;
+      }
+      all.players[myPlayerId] = playerSnapshot();
+      cachedBinData = all;
+      await jsonbinWriteAll(all);
+      setSyncStatus('ok');
+      addLogNode({type:'success', title:'Giao Dịch Thành Công', text: state.name+' đã mua '+listing.qty+'x '+(ITEM_DB[listing.itemId]?ITEM_DB[listing.itemId].name:listing.itemId)+' từ '+listing.sellerName+' với giá '+totalCost+' Linh Thạch.', deltas:['Linh Thạch -'+totalCost]});
+      renderMarketTab();
+    }catch(writeErr){
+      addLinhThach(totalCost);
+      state.inventory[listing.itemId] = Math.max(0, (state.inventory[listing.itemId]||0) - listing.qty);
+      if(state.inventory[listing.itemId] <= 0) delete state.inventory[listing.itemId];
+      setSyncStatus('error', writeErr && writeErr.message);
+      addLogNode({type:'fail', title:'Giao Dịch Thất Bại', text:'Không thể kết nối tới Vân Đài Ký Sự, giao dịch đã được hoàn tác.', deltas:[]});
+    }
+    updateUI();
+  }catch(err){
+    setSyncStatus('error', err && err.message);
+    addLogNode({type:'fail', title:'Không Thể Kết Nối', text:'Không thể tải dữ liệu Sàn Giao Dịch lúc này.', deltas:[]});
+  }
+}
+
+function passesMarketFilters(listing){
+  const it = ITEM_DB[listing.itemId];
+  if(!it) return false;
+  const typeFilter = el.marketFilterType.value;
+  if(typeFilter !== 'all' && it.type !== typeFilter) return false;
+  const rarityFilter = el.marketFilterRarity.value;
+  if(rarityFilter !== 'all' && it.rarity !== rarityFilter) return false;
+  const minP = el.marketFilterMinPrice.value ? Number(el.marketFilterMinPrice.value) : null;
+  const maxP = el.marketFilterMaxPrice.value ? Number(el.marketFilterMaxPrice.value) : null;
+  if(minP !== null && listing.pricePerUnit < minP) return false;
+  if(maxP !== null && listing.pricePerUnit > maxP) return false;
+  return true;
+}
+
+function renderMarketListRows(listings, container, mode){
+  container.innerHTML = '';
+  if(listings.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'lb-empty';
+    empty.textContent = mode==='mine' ? 'Ngươi chưa rao bán món nào.' : 'Không có niêm yết nào khớp bộ lọc hiện tại.';
+    container.appendChild(empty);
+    return;
+  }
+  listings.forEach(function(listing){
+    const it = ITEM_DB[listing.itemId];
+    if(!it) return;
+    const row = document.createElement('div');
+    row.className = 'listing-row';
+    const info = document.createElement('div'); info.className = 'listing-info';
+    const nm = document.createElement('div'); nm.className = 'listing-name'; nm.textContent = it.name + ' x' + listing.qty;
+    const meta = document.createElement('div'); meta.className = 'listing-meta';
+    meta.textContent = mode==='mine' ? rarityLabel(it.rarity) : rarityLabel(it.rarity)+' · Người bán: '+listing.sellerName;
+    info.appendChild(nm); info.appendChild(meta);
+    const price = document.createElement('div'); price.className = 'listing-price';
+    price.textContent = fmt(listing.qty*listing.pricePerUnit)+' LT';
+    row.appendChild(info); row.appendChild(price);
+    const btn = document.createElement('button');
+    if(mode==='mine'){
+      btn.className = 'cancel-btn';
+      btn.textContent = 'Hủy';
+      btn.addEventListener('click', function(){ cancelListing(listing.id); });
+    } else {
+      btn.textContent = 'Mua';
+      btn.disabled = !state || state.linhThach < listing.qty*listing.pricePerUnit;
+      btn.addEventListener('click', function(){ buyListing(listing.id); });
+    }
+    row.appendChild(btn);
+    container.appendChild(row);
+  });
+}
+
+async function loadMarketTab(){
+  el.marketSyncStatus.classList.remove('ok','error');
+  el.marketSyncStatus.classList.add('syncing');
+  el.marketSyncStatus.textContent = 'Đang tải Sàn Giao Dịch...';
+  try{
+    const all = await fetchAllPlayers();
+    const allListings = Object.values((all.market && all.market.listings) || {});
+    lastMarketListings = allListings.filter(function(l){ return l.sellerId !== myPlayerId; });
+    el.marketSyncStatus.classList.remove('syncing');
+    el.marketSyncStatus.classList.add('ok');
+    const t = new Date();
+    el.marketSyncStatus.textContent = 'Cập nhật lúc '+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0')+' · '+lastMarketListings.length+' niêm yết';
+    renderMarketTab();
+  }catch(err){
+    el.marketSyncStatus.classList.remove('syncing');
+    el.marketSyncStatus.classList.add('error');
+    el.marketSyncStatus.textContent = 'Không thể tải Sàn Giao Dịch ('+(err&&err.message)+')';
+  }
+}
+function renderMarketTab(){
+  const filtered = lastMarketListings.filter(passesMarketFilters);
+  renderMarketListRows(filtered, el.marketListingList, 'others');
+}
+function renderMyListingsTab(){
+  populateNewListingSelect();
+  const mine = (cachedBinData && cachedBinData.market && cachedBinData.market.listings)
+    ? Object.values(cachedBinData.market.listings).filter(function(l){ return l.sellerId===myPlayerId; })
+    : [];
+  renderMarketListRows(mine, el.myListingsList, 'mine');
+}
+
+/* ---------- Modal & chuyển tab ---------- */
+function switchMarketTab(tab){
+  el.tabShopBtn.classList.toggle('active', tab==='shop');
+  el.tabMarketBtn.classList.toggle('active', tab==='market');
+  el.tabMyListingsBtn.classList.toggle('active', tab==='mylistings');
+  el.shopTabContent.classList.toggle('hidden', tab!=='shop');
+  el.marketTabContent.classList.toggle('hidden', tab!=='market');
+  el.myListingsTabContent.classList.toggle('hidden', tab!=='mylistings');
+  if(tab==='shop') renderShopTab();
+  else if(tab==='market') loadMarketTab();
+  else if(tab==='mylistings') renderMyListingsTab();
+}
+function openMarket(){
+  el.marketModal.classList.remove('hidden');
+  switchMarketTab('shop');
+}
+function closeMarket(){ el.marketModal.classList.add('hidden'); }
+
 /* ================= INIT & EVENTS ================= */
 buildRoadmap();
 
@@ -3250,6 +3872,17 @@ document.getElementById('btnCancelDelete').addEventListener('click', function(){
   el.accountDeleteStep1.classList.remove('hidden');
 });
 document.getElementById('btnConfirmDelete').addEventListener('click', confirmDeleteAccount);
+
+document.getElementById('btnMarket').addEventListener('click', openMarket);
+document.getElementById('btnCloseMarket').addEventListener('click', closeMarket);
+el.tabShopBtn.addEventListener('click', function(){ switchMarketTab('shop'); });
+el.tabMarketBtn.addEventListener('click', function(){ switchMarketTab('market'); });
+el.tabMyListingsBtn.addEventListener('click', function(){ switchMarketTab('mylistings'); });
+['marketFilterType','marketFilterRarity','marketFilterMinPrice','marketFilterMaxPrice'].forEach(function(id){
+  document.getElementById(id).addEventListener('change', renderMarketTab);
+});
+document.getElementById('btnMarketRefresh').addEventListener('click', loadMarketTab);
+document.getElementById('btnCreateListing').addEventListener('click', createListing);
 
 nameInput.addEventListener('keydown', function(e){
   if(e.key === 'Enter') btnStart.click();
