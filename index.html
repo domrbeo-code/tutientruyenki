@@ -652,7 +652,11 @@
   }
   .disc-action-btn:hover{ background: rgba(45,212,191,0.1); color:var(--teal-soft); }
   .disc-action-btn.task-active{ background: rgba(232,194,122,0.08); border-color: rgba(232,194,122,0.3); color: var(--gold); cursor:default; }
+  .disc-action-btn.gift-btn{ background: rgba(232,194,122,0.08); border-color: rgba(232,194,122,0.3); color: var(--gold); }
+  .disc-action-btn.gift-btn:hover{ background: rgba(232,194,122,0.18); }
   .disc-empty{ text-align:center; color:var(--text-faint); font-size:12.5px; padding:16px 0; }
+  .disc-realm-label{ font-size:11px; color:var(--teal-soft); margin-bottom:4px; }
+  .disc-realm-label .major{ font-weight:700; color:var(--gold); font-family:var(--font-display); }
 
   /* ---------- Trading / Black Market modal ---------- */
   .market-tabs{ display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
@@ -731,6 +735,23 @@
     font-size:12.5px; font-weight:600; padding:8px 16px; border-radius:8px; cursor:pointer;
     background: rgba(79,219,160,0.12); border:1px solid rgba(79,219,160,0.4); color:#4fdba0;
   }
+
+  /* ---------- Gift Pill modal ---------- */
+  .gift-pill-modal-box{ max-width:420px; }
+  .gift-pill-list{ display:flex; flex-direction:column; gap:8px; max-height:40vh; overflow-y:auto; margin-bottom:14px; }
+  .gift-pill-row{
+    display:flex; align-items:center; gap:10px;
+    background: rgba(255,255,255,0.03); border:1px solid rgba(122,224,205,0.10);
+    border-radius:10px; padding:10px 12px;
+  }
+  .gift-pill-info{ flex:1; min-width:0; }
+  .gift-pill-name{ font-size:12.5px; font-weight:600; color:var(--text-main); }
+  .gift-pill-meta{ font-size:10.5px; color:var(--text-faint); }
+  .gift-pill-row button{
+    font-size:11.5px; padding:7px 14px; border-radius:8px; cursor:pointer; flex-shrink:0;
+    background: rgba(232,194,122,0.1); border:1px solid rgba(232,194,122,0.35); color:var(--gold);
+  }
+  .gift-pill-row button:disabled{ opacity:0.35; cursor:not-allowed; }
 
   @media (max-width:640px){
     .market-tab-btn{ min-width:90px; font-size:11.5px; }
@@ -815,7 +836,7 @@
 
       <button class="action-btn inventory-btn" id="btnInventory">
         Túi Đồ &amp; Trang Bị
-        <span class="sub">Trang bị vũ khí/giáp/pháp bảo, dùng đan dược để tăng tốc tu luyện vĩnh viễn</span>
+        <span class="sub">Trang bị vũ khí/giáp/pháp bảo, dùng đan dược để tăng tốc độ tu luyện vĩnh viễn</span>
       </button>
 
       <button class="action-btn market-btn" id="btnMarket">
@@ -861,7 +882,7 @@
       </div>
 
       <div class="realm-roadmap">
-        <div class="rm-title">42 Đại Cảnh Giới Chi Lộ</div>
+        <div class="rm-title" id="roadmapTitle">42 Đại Cảnh Giới Chi Lộ</div>
         <div class="rm-chip-row" id="roadmapRow"></div>
       </div>
     </div>
@@ -972,7 +993,7 @@
   </div>
 </div>
 
-<!-- DISCIPLE NAMING MODAL (bắt buộc, không có nút hủy) -->
+<!-- DISCIPLE NAMING MODAL -->
 <div class="modal-overlay hidden" id="discipleNameModal">
   <div class="modal-box">
     <h2>Đệ Tử Mới Bái Nhập</h2>
@@ -980,6 +1001,18 @@
     <input type="text" id="discipleNameInput" maxlength="20" placeholder="Nhập tên đệ tử...">
     <div id="discipleNameError" style="color:var(--danger); font-size:12px; margin-bottom:10px; display:none;">Tên đệ tử không được để trống.</div>
     <div><button class="modal-btn" id="btnConfirmDiscipleName">Xác Nhận Ghi Danh</button></div>
+  </div>
+</div>
+
+<!-- GIFT PILL MODAL -->
+<div class="modal-overlay hidden" id="giftPillModal">
+  <div class="modal-box gift-pill-modal-box">
+    <h2>Tặng Đan Dược Cho Đệ Tử</h2>
+    <p id="giftPillDesc">Chọn đan dược từ túi đồ để tặng cho đệ tử, giúp tăng tốc độ tu luyện hoặc đột phá cảnh giới.</p>
+    <div class="gift-pill-list" id="giftPillList"></div>
+    <div style="text-align:center;">
+      <button class="modal-btn modal-btn-cancel" id="btnCloseGiftPill">Đóng</button>
+    </div>
   </div>
 </div>
 
@@ -1080,26 +1113,21 @@ const MAJOR_REALMS = [
   "Nhân Tiên","Địa Tiên","Thiên Tiên","Chân Tiên","Kim Tiên","Thái Ất Thiên Tiên","Thái Ất Ngọc Tiên","Đại La Tán Tiên","Đại La Kim Tiên","Cửu Thiên Huyền Tiên","Tiên Vương","Tiên Tôn","Tiên Đế",
   "Thần Nhân","Chân Thần","Cổ Thần","Thần Vương","Thần Tôn","Thần Hoàng","Chúa Tể Thần Giới",
   "Hỗn Mang Sơ Cảnh","Hỗn Mang Trung Cảnh","Hỗn Mang Hậu Cảnh","Hỗn Mang Cực Cảnh",
-  "Vô Thượng Đạo Tôn","Vô Cực Thánh Nhân","Hỗn Nguyên Vô Cực","Thiên Đạo Chủ Xưởng","Đại Đạo Luân Hồi Giả","Hồng Mông Chưởng Mệnh","Vô Thượng Vĩnh Hằng Đạo Tổ"
+  "Vô Thượng Đạo Tôn","Vô Cực Thánh Nhân","Hỗn Nguyên Vô Cực","Thiên Đạo Chủ Xưởng","Đại Đạo Luân Hồi Giả","Hồng Mông Chưởng Mệnh","Vô Thượng Vĩnh Hằng Đạo Tổ",
+  /* --- 15 cảnh giới mới (mở rộng) --- */
+  "Siêu Việt Hồng Mông","Vô Lượng Đạo Tổ","Vạn Cổ Bất Hủ","Hằng Sa Đại Đạo","Bản Nguyên Chi Chủ","Hư Vô Cảnh Giới","Thái Sơ Đạo Tôn","Vô Thượng Tạo Hóa","Cửu Cực Chân Ngã","Bản Tôn Đại Đạo",
+  "Siêu Thoát Vạn Cổ","Vô Biên Hư Không","Vô Thượng Đại Tự Tại","Vô Lượng Vĩnh Hằng","Chư Thiên Vạn Giới Chí Tôn"
 ];
 const SUB_REALMS = ["Sơ Kỳ","Trung Kỳ","Hậu Kỳ","Viên Mãn"];
 const TANG_PER_SUB = 10;
-const TOTAL_FLAT = MAJOR_REALMS.length * SUB_REALMS.length * TANG_PER_SUB; // 1680
+const TOTAL_FLAT = MAJOR_REALMS.length * SUB_REALMS.length * TANG_PER_SUB;
 
 function flatIndex(realmIdx, subIdx, tang){
   return realmIdx * (SUB_REALMS.length*TANG_PER_SUB) + subIdx*TANG_PER_SUB + (tang-1);
 }
 
-/* MONOTONIC EXP CURVE — sửa triệt để lỗi "sụt tu vi"
-   Bản trước dùng 3 số mũ độc lập (realmBase * SUBREALM_GROWTH^subIdx * TANG_RATIO^(tang-1)) —
-   mỗi khi tang quay lại 1 (sang tiểu cảnh giới mới) hay subIdx quay lại 0 (sang đại cảnh giới mới),
-   số mũ TANG_RATIO^(tang-1) bị RESET VỀ 0, khiến yêu cầu tu vi SỤT THẲNG ĐỨNG dù cảnh giới vừa
-   tăng — đúng lỗi được báo cáo. Cách sửa triệt để: dùng DUY NHẤT MỘT số mũ liên tục — flatIndex
-   (đơn điệu tăng tuyệt đối từ 0 tới 1679, không bao giờ reset) — nên GROWTH^flatIndex CHỈ CÓ THỂ
-   tăng dần liên tục, không có cách nào tụt xuống. Mốc khởi điểm 40.000 (giữa khung 30k-50k yêu cầu),
-   cực hạn cuối game ~1e20 để vẫn "tăng vọt theo cấp số nhân" cho dân hardcore. */
 const BASE_REQ = 40000;
-const GROWTH = 1.0213413129626383; // BASE_REQ * GROWTH^1679 ≈ 1e20
+const GROWTH = 1.0213413129626383;
 function requiredCultivation(realmIdx, subIdx, tang){
   const fi = flatIndex(realmIdx, subIdx, tang);
   return BASE_REQ * Math.pow(GROWTH, fi);
@@ -1131,7 +1159,7 @@ function fmt(n){
 let state = null;
 let lifeCount = 1;
 let eternalBonus = 0;
-let kiepNanBuff = 0; // Buff Kiếp Nạn: +15% tốc độ tu luyện, cộng dồn vĩnh viễn mỗi lần chuyển sinh
+let kiepNanBuff = 0;
 let deathModalShown = false;
 
 function freshState(name){
@@ -1139,7 +1167,7 @@ function freshState(name){
     name: name || "Vô Danh Đạo Nhân",
     realmIdx: 0, subIdx: 0, tang: 1,
     cultivation: 0,
-    totalExpEarned: 0, // tổng EXP tích lũy trong kiếp này (chỉ cộng, không trừ) — dùng để quy đổi khi luân hồi
+    totalExpEarned: 0,
     linhThach: 20,
     thoNguyen: 100 + lifeCount*2,
     thoNguyenMax: 100 + lifeCount*2,
@@ -1177,17 +1205,12 @@ function addLinhThach(n){ state.linhThach = Math.max(0, state.linhThach + n); }
 function addHoDaoDan(n){ state.hoDaoDan = Math.max(0, state.hoDaoDan + n); }
 function addStat(key, n){ state.stats[key] = Math.max(1, state.stats[key] + n); }
 
-/* Mọi lượt tăng tu vi (click, sự kiện...) đều phải đi qua đây để ghi nhận vào totalExpEarned —
-   ledger này CHỈ CỘNG, không bị trừ khi tu vi bị mất, vì nó đại diện cho "đạo hạnh đã từng đạt được"
-   dùng làm căn cứ quy đổi 10% khi chuyển sinh. */
 function gainCultivation(s, amount){
   if(amount <= 0) return;
   s.cultivation += amount;
   s.totalExpEarned = (s.totalExpEarned||0) + amount;
 }
 
-/* Tụt cấp: lùi lại từng tầng một, có thể lùi qua tiểu cảnh giới liền trước, nhưng KHÔNG BAO GIỜ
-   lùi ngược về đại cảnh giới trước đó (không thể tước đi một đại đột phá đã thành công). */
 function demoteTang(amount){
   let remain = Math.max(0, Math.floor(amount));
   while(remain > 0){
@@ -1197,7 +1220,7 @@ function demoteTang(amount){
       state.subIdx--;
       state.tang = TANG_PER_SUB;
     } else {
-      break; // đã chạm sàn Sơ Kỳ Tầng 1 của đại cảnh giới hiện tại
+      break;
     }
     remain--;
   }
@@ -1214,7 +1237,7 @@ function addLogNode({type, title, text, deltas}){
 
   const day = document.createElement('div');
   day.className = 'log-day';
-  day.textContent = 'Ngày thứ ' + state.ngayTu;
+  day.textContent = 'Ngày thứ ' + (state ? state.ngayTu : 0);
 
   const h = document.createElement('div');
   h.className = 'log-title';
@@ -1399,7 +1422,6 @@ const EXPLORE_EVENTS = [
     text:"Nhận được một phong thư không rõ người gửi, bên trong chỉ vỏn vẹn một câu đạo ngôn khó hiểu. Ngươi đọc đi đọc lại nhiều lần, càng ngẫm càng thấy thâm sâu khôn cùng.",
     effect:(s)=>{ addStat('ngoTinh',1); return ["Ngộ Tính +1"]; } },
 
-  /* ---- Choice events ---- */
   { title:"Cửa Bí Cảnh Cổ Xưa", weight:0.8,
     text:"Trước mặt là một cánh cổng đá phủ đầy rêu phong, linh khí bên trong cuồn cuộn nhưng cũng ẩn chứa hung hiểm khó lường. Ngươi cảm nhận được cả cơ duyên lẫn nguy cơ đang chờ đợi ở phía sau cánh cổng ấy.",
     choices:[
@@ -1486,10 +1508,7 @@ const EXPLORE_EVENTS = [
     ]}
 ];
 
-/* ================= EXTREME EVENTS (chỉ xuất hiện từ cảnh giới cao) =================
-   "Được ăn cả, ngã về không": phần thưởng là % max EXP của cảnh giới HIỆN TẠI (reqNow()),
-   hình phạt là % thọ nguyên lớn hoặc tụt hẳn vài tầng tu vi — đúng tinh thần khổ tu cực đoan
-   mà chỉ lộ diện khi đạo hạnh đã đủ sâu (minRealm = ngưỡng đại cảnh giới tối thiểu). */
+/* ================= EXTREME EVENTS ================= */
 const EXTREME_EVENTS = [
   { title:"Đan Dược Thượng Cổ", weight:0.6, minRealm:16,
     text:"Trong một động phủ hoang phế giữa mây mù, một viên đan dược thượng cổ tỏa hào quang kỳ dị nằm lẫn trong đống linh thảo mục nát. Khí tức từ nó vừa mang theo sinh cơ mãnh liệt, vừa ẩn chứa một tia hủy diệt khó lường — được ăn cả, ngã về không.",
@@ -1592,8 +1611,6 @@ const EXTREME_EVENTS = [
     ]}
 ];
 
-/* Chọn pool sự kiện khám phá phù hợp: luôn có EXPLORE_EVENTS làm nền,
-   cộng thêm các EXTREME_EVENTS đã đủ điều kiện minRealm theo cảnh giới hiện tại. */
 function eligibleExploreEvents(){
   const pool = EXPLORE_EVENTS.slice().concat(GEAR_DROP_EVENTS);
   EXTREME_EVENTS.forEach(function(ev){
@@ -1603,9 +1620,6 @@ function eligibleExploreEvents(){
 }
 
 /* ================= EQUIPMENT, PILLS & COMBAT STATS ================= */
-/* type: 'weapon' | 'armor' | 'phapBao' (3 ô trang bị, tối đa 1 món/ô) | 'pill' (tiêu hao, cộng vĩnh viễn
-   vào pillBonuses) | 'material' (nguyên liệu sưu tầm, chưa có công dụng trực tiếp — dành cho hệ thống
-   luyện chế mở rộng sau này). tocDoTuLuyen trên trang bị/đan dược là số THẬP PHÂN (0.05 = +5%). */
 const ITEM_DB = {
   pham_kiem:      { name:"Phàm Kiếm",            type:"weapon", rarity:"common",    atk:8 },
   linh_kiem:      { name:"Linh Kiếm",             type:"weapon", rarity:"rare",      atk:22, tocDoTuLuyen:0.03 },
@@ -1634,15 +1648,10 @@ const ITEM_DB = {
   thien_nien_linh_chi:{ name:"Thiên Niên Linh Chi", type:"material", rarity:"rare" },
   hon_mang_thach: { name:"Hỗn Mang Thạch",        type:"material", rarity:"legendary" },
 
-  /* Công pháp: không tự dùng được, chỉ dùng để "truyền thụ" cho đệ tử (teachCongPhap) —
-     cộng vĩnh viễn vào tứ đại thuộc tính của đệ tử được chọn. */
   so_cap_tam_phap:     { name:"Sơ Cấp Tâm Pháp",     type:"congphap", rarity:"common",   ngoTinh:2, daoTam:2 },
   trung_cap_kiem_phap: { name:"Trung Cấp Kiếm Pháp", type:"congphap", rarity:"uncommon", daoTam:5, theChat:3 },
   thuong_co_dao_thu:   { name:"Thượng Cổ Đạo Thư",   type:"congphap", rarity:"rare",     ngoTinh:8, coDuyen:8, daoTam:8, theChat:8 },
 
-  /* Đan dược cực phẩm — chỉ xuất hiện trong "Hàng Luân Chuyển" của Tiệm Tạp Hóa Tông Môn,
-     số lượng rất hạn chế mỗi lần cửa hàng làm mới. Hạo Đan có hiệu ứng ĐẶC BIỆT: cộng thẳng
-     vào thọ nguyên (xử lý riêng trong consumePill, không đi qua pillBonuses như các đan khác). */
   do_kiep_dan: { name:"Độ Kiếp Đan",  type:"pill", rarity:"legendary", tocDoTuLuyen:0.2, atk:15, def:15, hp:60 },
   hao_dan:     { name:"Hạo Đan",      type:"pill", rarity:"legendary", thoNguyen:200 }
 };
@@ -1664,8 +1673,6 @@ function equippedSpeedBonusPct(s){
   return pct;
 }
 
-/* Dùng chung cho cả nhân vật của mình (state) LẪN dữ liệu ghost của đối thủ lấy từ JSONBin —
-   miễn đối tượng truyền vào có đủ realmIdx/subIdx/tang/stats/equipped/pillBonuses là tính được. */
 function computeCombatStats(s){
   const fi = flatIndex(s.realmIdx||0, s.subIdx||0, s.tang||1);
   const stats = s.stats || {ngoTinh:10,coDuyen:10,daoTam:10,theChat:10};
@@ -1765,13 +1772,11 @@ const IDLE_LOOT_EVENTS = [
 ];
 
 /* ================= TÔNG MÔN & CHIÊU MỘ ĐỆ TỬ ================= */
-const SECT_UNLOCK_REALM_IDX = 4; // Kết Đan (tương đương "Kim Đan") trở lên mới mở khóa Tông Môn
+const SECT_UNLOCK_REALM_IDX = 4;
 
 const DISCIPLE_QUALITIES = ['pham','hoang','dia','thien'];
 const QUALITY_LABELS = { pham:'Phàm Phẩm', hoang:'Hoàng Phẩm', dia:'Địa Phẩm', thien:'Thiên Phẩm' };
 const QUALITY_WEIGHTS = { pham:50, hoang:30, dia:15, thien:5 };
-/* Thiên phú cao (dia/thien): tự tu luyện + tự độ kiếp theo thời gian thực, kể cả khi không mở game.
-   Thiên phú thấp (pham/hoang): tốc độ gần như đứng im, chuyên đi làm nhiệm vụ "cu li". */
 const DISCIPLE_BASE_SPEED = { thien:5.0, dia:2.5, hoang:0.05, pham:0.01 };
 const DISCIPLE_BASE_STATS = {
   pham:  {ngoTinh:5,  coDuyen:5,  daoTam:5,  theChat:5},
@@ -1827,7 +1832,6 @@ function discipleCheckTangUp(disc){
     if(disc.tang > TANG_PER_SUB){ disc.tang = 1; disc.subIdx++; }
   }
 }
-/* Tự độ kiếp đơn giản hoá cho đệ tử (không cần thọ nguyên/Hộ Đạo Đan như nhân vật chính). */
 function discipleAutoBreakthrough(disc){
   if(!discIsAtGate(disc)) return false;
   const req = requiredCultivation(disc.realmIdx, disc.subIdx, disc.tang);
@@ -1842,11 +1846,9 @@ function discipleAutoBreakthrough(disc){
 }
 function discipleSpeed(disc){
   const base = DISCIPLE_BASE_SPEED[disc.quality] || 0.01;
-  const itemPct = equippedSpeedBonusPct(disc); // tái dùng hàm chung — đọc disc.equipped/disc.pillBonuses
+  const itemPct = equippedSpeedBonusPct(disc);
   return base * (1+itemPct);
 }
-/* Bù tiến độ tu luyện của đệ tử thiên phú cao theo THỜI GIAN THỰC ĐÃ TRÔI QUA (kể cả lúc đóng tab) —
-   trần 48 giờ mỗi lần bù để tránh số ảo phi lý nếu bỏ bê tài khoản quá lâu. */
 function advanceDiscipleCultivation(disc, nowTs){
   if(!isHighTalent(disc.quality)) return;
   const last = disc.lastTick || disc.recruitedAt || nowTs;
@@ -1875,8 +1877,6 @@ function checkTaskCompletion(disc, nowTs){
   else if(reward.type === 'item') addItem(state, reward.itemId, reward.qty||1);
   return reward;
 }
-/* Gọi mỗi giây từ vòng lặp treo máy chung: vừa bù tu luyện đệ tử thiên phú cao,
-   vừa kiểm tra nhiệm vụ đã hoàn thành của đệ tử thiên phú thấp. */
 function tickAllDisciples(){
   if(!state || !state.sect || !state.sect.disciples) return;
   const now = Date.now();
@@ -1895,7 +1895,7 @@ function tickAllDisciples(){
   });
 }
 
-let pendingDisciple = null; // { quality } — chờ người chơi đặt tên trước khi tạo đệ tử thật sự
+let pendingDisciple = null;
 
 function startRecruit(){
   if(!sectUnlocked()) return;
@@ -1927,6 +1927,7 @@ function confirmRecruitName(){
     realmIdx: 0, subIdx: 0, tang: 1, cultivation: 0,
     stats: Object.assign({}, DISCIPLE_BASE_STATS[quality]),
     equipped: { weapon: null, armor: null, phapBao: null },
+    pillBonuses: { atk:0, def:0, hp:0, tocDoTuLuyen:0 },
     task: null,
     lastTick: Date.now(),
     recruitedAt: Date.now()
@@ -1947,7 +1948,7 @@ function equipDisciple(discId, itemId){
   if(!disc || !it || !state.inventory || !state.inventory[itemId]) return;
   if(it.type!=='weapon' && it.type!=='armor' && it.type!=='phapBao') return;
   const oldId = disc.equipped[it.type];
-  if(oldId) addItem(state, oldId, 1); // trả trang bị cũ (nếu có) về túi đồ nhân vật chính
+  if(oldId) addItem(state, oldId, 1);
   state.inventory[itemId]--;
   if(state.inventory[itemId] <= 0) delete state.inventory[itemId];
   disc.equipped[it.type] = itemId;
@@ -1983,6 +1984,82 @@ function assignDiscipleTask(discId, taskType){
   renderSect(); updateUI(); syncSave({force:true});
 }
 
+/* Bồi Dưỡng Đệ Tử — Tặng Đan Dược: tiêu hao đan dược từ túi đồ nhân vật chính,
+   cộng trực tiếp vào pillBonuses của đệ tử (vĩnh viễn), giúp tăng tốc độ tu luyện
+   hoặc tăng ATK/DEF/HP. Đan Hạo Đan cũng cộng thẳng thọ nguyên cho đệ tử. */
+let giftPillTargetDiscId = null;
+
+function openGiftPillModal(discId){
+  const disc = state.sect && state.sect.disciples && state.sect.disciples[discId];
+  if(!disc) return;
+  giftPillTargetDiscId = discId;
+  el.giftPillDesc.textContent = 'Chọn đan dược từ túi đồ để tặng cho đệ tử '+disc.name+'. Đan dược sẽ bị tiêu hao và cộng vĩnh viễn vào chỉ số của đệ tử.';
+  renderGiftPillList();
+  el.giftPillModal.classList.remove('hidden');
+}
+function closeGiftPillModal(){
+  el.giftPillModal.classList.add('hidden');
+  giftPillTargetDiscId = null;
+}
+function renderGiftPillList(){
+  el.giftPillList.innerHTML = '';
+  const inv = (state && state.inventory) || {};
+  const pillIds = Object.keys(inv).filter(function(id){
+    const it = ITEM_DB[id];
+    return it && it.type==='pill' && inv[id] > 0;
+  });
+  if(pillIds.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'lb-empty';
+    empty.textContent = 'Không có đan dược trong túi đồ để tặng.';
+    el.giftPillList.appendChild(empty);
+    return;
+  }
+  pillIds.forEach(function(itemId){
+    const it = ITEM_DB[itemId];
+    const row = document.createElement('div');
+    row.className = 'gift-pill-row';
+    const info = document.createElement('div');
+    info.className = 'gift-pill-info';
+    const nm = document.createElement('div');
+    nm.className = 'gift-pill-name';
+    nm.textContent = it.name + ' x' + inv[itemId];
+    const meta = document.createElement('div');
+    meta.className = 'gift-pill-meta';
+    meta.textContent = itemStatSummary(it);
+    info.appendChild(nm); info.appendChild(meta);
+    row.appendChild(info);
+    const btn = document.createElement('button');
+    btn.textContent = 'Tặng';
+    btn.addEventListener('click', function(){ giftPillToDisciple(itemId); });
+    row.appendChild(btn);
+    el.giftPillList.appendChild(row);
+  });
+}
+function giftPillToDisciple(itemId){
+  if(!giftPillTargetDiscId) return;
+  const disc = state.sect && state.sect.disciples && state.sect.disciples[giftPillTargetDiscId];
+  const it = ITEM_DB[itemId];
+  if(!disc || !it || it.type!=='pill' || !state.inventory || !state.inventory[itemId]) return;
+  state.inventory[itemId]--;
+  if(state.inventory[itemId] <= 0) delete state.inventory[itemId];
+  disc.pillBonuses = disc.pillBonuses || {atk:0,def:0,hp:0,tocDoTuLuyen:0};
+  disc.pillBonuses.atk += it.atk||0;
+  disc.pillBonuses.def += it.def||0;
+  disc.pillBonuses.hp += it.hp||0;
+  disc.pillBonuses.tocDoTuLuyen += it.tocDoTuLuyen||0;
+  const deltas = [];
+  if(it.tocDoTuLuyen) deltas.push('Tốc Độ Tu Luyện +'+Math.round(it.tocDoTuLuyen*100)+'%');
+  if(it.atk) deltas.push('ATK +'+it.atk);
+  if(it.def) deltas.push('DEF +'+it.def);
+  if(it.hp) deltas.push('HP +'+it.hp);
+  addLogNode({type:'success', title:'Bồi Dưỡng Đệ Tử', text: state.name+' tặng '+it.name+' cho đệ tử '+disc.name+', dược lực thẩm thấu toàn thân, hóa thành sức mạnh vĩnh cửu.', deltas:deltas});
+  renderGiftPillList();
+  renderSect();
+  updateUI();
+  syncSave({force:true});
+}
+
 function renderSect(){
   if(!state || !state.sect) return;
   const disciples = Object.values(state.sect.disciples || {});
@@ -2016,6 +2093,7 @@ function renderSect(){
   disciples.forEach(function(disc){
     const card = document.createElement('div');
     card.className = 'disciple-card';
+    card.setAttribute('data-disc-id', disc.id);
 
     const head = document.createElement('div');
     head.className = 'disciple-head';
@@ -2029,12 +2107,18 @@ function renderSect(){
     head.appendChild(nameRow); head.appendChild(powerEl);
     card.appendChild(head);
 
+    /* Hiển thị cảnh giới trực quan cho đệ tử */
+    const realmLabel = document.createElement('div');
+    realmLabel.className = 'disc-realm-label';
+    realmLabel.innerHTML = '<span class="major">'+MAJOR_REALMS[disc.realmIdx]+'</span> · '+SUB_REALMS[disc.subIdx]+' Tầng '+disc.tang+'/'+TANG_PER_SUB;
+    card.appendChild(realmLabel);
+
     if(isHighTalent(disc.quality)){
       const req = requiredCultivation(disc.realmIdx, disc.subIdx, disc.tang);
       const pct = clamp((disc.cultivation/req)*100, 0, 100);
       const sub = document.createElement('div');
       sub.className = 'disciple-sub';
-      sub.textContent = MAJOR_REALMS[disc.realmIdx]+' - '+SUB_REALMS[disc.subIdx]+' Tầng '+disc.tang+' · Tự tu luyện '+fmt(discipleSpeed(disc))+'/s';
+      sub.textContent = 'Tự tu luyện '+fmt(discipleSpeed(disc))+'/s · Tu Vi: '+fmt(disc.cultivation)+' / '+fmt(req);
       card.appendChild(sub);
       const track = document.createElement('div'); track.className = 'disciple-bar-track';
       const fill = document.createElement('div'); fill.className = 'disciple-bar-fill'; fill.style.width = pct+'%';
@@ -2042,19 +2126,32 @@ function renderSect(){
     } else if(disc.task){
       const def = SECT_TASK_TYPES[disc.task.type];
       const remain = Math.max(0, disc.task.startedAt + disc.task.durationMs - Date.now());
+      const totalDur = disc.task.durationMs;
+      const elapsed = Date.now() - disc.task.startedAt;
+      const taskPct = clamp((elapsed/totalDur)*100, 0, 100);
       const sub = document.createElement('div');
       sub.className = 'disciple-sub';
-      sub.textContent = 'Đang làm nhiệm vụ: '+(def?def.name:disc.task.type)+' · còn '+Math.ceil(remain/60000)+' phút';
+      sub.textContent = 'Đang làm: '+(def?def.name:disc.task.type)+' · còn '+Math.ceil(remain/60000)+' phút';
       card.appendChild(sub);
+      const track = document.createElement('div'); track.className = 'disciple-bar-track';
+      const fill = document.createElement('div'); fill.className = 'disciple-bar-fill'; fill.style.width = taskPct+'%';
+      track.appendChild(fill); card.appendChild(track);
     } else {
       const sub = document.createElement('div');
       sub.className = 'disciple-sub';
-      sub.textContent = MAJOR_REALMS[disc.realmIdx]+' - '+SUB_REALMS[disc.subIdx]+' Tầng '+disc.tang+' · Nhàn rỗi tại Tông Môn';
+      sub.textContent = 'Nhàn rỗi tại Tông Môn — có thể giao nhiệm vụ';
       card.appendChild(sub);
     }
 
     const actions = document.createElement('div');
     actions.className = 'disciple-actions';
+
+    /* Nút Tặng Đan Dược — luôn hiển thị cho mọi đệ tử */
+    const giftBtn = document.createElement('button');
+    giftBtn.className = 'disc-action-btn gift-btn';
+    giftBtn.textContent = 'Tặng Đan Dược';
+    giftBtn.addEventListener('click', function(){ openGiftPillModal(disc.id); });
+    actions.appendChild(giftBtn);
 
     if(!isHighTalent(disc.quality)){
       Object.keys(SECT_TASK_TYPES).forEach(function(taskType){
@@ -2120,13 +2217,11 @@ const BREAKTHROUGH_FAIL = [
   (from,to)=>"Đạo tâm dao động ngay tại khoảnh khắc mấu chốt, huyễn cảnh tâm ma ập đến khiến toàn thân run rẩy. Cánh cửa dẫn tới "+to+" khép lại trong tiếc nuối, để lại vết thương âm ỉ nơi ngũ tạng."
 ];
 
-/* Thử Thách Đột Phá: mỗi lần đột phá đối mặt NGẪU NHIÊN với một trong hai hình thức kiếp nạn cổ điển. */
 const TRIAL_INTROS = [
   ()=>"Giữa không trung, mây đen cuồn cuộn kéo tới, một tia Lôi Kiếp tím thẫm chậm rãi ngưng tụ, chuẩn bị giáng xuống thử thách đạo cơ. ",
   ()=>"Trong khoảnh khắc vận công đề tụ toàn bộ tu vi, một bóng hình đen tối tách ra từ chính tâm thức — Tâm Ma xuất hiện, thì thầm những lời cám dỗ đầy mê hoặc. "
 ];
 
-/* Phần thưởng trấn phái khi đột phá thành công, chia theo bậc cảnh giới vừa đạt được. */
 function breakthroughRewardItem(newRealmIdx){
   if(newRealmIdx >= 31) return pickRandom(['thai_co_kiem','hon_thien_giap','hon_don_linh_chau','cuu_chuyen_kim_dan','thuong_co_dao_thu']);
   if(newRealmIdx >= 24) return pickRandom(['thanh_phong_kiem','long_lan_giap','van_dao_la_ban','dai_bo_linh_dan','thuong_co_dao_thu']);
@@ -2135,37 +2230,20 @@ function breakthroughRewardItem(newRealmIdx){
 }
 
 /* ================= CORE ACTIONS ================= */
-/* Tốc độ tiêu hao thọ nguyên: tính theo % thọ nguyên TỐI ĐA thay vì số cố định, để áp lực luôn
-   tỉ lệ thuận với cảnh giới hiện tại. Các basePct bên dưới đã được TÍNH LẠI TOÀN BỘ cho khớp với
-   đường cong yêu cầu tu vi mới (mốc khởi điểm 40.000, cao hơn hẳn bản trước) — nếu giữ nguyên
-   basePct cũ, người chơi sẽ cạn thọ nguyên và chết hàng loạt trước khi kịp đột phá lần đầu (đúng
-   lỗi được báo cáo). Đã mô phỏng số lớn để xác nhận: chơi idle/manual thuần túy qua trọn Đại
-   Cảnh Giới đầu tiên vẫn còn dư 55-90% thọ nguyên với các hằng số dưới đây. */
 function grindDecay(basePct){
   const theChatReduction = 1 / (1 + state.stats.theChat*0.04);
   return state.thoNguyenMax * basePct * theChatReduction;
 }
 
-/* ĐÓNG BĂNG TỐC ĐỘ TU LUYỆN TỰ ĐỘNG:
-   Hàm này TUYỆT ĐỐI KHÔNG được phép đọc realmIdx/subIdx/tang/flatIndex/ngoTinh — ngộ tính cũng bị
-   loại khỏi công thức này vì nó tự tăng dần qua các lần đột phá (mỗi lần +1), nên nếu vẫn tính vào
-   đây thì tốc độ tự động sẽ gián tiếp "tự tăng theo cảnh giới" qua đường vòng, vi phạm đúng yêu cầu.
-   Muốn tăng tốc độ TỰ ĐỘNG, con đường DUY NHẤT là trang bị/đan dược (equippedSpeedBonusPct) và
-   Buff Kiếp Nạn (không tính vì nó đến từ luân hồi, không phải "lên cảnh giới"). */
-const BASE_TU_LUYEN_SPEED = 150; // EXP/giây gốc, cố định vĩnh viễn cho MỌI cảnh giới
+const BASE_TU_LUYEN_SPEED = 150;
 function computeTocDoTuLuyen(s){
   const itemPct = equippedSpeedBonusPct(s);
   const kiepNanMult = 1 + kiepNanBuff;
   return BASE_TU_LUYEN_SPEED * (1 + itemPct) * kiepNanMult;
 }
 
-/* TỐC ĐỘ TU LUYỆN THỦ CÔNG: được PHÉP scale nhẹ theo cảnh giới (khác hẳn tốc độ tự động) —
-   dùng Ngộ Tính (tích lũy qua kỳ ngộ) VÀ một hệ số tuyến tính nhẹ theo realmIdx (+5%/đại cảnh giới,
-   "một chút" chứ không bùng nổ). Hiệu chỉnh MANUAL_BASE_MULT=12 để lượng thủ công cơ bản (sau khi
-   chia đều 25%/giây trong 5 giây) đạt hiệu suất ~3.5-4 lần tốc độ tự động ngay từ đầu game, đúng
-   yêu cầu "nhỉnh hơn khoảng 3-4 lần". Vẫn được cộng thêm trang bị/đan dược như tốc độ tự động. */
 const MANUAL_BASE_MULT = 12;
-const MANUAL_REALM_SCALE_RATE = 0.05; // +5%/đại cảnh giới — "scale nhẹ", không đóng băng nhưng cũng không bùng nổ
+const MANUAL_REALM_SCALE_RATE = 0.05;
 function manualClickBaseValue(s){
   const ngoTinhBonus = 1 + s.stats.ngoTinh * 0.02;
   const realmScale = 1 + s.realmIdx * MANUAL_REALM_SCALE_RATE;
@@ -2174,10 +2252,6 @@ function manualClickBaseValue(s){
   return BASE_TU_LUYEN_SPEED * MANUAL_BASE_MULT * ngoTinhBonus * realmScale * (1 + itemPct) * kiepNanMult;
 }
 
-/* CƠ CHẾ KÊNH KÍCH HOẠT 5 GIÂY: bấm "Tăng Tu Vi" mở một kênh vận công kéo dài đúng 5 giây,
-   mỗi giây cộng dồn 25% lượng tu vi thủ công cơ bản (5 lượt x 25% = 125% cho trọn một chu kỳ đầy
-   đủ). Nút bị khóa (disabled) trong suốt 5 giây đó và chỉ sáng lại khi kênh kết thúc — không thể
-   bấm chồng hoặc spam để lách cơ chế. */
 const MANUAL_CHANNEL_TICKS = 5;
 const MANUAL_CHANNEL_TICK_PCT = 0.25;
 let manualChannelActive = false;
@@ -2236,32 +2310,26 @@ function startIdleLoop(){
       const g = computeTocDoTuLuyen(state);
       gainCultivation(state, g);
       checkTangUp();
-      loseTho(grindDecay(0.00005)); // đã tính lại để không còn "chết hàng loạt" ở Ngưng Khí/Luyện Khí
+      loseTho(grindDecay(0.00005));
       if(!state.isDead && Math.random() < 0.015){
         triggerEvent(IDLE_LOOT_EVENTS);
       }
     }
-    tickAllDisciples(); // đệ tử vẫn tự tu luyện/làm nhiệm vụ độc lập với sinh tử của nhân vật chính
+    tickAllDisciples();
     if(el.sectModal && !el.sectModal.classList.contains('hidden')) renderSect();
     updateUI();
   }, 1000);
 }
 
-/* HỆ THỐNG CỘNG DỒN THỌ NGUYÊN THEO TIẾN ĐỘ (không chỉ lúc đột phá đại cảnh giới):
-   Đây là mảnh ghép sửa lỗi cốt lõi — trước đây thọ nguyên CHỈ được bù khi đột phá đại cảnh giới
-   thành công (một sự kiện hiếm, có rủi ro thất bại), khiến người chơi cạn thọ nguyên rất lâu trước
-   khi tới lượt đột phá đầu tiên. Giờ mỗi lần lên TẦNG (nhỏ nhất) và lên TIỂU CẢNH GIỚI cũng cộng
-   thêm thọ nguyên — những mốc này đạt được TỰ ĐỘNG qua tu luyện bình thường, không cần rủi ro —
-   tạo thành lưới an toàn liên tục thay vì chỉ một lần thưởng lớn ở cuối chặng đường. */
-const THO_PROGRESS_SCALE_RATE = 0.08; // +8%/đại cảnh giới — cảnh giới càng cao, thọ cộng thêm càng nhiều
+const THO_PROGRESS_SCALE_RATE = 0.08;
 function thoBonusForTangUp(realmIdx){
-  return (1 + Math.random()*4) * (1 + realmIdx*THO_PROGRESS_SCALE_RATE); // 1-5 năm, scale theo cảnh giới
+  return (1 + Math.random()*4) * (1 + realmIdx*THO_PROGRESS_SCALE_RATE);
 }
 function thoBonusForSubUp(realmIdx){
-  return (10 + Math.random()*10) * (1 + realmIdx*THO_PROGRESS_SCALE_RATE); // 10-20 năm
+  return (10 + Math.random()*10) * (1 + realmIdx*THO_PROGRESS_SCALE_RATE);
 }
 function thoBonusForRealmUp(realmIdx){
-  return (40 + Math.random()*40) * (1 + realmIdx*THO_PROGRESS_SCALE_RATE); // 40-80 năm
+  return (40 + Math.random()*40) * (1 + realmIdx*THO_PROGRESS_SCALE_RATE);
 }
 
 function checkTangUp(){
@@ -2329,8 +2397,6 @@ function dotPha(){
     return;
   }
 
-  /* HARDCORE: tỷ lệ thành công luôn bị ép chặt trong khoảng 30%-50%, không có "vùng an toàn" ở cảnh giới thấp.
-     Đạo Tâm chỉ có thể kéo chance lên gần mép trên, không bao giờ vượt qua nó nhiều. */
   const majorIdx = state.realmIdx;
   let baseChance = 0.50 - majorIdx*0.006;
   baseChance = Math.max(0.30, baseChance);
@@ -2368,7 +2434,6 @@ function dotPha(){
       addLogNode({type:'legend', title:'Tông Môn Khai Tông', text: state.name+' đạo hạnh đã đạt tới '+MAJOR_REALMS[state.realmIdx]+', đủ tư cách khai lập môn phái, chiêu mộ đệ tử trong thiên hạ để mở rộng thanh thế.', deltas:['Mở khóa: Tông Môn & Chiêu Mộ Đệ Tử', 'Nhận: Sơ Cấp Tâm Pháp x1']});
     }
   } else {
-    /* Trừng phạt tàn nhẫn: mất 30%-50% tiến độ tu vi hiện tại VÀ 20%-40% tổng thọ nguyên hiện tại (không phải số lẻ vô hại). */
     const expLossPct = 0.3 + Math.random()*0.2;
     const loss = state.cultivation * expLossPct;
     state.cultivation = Math.max(0, state.cultivation - loss);
@@ -2380,13 +2445,13 @@ function dotPha(){
     addLogNode({type:'fail', title:'ĐỘT PHÁ THẤT BẠI', text, deltas:["Tu Vi -"+fmt(loss)+" ("+Math.round(expLossPct*100)+"%)", "Thọ Nguyên -"+fmt(thoLoss)+" ("+Math.round(thoLossPct*100)+"%)"]});
   }
   updateUI();
-  syncSave({force:true}); // đồng bộ mây sau mỗi lần đột phá (thành công lẫn thất bại), theo yêu cầu đồng bộ
+  syncSave({force:true});
 }
 
 function khamPha(){
   if(!state || state.isDead) return;
   state.ngayTu++;
-  loseTho(grindDecay(0.00003)); // dấn thân hồng trần cũng bào mòn thọ nguyên, dù nhẹ hơn bế quan tu luyện
+  loseTho(grindDecay(0.00003));
   if(!state.isDead) triggerEvent(eligibleExploreEvents());
   updateUI();
 }
@@ -2418,6 +2483,7 @@ const el = {
   journeyFill: document.getElementById('journeyFill'),
   journeyPct: document.getElementById('journeyPct'),
   roadmapRow: document.getElementById('roadmapRow'),
+  roadmapTitle: document.getElementById('roadmapTitle'),
   deathModal: document.getElementById('deathModal'),
   deathTitle: document.getElementById('deathTitle'),
   deathText: document.getElementById('deathText'),
@@ -2488,7 +2554,10 @@ const el = {
   newListingItemSelect: document.getElementById('newListingItemSelect'),
   newListingQty: document.getElementById('newListingQty'),
   newListingPrice: document.getElementById('newListingPrice'),
-  myListingsList: document.getElementById('myListingsList')
+  myListingsList: document.getElementById('myListingsList'),
+  giftPillModal: document.getElementById('giftPillModal'),
+  giftPillDesc: document.getElementById('giftPillDesc'),
+  giftPillList: document.getElementById('giftPillList')
 };
 
 function tierClass(realmIdx){
@@ -2507,6 +2576,7 @@ function buildRoadmap(){
     chip.id = 'rmchip-'+idx;
     el.roadmapRow.appendChild(chip);
   });
+  el.roadmapTitle.textContent = MAJOR_REALMS.length + ' Đại Cảnh Giới Chi Lộ';
 }
 
 function updateRoadmap(){
@@ -2601,27 +2671,14 @@ function updateUI(){
   }
 }
 
-/* ================= CLOUD SYNC (JSONBin.io) =================
-   LƯU Ý BẢO MẬT (đọc kỹ trước khi phát tán file này):
-   Khóa X-Master-Key bên dưới có toàn quyền đọc/ghi lên Bin này và bị nhúng thẳng vào mã nguồn
-   phía client — bất kỳ ai mở "View Page Source" hoặc DevTools trên file HTML này đều nhìn thấy
-   và có thể tự do đọc/ghi/xóa dữ liệu của mọi người chơi, kể cả xóa sạch cả bảng xếp hạng.
-   Đây KHÔNG phải lỗi trong đoạn mã dưới đây, mà là giới hạn cố hữu của việc dùng Master Key trong
-   một ứng dụng tĩnh chạy hoàn toàn phía client — chính JSONBin.io cũng khuyến cáo trong tài liệu
-   của họ rằng Master Key chỉ nên dùng ở backend; với ứng dụng JS lộ mã nguồn như thế này, họ
-   khuyên dùng "X-Access-Key" (khóa được giới hạn quyền, tạo trong mục Access Keys) thay cho
-   Master Key, hoặc tốt nhất là đặt một backend nhỏ (serverless function...) làm trung gian giữ
-   khóa bí mật thật sự. Phần tích hợp dưới đây vẫn dùng đúng khóa được cung cấp theo yêu cầu,
-   nhưng nếu định phát hành file này công khai, hãy cân nhắc thay Master Key bằng Access Key
-   giới hạn quyền (chỉ đọc + chỉ cập nhật, không xóa/không đổi quyền riêng tư) trước khi chia sẻ. */
-
+/* ================= CLOUD SYNC (JSONBin.io) ================= */
 const JSONBIN_API_KEY = "$2a$10$I0dCIJa0Pmh.y8pZkIFYkOgQz4E5yBcv7gNR19WOBs1u2s7.oxRkO";
 const JSONBIN_BIN_ID = "6a89525fda38895dfe02bb7f";
 const JSONBIN_BASE = "https://api.jsonbin.io/v3/b/" + JSONBIN_BIN_ID;
-const SYNC_MIN_INTERVAL_MS = 5000; // chặn đồng bộ dồn dập, tránh chạm giới hạn request của JSONBin
+const SYNC_MIN_INTERVAL_MS = 5000;
 
 let myPlayerId = null;
-let cachedBinData = null;   // bản sao gần nhất của TOÀN BỘ bin (mọi người chơi) — dùng để merge an toàn
+let cachedBinData = null;
 let lastSyncAt = 0;
 let syncInFlight = false;
 let lbAutoTimer = null;
@@ -2654,7 +2711,6 @@ function setSyncStatus(kind, extra){
   }
 }
 
-/* Đọc TOÀN BỘ bin (tất cả người chơi). X-Bin-Meta:false để nhận thẳng JSON gốc, không bọc metadata. */
 async function jsonbinReadAll(){
   const res = await fetch(JSONBIN_BASE + '/latest', {
     method: 'GET',
@@ -2667,12 +2723,9 @@ async function jsonbinReadAll(){
   if(!record.players || typeof record.players !== 'object') record.players = {};
   if(!record.market || typeof record.market !== 'object') record.market = { listings: {} };
   if(!record.market.listings || typeof record.market.listings !== 'object') record.market.listings = {};
-  // record.shop giữ nguyên null/undefined nếu chưa có — ensureShopFresh() sẽ tự sinh khi cần
   return record;
 }
 
-/* Ghi đè TOÀN BỘ bin — luôn phải là bản đã merge đầy đủ dữ liệu mọi người chơi, không chỉ riêng mình,
-   nếu không sẽ xóa mất dữ liệu của những người chơi khác đang dùng chung Bin này. */
 async function jsonbinWriteAll(fullData, keepalive){
   const res = await fetch(JSONBIN_BASE, {
     method: 'PUT',
@@ -2684,14 +2737,6 @@ async function jsonbinWriteAll(fullData, keepalive){
   return true;
 }
 
-/* LƯU Ý KỸ THUẬT (đóng gói dữ liệu toàn vẹn):
-   playerSnapshot() là ĐIỂM DUY NHẤT đóng gói toàn bộ trạng thái cần lưu — nhân vật chính (cảnh giới,
-   EXP, thọ nguyên, chỉ số...), TOÀN BỘ kho đồ/trang bị, VÀ toàn bộ danh sách đệ tử Tông Môn — thành
-   MỘT object phẳng duy nhất. syncSave()/saveData() sau đó ghi nguyên object này vào đúng một khóa
-   all.players[myPlayerId] rồi PUT toàn bộ bin lên JSONBin trong một request duy nhất — không có
-   request rời rạc nào ghi riêng lẻ nhân vật chính tách khỏi đệ tử/kho đồ, nên không thể xảy ra tình
-   trạng dữ liệu bị lệch pha giữa các phần (ví dụ: đệ tử được lưu nhưng trang bị vừa gắn cho đệ tử đó
-   lại bị mất vì một request khác ghi đè trước). */
 function playerSnapshot(){
   const combat = computeCombatStats(state);
   return {
@@ -2716,13 +2761,11 @@ function playerSnapshot(){
     raidLog: state.raidLog || [],
     sect: state.sect || { disciples: {} },
     hp: combat.hp, atk: combat.atk, def: combat.def, combatPower: combat.combatPower,
-    power: combat.combatPower, // giữ tương thích ngược với dữ liệu bản cũ từng dùng khóa "power"
+    power: combat.combatPower,
     updatedAt: new Date().toISOString()
   };
 }
 
-/* Bí danh saveData đúng theo thuật ngữ được yêu cầu — chỉ gọi lại syncSave(), vốn đã dùng
-   playerSnapshot() ở trên làm nguồn duy nhất cho toàn bộ dữ liệu được đẩy lên JSONBin. */
 function saveData(opts){ return syncSave(opts); }
 
 function restoreStateFromSnapshot(snap, name){
@@ -2753,13 +2796,10 @@ function restoreStateFromSnapshot(snap, name){
   return s;
 }
 
-/* Lưu trạng thái lên mây. Luôn merge với bản mới nhất trước khi ghi (đọc-sửa-ghi) để không đè mất
-   dữ liệu của người chơi khác — TRỪ lúc thoát trang (exit=true), khi đó dùng luôn bản cache gần nhất
-   để kịp gửi request trước khi tab đóng hẳn (không có thời gian chờ một vòng GET nữa). */
 async function syncSave(opts){
   opts = opts || {};
   if(!state || !myPlayerId) return;
-  if(opts.exit && !cachedBinData) return; // chưa từng tải bản đầy đủ -> không an toàn để ghi đè lúc thoát
+  if(opts.exit && !cachedBinData) return;
 
   const now = Date.now();
   if(!opts.force && (now - lastSyncAt) < SYNC_MIN_INTERVAL_MS) return;
@@ -2788,8 +2828,6 @@ async function fetchAllPlayers(){
   return all;
 }
 
-/* Chống trùng tên/clone: tìm một người chơi khác đã dùng đúng đạo hiệu này (so sánh không phân
-   biệt hoa thường và khoảng trắng thừa). Trả về bản ghi trùng (nếu có) hoặc null. */
 function findPlayerByName(all, name){
   const target = (name||'').trim().toLowerCase();
   if(!target) return null;
@@ -2820,7 +2858,6 @@ function renderLeaderboard(all){
     el.lbList.appendChild(empty);
     return;
   }
-  // Sắp xếp theo Cảnh Giới (flatIndex) trước, Tổng EXP làm tiêu chí phụ khi đồng cảnh giới
   players.sort(function(a,b){
     const fa = flatIndex(a.realmIdx||0, a.subIdx||0, a.tang||1);
     const fb = flatIndex(b.realmIdx||0, b.subIdx||0, b.tang||1);
@@ -2902,7 +2939,7 @@ function openLeaderboard(){
   el.leaderboardModal.classList.remove('hidden');
   loadLeaderboard();
   if(lbAutoTimer) clearInterval(lbAutoTimer);
-  lbAutoTimer = setInterval(loadLeaderboard, 45000); // làm mới nhẹ nhàng trong lúc mở bảng, tránh dội API
+  lbAutoTimer = setInterval(loadLeaderboard, 45000);
 }
 function closeLeaderboard(){
   el.leaderboardModal.classList.add('hidden');
@@ -2980,9 +3017,9 @@ function renderInventory(){
 function openInventory(){ renderInventory(); el.inventoryModal.classList.remove('hidden'); }
 function closeInventory(){ el.inventoryModal.classList.add('hidden'); }
 
-/* ---------- Tỉ Thí (PvP bất đồng bộ, cân bằng theo cảnh giới, có hoạt cảnh chiến đấu) ---------- */
-const PVP_REALM_GATE = 1; // chỉ được khiêu chiến người chênh tối đa 1 bậc đại cảnh giới (cả trên lẫn dưới)
-const PVP_PER_OPPONENT_COOLDOWN_MS = 8 * 60 * 1000; // 8 phút/đối thủ cụ thể — nằm trong khung 5-10 phút yêu cầu
+/* ---------- Tỉ Thí (PvP) ---------- */
+const PVP_REALM_GATE = 1;
+const PVP_PER_OPPONENT_COOLDOWN_MS = 8 * 60 * 1000;
 
 function realmGateOk(myRealmIdx, oppRealmIdx){
   return Math.abs((myRealmIdx||0) - (oppRealmIdx||0)) <= PVP_REALM_GATE;
@@ -3002,8 +3039,6 @@ function addCombatLogLine(text, cls){
   el.combatLog.scrollTop = el.combatLog.scrollHeight;
 }
 
-/* Hoạt cảnh chiến đấu thời gian thực: hai bên luân phiên ra chiêu, thanh HP cập nhật ngay từng vòng,
-   dùng async/await + setTimeout để tạo độ trễ giữa các lượt như yêu cầu. */
 async function runCombatUI(myFighter, oppFighter){
   el.combatModal.classList.remove('hidden');
   el.combatLog.innerHTML = '';
@@ -3077,7 +3112,7 @@ async function tiThi(opponentId, opponentNameHint){
 
   let all, opp;
   try{
-    all = await fetchAllPlayers(); // luôn lấy bản MỚI NHẤT của đối thủ theo đúng yêu cầu
+    all = await fetchAllPlayers();
     opp = all.players && all.players[opponentId];
   }catch(err){
     addLogNode({type:'fail', title:'Tỉ Thí Gián Đoạn', text:'Kết nối tới Vân Đài Ký Sự bị gián đoạn giữa chừng, trận tỉ thí không thể diễn ra. Hãy thử lại sau.', deltas:[]});
@@ -3106,7 +3141,6 @@ async function tiThi(opponentId, opponentNameHint){
   const deltas = [];
   let narrative;
   if(result.win){
-    /* Thắng: cướp trực tiếp một phần EXP của đối thủ, ghi ngược "Nhật ký bị cướp" vào bản ghi của họ. */
     const stealPct = 0.05 + Math.random()*0.05;
     const stolen = Math.max(0, Math.floor((opp.totalExpEarned||0) * stealPct));
     if(stolen > 0){
@@ -3124,7 +3158,6 @@ async function tiThi(opponentId, opponentNameHint){
     narrative = state.name+' đã đánh bại '+oppFighter.name+' trong trận tỉ thí, thu hoạch được một phần tu vi và danh vọng từ đối phương.';
     addLogNode({type:'success', title:'TỈ THÍ THẮNG LỢI', text:narrative, deltas:deltas});
   } else {
-    /* Thua: trả giá bằng một phần tu vi hiện có và chút danh vọng, KHÔNG động tới dữ liệu đối thủ. */
     const lossPct = 0.03 + Math.random()*0.04;
     const loss = Math.floor(state.cultivation * lossPct);
     state.cultivation = Math.max(0, state.cultivation - loss);
@@ -3139,9 +3172,6 @@ async function tiThi(opponentId, opponentNameHint){
 
   updateUI();
 
-  /* Ghi ngược CẢ HAI bản ghi (của mình và của đối thủ) trong cùng một lần PUT — đây là điểm khác biệt
-     so với syncSave() thông thường (vốn chỉ đụng tới đúng bản ghi của mình). Vẫn theo mô hình đọc-sửa-ghi
-     đã tải ở all phía trên, nên không ảnh hưởng tới những người chơi khác không liên quan tới trận này. */
   all.players[myPlayerId] = playerSnapshot();
   all.players[opponentId] = opp;
   cachedBinData = all;
@@ -3154,10 +3184,6 @@ async function tiThi(opponentId, opponentNameHint){
   }
 }
 
-
-/* Modal xác nhận dùng chung cho cả 2 luồng:
-   - forced = true  : thọ nguyên về 0, bắt buộc chuyển sinh, không có nút Hủy Bỏ.
-   - forced = false : người chơi chủ động bấm nút chuyển sinh khi vẫn còn sống, có thể Hủy Bỏ. */
 function openReincarnateModal(forced){
   const totalEarned = (state.totalExpEarned || 0);
   const carry = totalEarned * 0.10;
@@ -3189,22 +3215,21 @@ function closeReincarnateModal(){
 
 function reincarnate(){
   const totalEarned = state.totalExpEarned || 0;
-  const carryOverExp = totalEarned * 0.10; // (1) quy đổi chính xác 10% tổng EXP tích lũy kiếp trước
+  const carryOverExp = totalEarned * 0.10;
 
   lifeCount++;
-  eternalBonus += 1;      // thưởng nhỏ hiện có, giữ nguyên: +1 tứ đại thuộc tính khởi điểm mỗi kiếp
-  kiepNanBuff += 0.15;    // (3) Buff Kiếp Nạn +15% tốc độ tu luyện, cộng dồn vĩnh viễn mỗi lần chuyển sinh
+  eternalBonus += 1;
+  kiepNanBuff += 0.15;
 
   const name = state.name;
-  state = freshState(name);           // (1) reset về Phàm Nhân - Sơ Kỳ - Tầng 1
-  state.cultivation = carryOverExp;   // (1) điểm khởi đầu = 10% EXP mang sang
-  state.totalExpEarned = carryOverExp; // ledger kiếp mới bắt đầu từ đúng phần được mang sang
-  // (4) thoNguyen/thoNguyenMax đã được freshState() cấp lại 100%/100% cho vòng đời mới
+  state = freshState(name);
+  state.cultivation = carryOverExp;
+  state.totalExpEarned = carryOverExp;
 
   deathModalShown = false;
   closeReincarnateModal();
 
-  checkTangUp(); // giải quyết ngay các tầng "nhảy cóc" nhờ EXP mang sang (dừng lại tự nhiên ở cổng đột phá đại cảnh giới)
+  checkTangUp();
 
   updateUI();
 
@@ -3221,8 +3246,7 @@ function reincarnate(){
 
 /* ================= GIAO THƯƠNG & CHỢ ĐEN ================= */
 
-/* ---------- Tiệm Tạp Hóa Tông Môn (NPC Shop) ---------- */
-const SHOP_REFRESH_INTERVAL_MS = 24*60*60*1000; // làm mới mỗi ngày
+const SHOP_REFRESH_INTERVAL_MS = 24*60*60*1000;
 const SHOP_BASE_ITEMS = [
   {itemId:'linh_thao', price:15},
   {itemId:'yeu_dan', price:30},
@@ -3265,8 +3289,6 @@ function generateShopInventory(){
   return { refreshedAt: Date.now(), rotating: picked };
 }
 
-/* Nếu bản ghi shop chung chưa có hoặc đã quá hạn SHOP_REFRESH_INTERVAL_MS, sinh một danh sách mới
-   và ghi thẳng vào `all` (chưa PUT lên mạng — việc PUT do hàm gọi ensureShopFresh chịu trách nhiệm). */
 function ensureShopFresh(all){
   const stale = !all.shop || typeof all.shop.refreshedAt !== 'number' || (Date.now() - all.shop.refreshedAt >= SHOP_REFRESH_INTERVAL_MS);
   if(stale){
@@ -3358,10 +3380,9 @@ async function renderShopTab(){
   try{
     const all = await fetchAllPlayers();
     const shop = ensureShopFresh(all);
-    // Nếu vừa mới sinh shop mới (do hết hạn), ghi lại ngay để những người chơi khác cũng thấy bản mới này.
     if(all.shop === shop && (!cachedBinData || cachedBinData.shop !== shop)){
       cachedBinData = all;
-      try{ await jsonbinWriteAll(all); }catch(e){ /* không sao, lần refresh sau sẽ thử lại */ }
+      try{ await jsonbinWriteAll(all); }catch(e){ }
     }
     el.shopRefreshInfo.textContent = shopRefreshCountdownText(shop);
     shop.rotating.forEach(function(slot, idx){
@@ -3385,7 +3406,7 @@ async function renderShopTab(){
 }
 
 /* ---------- Chợ Đen / Sàn Giao Dịch (P2P) ---------- */
-const MARKET_LISTING_FEE_PCT = 0.05; // 5% giá trị niêm yết
+const MARKET_LISTING_FEE_PCT = 0.05;
 const MARKET_LISTING_FEE_MIN = 5;
 let lastMarketListings = [];
 
@@ -3460,7 +3481,6 @@ async function createListing(){
     populateNewListingSelect();
     renderMyListingsTab();
   }catch(err){
-    // Hoàn tác cục bộ vì giao dịch không thực sự ghi được lên máy chủ
     state.inventory[itemId] = (state.inventory[itemId]||0) + qty;
     addLinhThach(fee);
     setSyncStatus('error', err && err.message);
@@ -3634,7 +3654,6 @@ function renderMyListingsTab(){
   renderMarketListRows(mine, el.myListingsList, 'mine');
 }
 
-/* ---------- Modal & chuyển tab ---------- */
 function switchMarketTab(tab){
   el.tabShopBtn.classList.toggle('active', tab==='shop');
   el.tabMarketBtn.classList.toggle('active', tab==='market');
@@ -3663,8 +3682,6 @@ document.getElementById('btnCancelReincarnate').addEventListener('click', closeR
 
 document.getElementById('btnManualReincarnate').addEventListener('click', function(){
   if(!state || state.isDead) return;
-  // Chặn khai thác: phải đột phá thành công ít nhất 1 lần mới đủ tư cách chủ động luân hồi,
-  // tránh vòng lặp "luân hồi cày buff" gần như miễn phí ngay từ vạch xuất phát.
   if(state.realmIdx < 1){
     addLogNode({type:'neutral', title:'Đạo Hạnh Còn Non Nớt', text:'Chưa từng trải qua một lần đột phá đại cảnh giới nào, luân hồi lúc này chỉ là uổng phí một kiếp người. Hãy đột phá ít nhất một lần trước đã.', deltas:[]});
     updateUI();
@@ -3686,10 +3703,8 @@ document.getElementById('btnConfirmDiscipleName').addEventListener('click', conf
 document.getElementById('discipleNameInput').addEventListener('keydown', function(e){
   if(e.key === 'Enter') confirmRecruitName();
 });
+document.getElementById('btnCloseGiftPill').addEventListener('click', closeGiftPillModal);
 
-/* Đồng bộ khi thoát game: fetch với keepalive:true để trình duyệt cố gắng gửi nốt request
-   ngay cả sau khi trang bắt đầu đóng. Đây là kỹ thuật tốt nhất hiện có cho tác vụ lúc unload,
-   nhưng KHÔNG được đảm bảo 100% (trình duyệt có thể vẫn hủy nếu tab đóng quá đột ngột). */
 window.addEventListener('pagehide', function(){
   if(state && !state.isDead && myPlayerId){
     syncSave({force:true, exit:true});
@@ -3712,11 +3727,9 @@ function beginLocalGame(freshName){
     text: freshName+' chính thức bước những bước chân đầu tiên trên con đường tu tiên vạn dặm, mang theo một tia linh căn mờ nhạt và một trái tim khát khao trường sinh.',
     deltas:['Mã Đạo Hữu: '+myPlayerId+' (hãy ghi nhớ để tiếp tục ở lần chơi sau)']
   });
-  // Khởi động nền: đồng bộ nhân vật mới lên mây + làm ấm cache cho lần thoát trang sau này.
   syncSave({force:true});
 }
 
-/* ================= QUẢN LÝ TÀI KHOẢN ================= */
 function openAccountModal(){
   if(!state || !myPlayerId) return;
   el.accountInfo.innerHTML =
@@ -3730,8 +3743,6 @@ function openAccountModal(){
 }
 function closeAccountModal(){ el.accountModal.classList.add('hidden'); }
 
-/* Xóa vĩnh viễn bản ghi của MÌNH khỏi bin dùng chung — luôn đọc bản mới nhất trước khi xóa
-   (đọc-sửa-ghi) để không đụng tới dữ liệu của bất kỳ người chơi nào khác. */
 async function deleteAccountFromCloud(){
   const all = await jsonbinReadAll();
   if(all.players && myPlayerId && all.players[myPlayerId]){
@@ -3756,6 +3767,7 @@ function resetToStartScreen(){
   el.sectModal.classList.add('hidden');
   el.combatModal.classList.add('hidden');
   el.accountModal.classList.add('hidden');
+  el.giftPillModal.classList.add('hidden');
   logContainer.innerHTML = '';
   nameInput.value = '';
   resumeIdInput.value = '';
@@ -3815,17 +3827,16 @@ btnStart.addEventListener('click', async function(){
               deltas:['Tu Vi bị cướp: -'+fmt(entry.amount||0)]
             });
           });
-          state.raidLog = []; // đã hiển thị xong, sẽ được đồng bộ xóa sạch ở lần lưu mây kế tiếp
+          state.raidLog = [];
         }
         if(state.sect && state.sect.disciples && Object.keys(state.sect.disciples).length){
-          tickAllDisciples(); // bù ngay tiến độ tự tu luyện/nhiệm vụ của đệ tử trong lúc vắng mặt
+          tickAllDisciples();
           addLogNode({type:'neutral', title:'Tông Môn Báo Cáo', text:'Trong lúc '+state.name+' vắng mặt, các đệ tử vẫn âm thầm tu luyện và thực hiện nhiệm vụ được giao. Hãy mở Tông Môn để xem chi tiết.', deltas:[]});
         }
         updateUI();
         return;
       }
       addLogNodePreStart('Không Tìm Thấy Mã Đạo Hữu', 'Không tìm thấy dữ liệu khớp với mã "'+resumeId+'" trên Vân Đài Ký Sự.');
-      // rơi xuống bên dưới để kiểm tra trùng tên trước khi cho tạo nhân vật mới thay thế
     }
 
     if(!all){
@@ -3834,8 +3845,6 @@ btnStart.addEventListener('click', async function(){
       return;
     }
 
-    /* CHỐNG TRÙNG TÊN/CLONE: nếu đạo hiệu đã tồn tại trên Vân Đài Ký Sự, TUYỆT ĐỐI không tạo
-       nhân vật mới tinh — bắt buộc người chơi phải nhập đúng Mã Đạo Hữu cũ để khôi phục. */
     const dup = findPlayerByName(all, typedName);
     if(dup){
       showStartNameError('Đạo hiệu "'+typedName+'" đã tồn tại trên Vân Đài Ký Sự. Nếu đây là nhân vật của chính ngươi, hãy nhập đúng Mã Đạo Hữu vào ô bên trên để khôi phục. Nếu không, hãy chọn một đạo hiệu khác.');
@@ -3849,8 +3858,6 @@ btnStart.addEventListener('click', async function(){
   }
 });
 
-/* addLogNode cần state đã tồn tại (dùng state.ngayTu) — hàm phụ này cho phép ghi log AN TOÀN
-   ngay cả khi được gọi trước khi state khởi tạo xong (ví dụ: báo lỗi tra cứu Mã Đạo Hữu). */
 function addLogNodePreStart(title, text){
   if(state){ addLogNode({type:'neutral', title:title, text:text, deltas:[]}); return; }
   const card = document.createElement('div');
