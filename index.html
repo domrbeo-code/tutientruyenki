@@ -576,6 +576,30 @@
   .inv-item-row .rarity-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
   .rarity-common{ background:#8fa8b3; } .rarity-uncommon{ background:#4fdba0; }
   .rarity-rare{ background:#60a5fa; } .rarity-epic{ background:#c084fc; } .rarity-legendary{ background:var(--gold); }
+
+  /* Rarity-colored borders for inventory items */
+  .inv-item-row.rarity-border-common{ border-color: rgba(143,168,179,0.35); }
+  .inv-item-row.rarity-border-uncommon{ border-color: rgba(79,219,160,0.45); box-shadow: 0 0 8px rgba(79,219,160,0.12); }
+  .inv-item-row.rarity-border-rare{ border-color: rgba(96,165,250,0.5); box-shadow: 0 0 10px rgba(96,165,250,0.15); }
+  .inv-item-row.rarity-border-epic{ border-color: rgba(192,132,252,0.55); box-shadow: 0 0 12px rgba(192,132,252,0.18); }
+  .inv-item-row.rarity-border-legendary{ border-color: rgba(232,194,122,0.6); box-shadow: 0 0 14px rgba(232,194,122,0.22); }
+
+  .inv-item-name.rarity-text-common{ color:#a8bcc6; }
+  .inv-item-name.rarity-text-uncommon{ color:#4fdba0; }
+  .inv-item-name.rarity-text-rare{ color:#60a5fa; }
+  .inv-item-name.rarity-text-epic{ color:#c084fc; }
+  .inv-item-name.rarity-text-legendary{ color:var(--gold); }
+
+  .inv-slot.rarity-border-common{ border-color: rgba(143,168,179,0.3); }
+  .inv-slot.rarity-border-uncommon{ border-color: rgba(79,219,160,0.4); }
+  .inv-slot.rarity-border-rare{ border-color: rgba(96,165,250,0.45); }
+  .inv-slot.rarity-border-epic{ border-color: rgba(192,132,252,0.5); }
+  .inv-slot.rarity-border-legendary{ border-color: rgba(232,194,122,0.55); }
+
+  .shop-item-card.rarity-border-uncommon{ border-color: rgba(79,219,160,0.4); }
+  .shop-item-card.rarity-border-rare{ border-color: rgba(96,165,250,0.45); }
+  .shop-item-card.rarity-border-epic{ border-color: rgba(192,132,252,0.5); }
+  .shop-item-card.rarity-border-legendary{ border-color: rgba(232,194,122,0.55); }
   .inv-item-info{ flex:1; min-width:0; }
   .inv-item-name{ font-size:12.5px; font-weight:600; color:var(--text-main); }
   .inv-item-meta{ font-size:10.5px; color:var(--text-faint); }
@@ -1310,11 +1334,11 @@ function triggerEvent(pool){
 const CULTIVATION_EVENTS = [
   { title:"Cảm Ngộ Thoáng Qua", tone:"gain", weight:1,
     text:"Giữa lúc vận chuyển chân khí trong kinh mạch, ngươi bỗng bắt được một tia cảm ngộ mơ hồ về vòng tuần hoàn của trời đất. Chân khí lập tức thuận theo đó mà cuồn cuộn dâng trào.",
-    effect:(s)=>{ const g = reqNow()*0.25; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+    effect:(s)=>{ const g = reqNow()*0.06; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
 
   { title:"Linh Khí Hoang Dã", tone:"gain", weight:1,
     text:"Một luồng linh khí hoang dã ngoài ý muốn tụ tập quanh thân thể, ngươi thuận thế mở rộng kinh mạch thu nạp toàn bộ vào đan điền.",
-    effect:(s)=>{ const g = reqNow()*0.18; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+    effect:(s)=>{ const g = reqNow()*0.05; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
 
   { title:"Tạp Niệm Nhiễu Loạn", tone:"fail", weight:1,
     text:"Tạp niệm bất chợt nổi lên giữa lúc nhập định, khí cơ vận hành hỗn loạn trong chốc lát, một phần tu vi tản mát vô ích.",
@@ -1338,11 +1362,11 @@ const CULTIVATION_EVENTS = [
 
   { title:"Đom Đóm Linh Khí", tone:"gain", weight:0.5,
     text:"Một đốm sáng nhỏ tựa đom đóm bay ngang qua thiền phòng, để lại một vệt tinh hoa rơi đúng vào đan điền, ngưng tụ thành dòng linh khí đậm đặc hiếm có.",
-    effect:(s)=>{ const g = reqNow()*0.42; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+    effect:(s)=>{ const g = reqNow()*0.08; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
 
   { title:"Cơn Mưa Bất Chợt", tone:"neutral", weight:1,
     text:"Ngoài trời mây đen kéo đến, một trận mưa nhỏ rơi xuống làm gián đoạn việc tu luyện, nhưng cũng giúp tâm tình trở nên thư thái hơn đôi chút.",
-    effect:(s)=>{ const g = reqNow()*0.05; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+    effect:(s)=>{ const g = reqNow()*0.03; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
 
   { title:"Yêu Khí Ẩn Tàng", tone:"fail", weight:0.6,
     text:"Một luồng yêu khí ẩn tàng gần đó đột ngột trỗi dậy, tâm thần chấn động dữ dội khiến chân khí đảo lộn, thân thể mệt mỏi rã rời.",
@@ -1352,15 +1376,15 @@ const CULTIVATION_EVENTS = [
 const EXPLORE_EVENTS = [
   { title:"Cổ Mộ Tàn Tích", tone:"gain", weight:1,
     text:"Ngươi lạc bước vào một cổ mộ đổ nát phủ đầy rêu phong, giữa đống xương tàn tìm thấy một mảnh ngọc giản còn sót lại. Vừa vận công cảm ứng, một đoạn tâm pháp thượng cổ hiện lên trong tâm trí.",
-    effect:(s)=>{ const g=reqNow()*0.6; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+    effect:(s)=>{ const g=reqNow()*0.08; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
 
   { title:"Linh Tuyền Ẩn Hiện", tone:"gain", weight:1,
     text:"Sâu trong một khe núi hiểm trở, ngươi phát hiện một mạch linh tuyền trong vắt tỏa hơi linh khí nồng đậm. Ngâm mình hấp thụ trọn một canh giờ, toàn thân như được tắm gội lại từ đầu.",
-    effect:(s)=>{ const g=reqNow()*0.45; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+    effect:(s)=>{ const g=reqNow()*0.07; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
 
   { title:"Tiên Nhân Đàm Đạo", tone:"gain", weight:1,
     text:"Trên đỉnh núi mây phủ, ngươi vô tình nghe được hai vị cao nhân đang đàm đạo về lẽ huyền vi của đạo pháp. Không dám kinh động, chỉ lặng lẽ ẩn mình ghi nhớ từng câu chữ.",
-    effect:(s)=>{ const g=reqNow()*0.3; gainCultivation(s,g); addStat('ngoTinh',1); return ["Tu Vi +"+fmt(g), "Ngộ Tính +1"]; } },
+    effect:(s)=>{ const g=reqNow()*0.06; gainCultivation(s,g); addStat('ngoTinh',1); return ["Tu Vi +"+fmt(g), "Ngộ Tính +1"]; } },
 
   { title:"Dị Thú Tặng Đan", tone:"gain", weight:0.8,
     text:"Một con linh hồ lông trắng như tuyết chậm rãi bước tới trước mặt, nhả ra một viên nội đan óng ánh rồi lặng lẽ quay mình biến mất vào rừng sâu, tựa như đang trả một món nợ duyên từ kiếp trước.",
@@ -1368,7 +1392,7 @@ const EXPLORE_EVENTS = [
 
   { title:"Mưa Sao Băng Linh Khí", tone:"gain", weight:0.7,
     text:"Giữa đêm khuya thanh vắng, từng vệt sao băng mang theo linh khí nguyên thủy của trời đất vụt qua bầu trời. Ngươi vội vàng vận công thu nạp, tận hưởng một cơ duyên ngàn năm khó gặp.",
-    effect:(s)=>{ const g=reqNow()*0.35; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+    effect:(s)=>{ const g=reqNow()*0.07; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
 
   { title:"Cứu Tế Lữ Khách", tone:"gain", weight:1,
     text:"Bên đường mòn hoang vắng, một tu sĩ trọng thương nằm thoi thóp. Ngươi ra tay tương trợ, băng bó vết thương và chia sẻ chút linh dược mang theo. Trước khi rời đi, người ấy tặng lại một chậu đan dược tạ ơn.",
@@ -1380,7 +1404,7 @@ const EXPLORE_EVENTS = [
 
   { title:"Bia Đá Kiếm Ý", tone:"gain", weight:0.8,
     text:"Giữa vách núi dựng đứng, một phiến đá cổ khắc đầy kiếm ý sắc bén hiện ra trước mắt. Chỉ nhìn thoáng qua những đường nét ấy, ngươi đã cảm thấy chân khí trong người cuộn trào không ngừng.",
-    effect:(s)=>{ const g=reqNow()*0.4; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+    effect:(s)=>{ const g=reqNow()*0.07; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
 
   { title:"Trận Pháp Cổ Mê Hoặc", tone:"fail", weight:1,
     text:"Không cẩn thận, ngươi lạc bước vào tàn tích của một trận pháp mê hoặc năm xưa. Ảo cảnh trùng trùng khiến tâm thần bị nhiễu loạn suốt một khắc, khi thoát ra được thì tu vi đã hao tổn không ít.",
@@ -1408,7 +1432,7 @@ const EXPLORE_EVENTS = [
 
   { title:"Cố Nhân Trùng Phùng", tone:"neutral", weight:1,
     text:"Tình cờ gặp lại một người quen cũ giữa chốn hồng trần, hai bên ngồi bên đống lửa nhỏ đàm đạo suốt đêm dài. Tâm tình khoan khoái, dường như mọi mệt mỏi trên đường tu đạo đều tan biến.",
-    effect:(s)=>{ const g=reqNow()*0.1; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+    effect:(s)=>{ const g=reqNow()*0.04; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
 
   { title:"Bản Đồ Bí Cảnh", tone:"neutral", weight:0.9,
     text:"Từ một lão giả bán hàng rong ven đường, ngươi mua được một tấm bản đồ cũ kỹ, nét vẽ đã phai mờ theo năm tháng. Không rõ thực hư, nhưng cũng coi như một cơ duyên nho nhỏ giữa dòng đời.",
@@ -1416,7 +1440,7 @@ const EXPLORE_EVENTS = [
 
   { title:"Sương Sớm Trên Đỉnh Non", tone:"neutral", weight:1,
     text:"Đứng trên đỉnh núi cao nhìn biển mây cuồn cuộn phía dưới, ánh bình minh len qua từng lớp sương mỏng. Tâm cảnh trong khoảnh khắc ấy như được khai mở đôi chút.",
-    effect:(s)=>{ const g=reqNow()*0.08; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
+    effect:(s)=>{ const g=reqNow()*0.03; gainCultivation(s,g); return ["Tu Vi +"+fmt(g)]; } },
 
   { title:"Thư Tín Từ Phương Xa", tone:"gain", weight:0.6,
     text:"Nhận được một phong thư không rõ người gửi, bên trong chỉ vỏn vẹn một câu đạo ngôn khó hiểu. Ngươi đọc đi đọc lại nhiều lần, càng ngẫm càng thấy thâm sâu khôn cùng.",
@@ -1427,7 +1451,7 @@ const EXPLORE_EVENTS = [
     choices:[
       { label:"Xông vào bí cảnh", effect:(s)=>{
           if(Math.random() < 0.55){
-            const g=reqNow()*0.8; gainCultivation(s,g);
+            const g=reqNow()*0.10; gainCultivation(s,g);
             return {text:"Bất chấp hiểm nguy, ngươi xông thẳng vào trong. May mắn thay, cơ duyên bên trong bí cảnh không phụ lòng người, một khối tinh hoa cổ xưa được thu nạp trọn vẹn.", deltas:["Tu Vi +"+fmt(g)]};
           } else {
             const g=reqNow()*0.25; s.cultivation=Math.max(0,s.cultivation-g); const t=s.thoNguyenMax*0.025; loseTho(t);
@@ -1452,11 +1476,11 @@ const EXPLORE_EVENTS = [
     text:"Trong một hốc đá sâu hun hút, một rương gỗ cổ xưa phát ra ánh sáng yếu ớt. Xung quanh phủ một lớp trận pháp phòng hộ đơn giản nhưng vẫn đủ nguy hiểm với kẻ bất cẩn.",
     choices:[
       { label:"Cường công phá trận", effect:(s)=>{
-          if(Math.random()<0.5){ const g=reqNow()*0.6; gainCultivation(s,g); addHoDaoDan(1); return {text:"Một quyền đánh thẳng vào tâm trận, trận pháp vỡ tan trong tiếng nổ lớn. Rương báu lộ ra nguyên vẹn, bên trong là một khối tinh hoa quý giá.", deltas:["Tu Vi +"+fmt(g), "Nhận được: Hộ Đạo Đan x1"]}; }
+          if(Math.random()<0.5){ const g=reqNow()*0.08; gainCultivation(s,g); addHoDaoDan(1); return {text:"Một quyền đánh thẳng vào tâm trận, trận pháp vỡ tan trong tiếng nổ lớn. Rương báu lộ ra nguyên vẹn, bên trong là một khối tinh hoa quý giá.", deltas:["Tu Vi +"+fmt(g), "Nhận được: Hộ Đạo Đan x1"]}; }
           const g=reqNow()*0.3; s.cultivation=Math.max(0,s.cultivation-g);
           return {text:"Trận pháp phản phệ dữ dội ngay khi vừa động thủ, một luồng kình lực vô hình đánh bật ngươi ra xa. Rương báu vỡ tan cùng phần tinh hoa bên trong.", deltas:["Tu Vi -"+fmt(g)]};
         }},
-      { label:"Tìm cách hóa giải an toàn", effect:(s)=>{ const g=reqNow()*0.22; gainCultivation(s,g); return {text:"Ngươi kiên nhẫn quan sát từng đường nét của trận pháp, mất kha khá thời gian mới tìm ra một khe hở nhỏ để hóa giải an toàn. Phần thưởng không lớn nhưng chắc chắn.", deltas:["Tu Vi +"+fmt(g)]}; } }
+      { label:"Tìm cách hóa giải an toàn", effect:(s)=>{ const g=reqNow()*0.05; gainCultivation(s,g); return {text:"Ngươi kiên nhẫn quan sát từng đường nét của trận pháp, mất kha khá thời gian mới tìm ra một khe hở nhỏ để hóa giải an toàn. Phần thưởng không lớn nhưng chắc chắn.", deltas:["Tu Vi +"+fmt(g)]}; } }
     ]},
 
   { title:"Yêu Vương Khiêu Chiến", weight:0.5,
@@ -1464,7 +1488,7 @@ const EXPLORE_EVENTS = [
     choices:[
       { label:"Ứng chiến", effect:(s)=>{
           const chance = clamp(0.3 + (s.stats.daoTam + s.stats.theChat)*0.01, 0.2, 0.75);
-          if(Math.random()<chance){ const g=reqNow()*1.0; gainCultivation(s,g); addHoDaoDan(1); return {text:"Một trận ác chiến kinh thiên động địa nổ ra. Sau cùng, ngươi dồn hết sức lực tung ra một chiêu quyết định, yêu vương gầm lên một tiếng rồi bỏ chạy, để lại nội đan rơi vãi trên mặt đất.", deltas:["Tu Vi +"+fmt(g), "Nhận được: Hộ Đạo Đan x1"]}; }
+          if(Math.random()<chance){ const g=reqNow()*0.10; gainCultivation(s,g); addHoDaoDan(1); return {text:"Một trận ác chiến kinh thiên động địa nổ ra. Sau cùng, ngươi dồn hết sức lực tung ra một chiêu quyết định, yêu vương gầm lên một tiếng rồi bỏ chạy, để lại nội đan rơi vãi trên mặt đất.", deltas:["Tu Vi +"+fmt(g), "Nhận được: Hộ Đạo Đan x1"]}; }
           const g=reqNow()*0.3; s.cultivation=Math.max(0,s.cultivation-g); const t=s.thoNguyenMax*0.04; loseTho(t);
           return {text:"Thực lực bất túc, chỉ vài chiêu ngươi đã lâm vào thế hạ phong. May mắn thoát được thân trong đường tơ kẽ tóc, nhưng thương thế không nhẹ.", deltas:["Tu Vi -"+fmt(g), "Thọ Nguyên -"+fmt(t)]};
         }},
@@ -1475,13 +1499,13 @@ const EXPLORE_EVENTS = [
     text:"Con đường phía trước chia làm hai nhánh: một bên phảng phất khí tức ôn hòa chính đại, một bên lại cuộn trào ma khí mãnh liệt đầy cám dỗ, hứa hẹn sức mạnh nhanh chóng nhưng ẩn chứa hiểm họa khôn lường.",
     choices:[
       { label:"Chọn Chính Đạo", effect:(s)=>{ addStat('daoTam',2); return {text:"Ngươi bước theo con đường ôn hòa, từng bước tuy chậm rãi nhưng vững chãi. Đạo tâm theo đó mà kiên định hơn rất nhiều.", deltas:["Đạo Tâm +2"]}; } },
-      { label:"Chọn Ma Đạo", effect:(s)=>{ const g=reqNow()*0.7; gainCultivation(s,g); addStat('daoTam',-1); return {text:"Ngươi dấn thân vào con đường mãnh liệt, để ma khí cuồn cuộn tràn vào cơ thể. Tu vi tăng vọt nhanh chóng, nhưng đạo tâm cũng theo đó mà gợn sóng bất an.", deltas:["Tu Vi +"+fmt(g), "Đạo Tâm -1"]}; } }
+      { label:"Chọn Ma Đạo", effect:(s)=>{ const g=reqNow()*0.08; gainCultivation(s,g); addStat('daoTam',-1); return {text:"Ngươi dấn thân vào con đường mãnh liệt, để ma khí cuồn cuộn tràn vào cơ thể. Tu vi tăng vọt nhanh chóng, nhưng đạo tâm cũng theo đó mà gợn sóng bất an.", deltas:["Tu Vi +"+fmt(g), "Đạo Tâm -1"]}; } }
     ]},
 
   { title:"Lão Giả Bí Ẩn", weight:0.5,
     text:"Một lão nhân áo xám không rõ lai lịch ngồi lặng lẽ bên đường, ánh mắt sâu thẳm như đã nhìn thấu ngàn năm dâu bể. Lão khẽ mở lời, đề nghị dùng một phần thọ nguyên của ngươi để đổi lấy một đạo lực lượng khổng lồ đang ẩn giấu trong người.",
     choices:[
-      { label:"Đồng ý trao đổi", effect:(s)=>{ const t=s.thoNguyenMax*0.12; loseTho(t); const g=reqNow()*1.2; gainCultivation(s,g); return {text:"Lão nhân khẽ gật đầu, đặt một ngón tay lên trán ngươi. Một luồng sức mạnh khổng lồ tràn vào cơ thể, nhưng đồng thời ngươi cũng cảm nhận được sinh mệnh của mình đang vơi đi.", deltas:["Tu Vi +"+fmt(g), "Thọ Nguyên -"+fmt(t)]}; } },
+      { label:"Đồng ý trao đổi", effect:(s)=>{ const t=s.thoNguyenMax*0.12; loseTho(t); const g=reqNow()*0.10; gainCultivation(s,g); return {text:"Lão nhân khẽ gật đầu, đặt một ngón tay lên trán ngươi. Một luồng sức mạnh khổng lồ tràn vào cơ thể, nhưng đồng thời ngươi cũng cảm nhận được sinh mệnh của mình đang vơi đi.", deltas:["Tu Vi +"+fmt(g), "Thọ Nguyên -"+fmt(t)]}; } },
       { label:"Từ chối", effect:()=>({text:"Ngươi lắc đầu từ chối lời đề nghị. Lão nhân chỉ khẽ mỉm cười, ánh mắt thoáng chút tán thưởng, rồi hóa thành một làn khói mờ tan biến vào không trung.", deltas:[]}) }
     ]},
 
@@ -1620,40 +1644,252 @@ function eligibleExploreEvents(){
 }
 
 /* ================= EQUIPMENT, PILLS & COMBAT STATS ================= */
+/* Rarity tiers: common(Phàm) -> uncommon(Tinh) -> rare(Huyền) -> epic(Địa) -> legendary(Thiên) */
+/* 200+ items across weapons, armor, phapBao, pills, materials, congphap */
 const ITEM_DB = {
+  /* --- WEAPONS (50+) --- */
   pham_kiem:      { name:"Phàm Kiếm",            type:"weapon", rarity:"common",    atk:8 },
+  moc_kiem:       { name:"Mộc Kiếm",             type:"weapon", rarity:"common",    atk:6, tocDoTuLuyen:0.01 },
+  dong_dao:       { name:"Đồng Đao",             type:"weapon", rarity:"common",    atk:10 },
+  thach_bang:     { name:"Thạch Bổng",           type:"weapon", rarity:"common",    atk:7, def:2 },
+  tieu_kiem:      { name:"Tiêu Kiếm",            type:"weapon", rarity:"common",    atk:12 },
+  sat_giao:       { name:"Sát Giao",             type:"weapon", rarity:"uncommon",  atk:15 },
+  bach_moc_kiem:   { name:"Bạch Mộc Kiếm",        type:"weapon", rarity:"uncommon",  atk:14, tocDoTuLuyen:0.02 },
+  ngoc_bang:      { name:"Ngọc Bổng",            type:"weapon", rarity:"uncommon",  atk:16, hp:10 },
+  thiet_chuong:   { name:"Thiết Chưởng",         type:"weapon", rarity:"uncommon",  atk:18, def:3 },
+  xuong_truong:   { name:"Xương Trượng",         type:"weapon", rarity:"uncommon",  atk:13, tocDoTuLuyen:0.03 },
   linh_kiem:      { name:"Linh Kiếm",             type:"weapon", rarity:"rare",      atk:22, tocDoTuLuyen:0.03 },
   huyet_dao:      { name:"Huyết Đao",             type:"weapon", rarity:"rare",      atk:30, def:-3 },
+  thanh_bang:     { name:"Thanh Bổng",            type:"weapon", rarity:"rare",      atk:25, def:5 },
+  bang_kiem:      { name:"Băng Kiếm",             type:"weapon", rarity:"rare",      atk:28, tocDoTuLuyen:0.04 },
+  hoac_kiem:      { name:"Hỏa Kiếm",              type:"weapon", rarity:"rare",      atk:32, hp:-10 },
+  phong_luu_kiem: { name:"Phong Lưu Kiếm",        type:"weapon", rarity:"rare",      atk:26, tocDoTuLuyen:0.05 },
+  bach_ngoc_kiem:  { name:"Bạch Ngọc Kiếm",        type:"weapon", rarity:"rare",      atk:30, tocDoTuLuyen:0.04 },
+  am_dao:         { name:"Âm Đao",                type:"weapon", rarity:"rare",      atk:24, def:4 },
+  duong_kiem:     { name:"Dương Kiếm",            type:"weapon", rarity:"rare",      atk:27, hp:15 },
+  loan_kiem:      { name:"Loan Kiếm",             type:"weapon", rarity:"rare",      atk:29, tocDoTuLuyen:0.03 },
   thanh_phong_kiem:{ name:"Thanh Phong Kiếm",     type:"weapon", rarity:"epic",      atk:55, tocDoTuLuyen:0.06 },
+  liet_hoa_kiem:   { name:"Liệt Hỏa Kiếm",        type:"weapon", rarity:"epic",      atk:60, hp:-20 },
+  tuyet_kiem:     { name:"Tuyết Kiếm",            type:"weapon", rarity:"epic",      atk:52, def:10 },
+  pha_thien_kiem:  { name:"Phá Thiên Kiếm",        type:"weapon", rarity:"epic",      atk:58, tocDoTuLuyen:0.07 },
+  uy_dien_chuong:  { name:"Uy Điện Chưởng",       type:"weapon", rarity:"epic",      atk:50, def:8 },
+  long_nguyen_kiem:{ name:"Long Nguyên Kiếm",     type:"weapon", rarity:"epic",      atk:62, hp:30, tocDoTuLuyen:0.06 },
+  phượng_kiem:    { name:"Phượng Kiếm",           type:"weapon", rarity:"epic",      atk:56, tocDoTuLuyen:0.08 },
+  toan_kiem:      { name:"Toàn Kiếm",             type:"weapon", rarity:"epic",      atk:54, def:12 },
+  bach_long_kiem:  { name:"Bạch Long Kiếm",        type:"weapon", rarity:"epic",      atk:59, hp:25, tocDoTuLuyen:0.05 },
+  huyen_vu_kiem:   { name:"Huyền Vũ Kiếm",        type:"weapon", rarity:"epic",      atk:57, def:6, tocDoTuLuyen:0.07 },
   thai_co_kiem:   { name:"Thái Cổ Thần Kiếm",     type:"weapon", rarity:"legendary", atk:120, hp:40, tocDoTuLuyen:0.12 },
+  hon_don_kiem:   { name:"Hỗn Độn Kiếm",          type:"weapon", rarity:"legendary", atk:110, def:20, tocDoTuLuyen:0.15 },
+  hoang_co_kiem:  { name:"Hoang Cổ Kiếm",         type:"weapon", rarity:"legendary", atk:130, hp:60, tocDoTuLuyen:0.10 },
+  vuc_kiem:       { name:"Vực Kiếm",              type:"weapon", rarity:"legendary", atk:115, def:30, tocDoTuLuyen:0.14 },
+  thien_dao_kiem:  { name:"Thiên Đạo Kiếm",        type:"weapon", rarity:"legendary", atk:140, hp:50, tocDoTuLuyen:0.18 },
+  vuc_than_kiem:   { name:"Vực Thần Kiếm",         type:"weapon", rarity:"legendary", atk:125, def:25, tocDoTuLuyen:0.16 },
+  hoang_thien_kiem:{ name:"Hoàng Thiên Kiếm",     type:"weapon", rarity:"legendary", atk:135, hp:70, tocDoTuLuyen:0.13 },
+  co_thuong_kiem:  { name:"Cổ Thương Kiếm",        type:"weapon", rarity:"legendary", atk:145, def:15, tocDoTuLuyen:0.15 },
+  vuc_hoang_kiem:  { name:"Vực Hoang Kiếm",        type:"weapon", rarity:"legendary", atk:128, hp:55, tocDoTuLuyen:0.17 },
+  thai_suu_kiem:   { name:"Thái Tuế Kiếm",         type:"weapon", rarity:"legendary", atk:138, def:20, tocDoTuLuyen:0.20 },
+  hon_mang_kiem:   { name:"Hỗn Mang Kiếm",         type:"weapon", rarity:"legendary", atk:150, hp:80, tocDoTuLuyen:0.15 },
+  dao_tong_kiem:   { name:"Đạo Tông Kiếm",         type:"weapon", rarity:"legendary", atk:142, def:35, tocDoTuLuyen:0.19 },
+  vuc_luyen_kiem:  { name:"Vực Luyện Kiếm",        type:"weapon", rarity:"legendary", atk:148, hp:45, tocDoTuLuyen:0.16 },
+  hoang_vuc_kiem:  { name:"Hoang Vực Kiếm",        type:"weapon", rarity:"legendary", atk:155, def:10, tocDoTuLuyen:0.14 },
+  co_hoang_kiem:   { name:"Cổ Hoang Kiếm",         type:"weapon", rarity:"legendary", atk:160, hp:60, tocDoTuLuyen:0.22 },
+  thien_co_kiem:   { name:"Thiên Cổ Kiếm",         type:"weapon", rarity:"legendary", atk:165, def:40, tocDoTuLuyen:0.20 },
+  vuc_co_kiem:     { name:"Vực Cổ Kiếm",           type:"weapon", rarity:"legendary", atk:170, hp:90, tocDoTuLuyen:0.25 },
+  hoang_dao_kiem:  { name:"Hoang Đạo Kiếm",        type:"weapon", rarity:"legendary", atk:175, def:30, tocDoTuLuyen:0.21 },
+  hon_thuong_kiem: { name:"Hồn Thương Kiếm",       type:"weapon", rarity:"legendary", atk:180, hp:100, tocDoTuLuyen:0.23 },
+  vuc_dao_kiem:    { name:"Vực Đạo Kiếm",           type:"weapon", rarity:"legendary", atk:185, def:45, tocDoTuLuyen:0.24 },
+  co_dao_kiem:     { name:"Cổ Đạo Kiếm",           type:"weapon", rarity:"legendary", atk:190, hp:80, tocDoTuLuyen:0.26 },
+  thien_hoang_kiem:{ name:"Thiên Hoang Kiếm",      type:"weapon", rarity:"legendary", atk:200, def:50, tocDoTuLuyen:0.28 },
 
+  /* --- ARMOR (50+) --- */
   bo_giap_vai:    { name:"Bố Giáp",               type:"armor",  rarity:"common",    def:6, hp:20 },
+  lac_giap:       { name:"Lạc Giáp",              type:"armor",  rarity:"common",    def:4, hp:25 },
+  da_giap:        { name:"Da Giáp",               type:"armor",  rarity:"common",    def:8, hp:15 },
+  binh_sat_giap:   { name:"Binh Sắt Giáp",         type:"armor",  rarity:"common",    def:10, hp:18 },
+  moc_giap:       { name:"Mộc Giáp",              type:"armor",  rarity:"common",    def:5, hp:30 },
+  da_trang_giap:   { name:"Da Trắng Giáp",         type:"armor",  rarity:"uncommon",  def:12, hp:25 },
+  ngoc_bao_giap:   { name:"Ngọc Bảo Giáp",         type:"armor",  rarity:"uncommon",  def:14, hp:35 },
+  bach_sat_giap:   { name:"Bạch Sắt Giáp",         type:"armor",  rarity:"uncommon",  def:15, hp:30 },
+  xich_sat_giap:   { name:"Xích Sắt Giáp",        type:"armor",  rarity:"uncommon",  def:13, hp:40 },
+  thanh_bach_giap: { name:"Thanh Bạch Giáp",      type:"armor",  rarity:"uncommon",  def:16, hp:28 },
   huyen_thiet_giap:{ name:"Huyền Thiết Giáp",     type:"armor",  rarity:"rare",      def:18, hp:60 },
+  bach_ngoc_giap:  { name:"Bạch Ngọc Giáp",       type:"armor",  rarity:"rare",      def:22, hp:50 },
+  thach_linh_giap: { name:"Thạch Linh Giáp",       type:"armor",  rarity:"rare",      def:20, hp:70, tocDoTuLuyen:0.02 },
+  xich_long_giap:  { name:"Xích Long Giáp",        type:"armor",  rarity:"rare",      def:25, hp:55 },
+  bach_ho_giap:    { name:"Bạch Hổ Giáp",          type:"armor",  rarity:"rare",      def:24, hp:65, tocDoTuLuyen:0.03 },
+  huyen_long_giap: { name:"Huyền Long Giáp",      type:"armor",  rarity:"rare",      def:28, hp:50 },
+  phượng_vu_giap:  { name:"Phượng Vũ Giáp",        type:"armor",  rarity:"rare",      def:26, hp:75, tocDoTuLuyen:0.03 },
+  loan_vu_giap:    { name:"Loan Vũ Giáp",          type:"armor",  rarity:"rare",      def:30, hp:45 },
+  huyen_vuc_giap:  { name:"Huyền Vực Giáp",        type:"armor",  rarity:"rare",      def:32, hp:60, tocDoTuLuyen:0.04 },
   long_lan_giap:  { name:"Long Lân Giáp",         type:"armor",  rarity:"epic",      def:40, hp:150, tocDoTuLuyen:0.04 },
+  phuong_hoang_giap:{name:"Phượng Hoàng Giáp",    type:"armor",  rarity:"epic",      def:45, hp:130, tocDoTuLuyen:0.05 },
+  thien_long_giap: { name:"Thiên Long Giáp",      type:"armor",  rarity:"epic",      def:50, hp:120, tocDoTuLuyen:0.06 },
+  bach_ho_than_giap:{name:"Bạch Hổ Thần Giáp",    type:"armor",  rarity:"epic",      def:48, hp:160, tocDoTuLuyen:0.05 },
+  huyen_vu_than_giap:{name:"Huyền Vũ Thần Giáp",  type:"armor",  rarity:"epic",      def:55, hp:100, tocDoTuLuyen:0.07 },
+  chu_tuong_giap:  { name:"Chu Tước Giáp",         type:"armor",  rarity:"epic",      def:42, hp:170, tocDoTuLuyen:0.04 },
+  co_long_giap:    { name:"Cổ Long Giáp",          type:"armor",  rarity:"epic",      def:52, hp:140, tocDoTuLuyen:0.06 },
+  thien_phuong_giap:{name:"Thiên Phượng Giáp",    type:"armor",  rarity:"epic",      def:46, hp:180, tocDoTuLuyen:0.05 },
+  hoang_long_giap: { name:"Hoang Long Giáp",       type:"armor",  rarity:"epic",      def:54, hp:110, tocDoTuLuyen:0.07 },
+  vuc_long_giap:   { name:"Vực Long Giáp",         type:"armor",  rarity:"epic",      def:58, hp:125, tocDoTuLuyen:0.08 },
   hon_thien_giap: { name:"Hỗn Thiên Thần Giáp",   type:"armor",  rarity:"legendary", def:90, hp:400, tocDoTuLuyen:0.08 },
+  hon_don_giap:   { name:"Hỗn Độn Giáp",          type:"armor",  rarity:"legendary", def:100, hp:350, tocDoTuLuyen:0.12 },
+  hoang_co_giap:  { name:"Hoang Cổ Giáp",         type:"armor",  rarity:"legendary", def:110, hp:450, tocDoTuLuyen:0.10 },
+  thien_dao_giap:  { name:"Thiên Đạo Giáp",        type:"armor",  rarity:"legendary", def:120, hp:380, tocDoTuLuyen:0.15 },
+  vuc_than_giap:   { name:"Vực Thần Giáp",         type:"armor",  rarity:"legendary", def:95, hp:500, tocDoTuLuyen:0.14 },
+  hoang_thien_giap:{ name:"Hoàng Thiên Giáp",     type:"armor",  rarity:"legendary", def:115, hp:420, tocDoTuLuyen:0.11 },
+  co_thuong_giap:  { name:"Cổ Thương Giáp",        type:"armor",  rarity:"legendary", def:130, hp:360, tocDoTuLuyen:0.13 },
+  vuc_hoang_giap:  { name:"Vực Hoang Giáp",        type:"armor",  rarity:"legendary", def:105, hp:480, tocDoTuLuyen:0.16 },
+  thai_suu_giap:   { name:"Thái Tuế Giáp",         type:"armor",  rarity:"legendary", def:125, hp:400, tocDoTuLuyen:0.17 },
+  hon_mang_giap:   { name:"Hỗn Mang Giáp",         type:"armor",  rarity:"legendary", def:140, hp:520, tocDoTuLuyen:0.12 },
+  dao_tong_giap:   { name:"Đạo Tông Giáp",         type:"armor",  rarity:"legendary", def:135, hp:380, tocDoTuLuyen:0.19 },
+  vuc_luyen_giap:  { name:"Vực Luyện Giáp",        type:"armor",  rarity:"legendary", def:145, hp:440, tocDoTuLuyen:0.15 },
+  hoang_vuc_giap:  { name:"Hoang Vực Giáp",        type:"armor",  rarity:"legendary", def:150, hp:350, tocDoTuLuyen:0.13 },
+  co_hoang_giap:   { name:"Cổ Hoang Giáp",         type:"armor",  rarity:"legendary", def:155, hp:460, tocDoTuLuyen:0.20 },
+  thien_co_giap:   { name:"Thiên Cổ Giáp",         type:"armor",  rarity:"legendary", def:160, hp:420, tocDoTuLuyen:0.18 },
+  vuc_co_giap:     { name:"Vực Cổ Giáp",           type:"armor",  rarity:"legendary", def:165, hp:540, tocDoTuLuyen:0.22 },
+  hoang_dao_giap:  { name:"Hoang Đạo Giáp",        type:"armor",  rarity:"legendary", def:170, hp:390, tocDoTuLuyen:0.16 },
+  hon_thuong_giap: { name:"Hồn Thương Giáp",       type:"armor",  rarity:"legendary", def:175, hp:500, tocDoTuLuyen:0.21 },
+  vuc_dao_giap:    { name:"Vực Đạo Giáp",           type:"armor",  rarity:"legendary", def:180, hp:450, tocDoTuLuyen:0.23 },
+  co_dao_giap:     { name:"Cổ Đạo Giáp",           type:"armor",  rarity:"legendary", def:185, hp:480, tocDoTuLuyen:0.25 },
+  thien_hoang_giap:{ name:"Thiên Hoang Giáp",      type:"armor",  rarity:"legendary", def:195, hp:560, tocDoTuLuyen:0.28 },
 
+  /* --- PHÁP BẢO (40+) --- */
   tu_chan_ngoc_bai:{ name:"Tu Chân Ngọc Bài",     type:"phapBao",rarity:"common",    tocDoTuLuyen:0.05 },
+  ngoc_phien:     { name:"Ngọc Phiến",            type:"phapBao",rarity:"common",    tocDoTuLuyen:0.03 },
+  linh_bao:       { name:"Linh Bảo",             type:"phapBao",rarity:"common",    tocDoTuLuyen:0.04, hp:10 },
+  phap_bao:       { name:"Pháp Bảo",             type:"phapBao",rarity:"common",    tocDoTuLuyen:0.06, atk:5 },
+  ngoc_anh:       { name:"Ngọc Ảnh",             type:"phapBao",rarity:"uncommon",  tocDoTuLuyen:0.07, def:5 },
+  linh_vu:        { name:"Linh Vũ",              type:"phapBao",rarity:"uncommon",  tocDoTuLuyen:0.06, hp:20 },
+  thach_linh:     { name:"Thạch Linh",           type:"phapBao",rarity:"uncommon",  tocDoTuLuyen:0.08, atk:8 },
+  phap_luan:      { name:"Pháp Luân",            type:"phapBao",rarity:"uncommon",  tocDoTuLuyen:0.07, def:8 },
   van_dao_la_ban: { name:"Vạn Đạo La Bàn",        type:"phapBao",rarity:"rare",      tocDoTuLuyen:0.10, def:8 },
+  thien_co_linh:  { name:"Thiên Cổ Linh",        type:"phapBao",rarity:"rare",      tocDoTuLuyen:0.12, atk:10 },
+  dia_linh:       { name:"Địa Linh",             type:"phapBao",rarity:"rare",      tocDoTuLuyen:0.11, def:12 },
+  thien_nhan:     { name:"Thiên Nhãn",           type:"phapBao",rarity:"rare",      tocDoTuLuyen:0.13, hp:30 },
+  phap_kinh:      { name:"Pháp Kính",            type:"phapBao",rarity:"rare",      tocDoTuLuyen:0.14, def:15 },
+  linh_thuyen:    { name:"Linh Thuyền",          type:"phapBao",rarity:"rare",      tocDoTuLuyen:0.12, atk:12, hp:20 },
+  thien_co_dao:   { name:"Thiên Cổ Đạo",         type:"phapBao",rarity:"epic",      tocDoTuLuyen:0.15, atk:20, def:10 },
+  hon_don_co:     { name:"Hỗn Độn Cổ",           type:"phapBao",rarity:"epic",      tocDoTuLuyen:0.17, def:20, hp:50 },
+  hoang_co_dao:   { name:"Hoang Cổ Đạo",         type:"phapBao",rarity:"epic",      tocDoTuLuyen:0.18, atk:15, hp:60 },
+  vuc_co_dao:     { name:"Vực Cổ Đạo",           type:"phapBao",rarity:"epic",      tocDoTuLuyen:0.16, atk:25, def:15 },
+  thien_dao_co:   { name:"Thiên Đạo Cổ",         type:"phapBao",rarity:"epic",      tocDoTuLuyen:0.19, def:25, hp:40 },
+  co_dao_linh:    { name:"Cổ Đạo Linh",           type:"phapBao",rarity:"epic",      tocDoTuLuyen:0.20, atk:18, hp:55 },
   hon_don_linh_chau:{ name:"Hỗn Độn Linh Châu",   type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.25, atk:30, def:30, hp:100 },
+  hon_mang_bao:   { name:"Hỗn Mang Bảo",         type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.30, atk:40, def:40, hp:150 },
+  thien_dao_bao:  { name:"Thiên Đạo Bảo",        type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.28, atk:35, def:35, hp:120 },
+  vuc_than_bao:   { name:"Vực Thần Bảo",         type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.32, atk:45, def:25, hp:180 },
+  hoang_co_bao:   { name:"Hoang Cổ Bảo",         type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.27, atk:50, def:50, hp:130 },
+  co_thuong_bao:  { name:"Cổ Thương Bảo",        type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.35, atk:55, def:30, hp:200 },
+  vuc_hoang_bao:  { name:"Vực Hoang Bảo",        type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.33, atk:48, def:45, hp:160 },
+  thai_suu_bao:   { name:"Thái Tuế Bảo",         type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.38, atk:60, def:35, hp:220 },
+  hon_luyen_bao:  { name:"Hồn Luyện Bảo",        type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.36, atk:52, def:55, hp:140 },
+  dao_tong_bao:   { name:"Đạo Tông Bảo",         type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.40, atk:65, def:40, hp:250 },
+  vuc_luyen_bao:  { name:"Vực Luyện Bảo",        type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.37, atk:58, def:60, hp:170 },
+  hoang_vuc_bao:  { name:"Hoang Vực Bảo",        type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.34, atk:70, def:30, hp:230 },
+  co_hoang_bao:   { name:"Cổ Hoang Bảo",         type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.42, atk:75, def:50, hp:190 },
+  thien_co_bao:   { name:"Thiên Cổ Bảo",         type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.39, atk:68, def:65, hp:160 },
+  vuc_co_bao:     { name:"Vực Cổ Bảo",           type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.44, atk:80, def:45, hp:280 },
+  hoang_dao_bao:  { name:"Hoang Đạo Bảo",        type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.36, atk:72, def:70, hp:150 },
+  hon_thuong_bao: { name:"Hồn Thương Bảo",       type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.45, atk:85, def:55, hp:240 },
+  vuc_dao_bao:    { name:"Vực Đạo Bảo",          type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.43, atk:78, def:75, hp:200 },
+  co_dao_bao:     { name:"Cổ Đạo Bảo",           type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.48, atk:90, def:60, hp:300 },
+  thien_hoang_bao:{ name:"Thiên Hoang Bảo",      type:"phapBao",rarity:"legendary", tocDoTuLuyen:0.50, atk:100, def:80, hp:350 },
 
+  /* --- PILLS (40+) --- */
   tu_khi_dan:     { name:"Tụ Khí Đan",            type:"pill",   rarity:"common",    tocDoTuLuyen:0.02 },
   cuong_the_dan:  { name:"Cường Thể Đan",         type:"pill",   rarity:"common",    hp:15, atk:3 },
+  bo_khi_dan:     { name:"Bổ Khí Đan",            type:"pill",   rarity:"common",    tocDoTuLuyen:0.03, hp:10 },
+  hoac_huyet_dan: { name:"Hóa Huyết Đan",         type:"pill",   rarity:"common",    hp:20 },
+  an_than_dan:    { name:"An Thần Đan",           type:"pill",   rarity:"common",    tocDoTuLuyen:0.04 },
   pha_giap_dan:   { name:"Phá Giáp Đan",          type:"pill",   rarity:"uncommon",  atk:10 },
   huyen_thiet_dan:{ name:"Huyền Thiết Đan",       type:"pill",   rarity:"uncommon",  def:10 },
+  tiet_cot_dan:   { name:"Tiết Cốt Đan",          type:"pill",   rarity:"uncommon",  hp:25, atk:5 },
+  bach_hoa_dan:   { name:"Bạch Hỏa Đan",          type:"pill",   rarity:"uncommon",  atk:12, tocDoTuLuyen:0.03 },
+  thanh_tam_dan:  { name:"Thanh Tâm Đan",         type:"pill",   rarity:"uncommon",  tocDoTuLuyen:0.05, def:5 },
   dai_bo_linh_dan:{ name:"Đại Bổ Linh Đan",       type:"pill",   rarity:"rare",      tocDoTuLuyen:0.05, hp:30 },
+  ngoc_linh_dan:  { name:"Ngọc Linh Đan",         type:"pill",   rarity:"rare",      tocDoTuLuyen:0.06, atk:8 },
+  hoac_long_dan:  { name:"Hỏa Long Đan",          type:"pill",   rarity:"rare",      atk:15, hp:20 },
+  bach_long_dan:  { name:"Bạch Long Đan",         type:"pill",   rarity:"rare",      def:15, hp:25 },
+  phap_luc_dan:   { name:"Pháp Lực Đan",          type:"pill",   rarity:"rare",      tocDoTuLuyen:0.07, atk:10, def:5 },
+  tich_cot_dan:   { name:"Tích Cốt Đan",          type:"pill",   rarity:"rare",      hp:40, def:8 },
+  linh_nguyen_dan:{ name:"Linh Nguyên Đan",       type:"pill",   rarity:"rare",      tocDoTuLuyen:0.08, hp:35 },
+  hoang_long_dan: { name:"Hoang Long Đan",        type:"pill",   rarity:"epic",      atk:20, hp:50, tocDoTuLuyen:0.06 },
+  thien_long_dan: { name:"Thiên Long Đan",        type:"pill",   rarity:"epic",      def:20, hp:60, tocDoTuLuyen:0.07 },
+  co_long_dan:    { name:"Cổ Long Đan",            type:"pill",   rarity:"epic",      atk:18, def:15, hp:55, tocDoTuLuyen:0.08 },
+  phuong_hoang_dan:{name:"Phượng Hoàng Đan",      type:"pill",   rarity:"epic",      tocDoTuLuyen:0.10, hp:80, atk:12 },
+  hon_don_dan:    { name:"Hỗn Độn Đan",           type:"pill",   rarity:"epic",      tocDoTuLuyen:0.12, atk:15, def:15, hp:60 },
   cuu_chuyen_kim_dan:{ name:"Cửu Chuyển Kim Đan", type:"pill",   rarity:"legendary", tocDoTuLuyen:0.15, atk:20, def:20, hp:80 },
+  do_kiep_dan:    { name:"Độ Kiếp Đan",            type:"pill",   rarity:"legendary", tocDoTuLuyen:0.2, atk:15, def:15, hp:60 },
+  hao_dan:        { name:"Hạo Đan",                type:"pill",   rarity:"legendary", thoNguyen:200 },
+  hon_mang_dan:   { name:"Hỗn Mang Đan",           type:"pill",   rarity:"legendary", tocDoTuLuyen:0.25, atk:25, def:25, hp:100 },
+  thien_dao_dan:  { name:"Thiên Đạo Đan",          type:"pill",   rarity:"legendary", tocDoTuLuyen:0.22, atk:30, def:20, hp:120 },
+  vuc_than_dan:   { name:"Vực Thần Đan",           type:"pill",   rarity:"legendary", tocDoTuLuyen:0.28, atk:20, def:30, hp:90 },
+  hoang_co_dan:   { name:"Hoang Cổ Đan",           type:"pill",   rarity:"legendary", tocDoTuLuyen:0.24, atk:28, def:28, hp:110 },
+  co_thuong_dan:  { name:"Cổ Thương Đan",          type:"pill",   rarity:"legendary", tocDoTuLuyen:0.30, atk:35, def:25, hp:130 },
+  vuc_hoang_dan:  { name:"Vực Hoang Đan",          type:"pill",   rarity:"legendary", tocDoTuLuyen:0.27, atk:32, def:35, hp:100 },
+  thai_suu_dan:   { name:"Thái Tuế Đan",           type:"pill",   rarity:"legendary", tocDoTuLuyen:0.32, atk:40, def:30, hp:150 },
+  hon_luyen_dan:  { name:"Hồn Luyện Đan",          type:"pill",   rarity:"legendary", tocDoTuLuyen:0.29, atk:38, def:40, hp:120 },
+  dao_tong_dan:   { name:"Đạo Tông Đan",           type:"pill",   rarity:"legendary", tocDoTuLuyen:0.35, atk:45, def:35, hp:180 },
+  vuc_luyen_dan:  { name:"Vực Luyện Đan",          type:"pill",   rarity:"legendary", tocDoTuLuyen:0.31, atk:42, def:45, hp:140 },
+  hoang_vuc_dan:  { name:"Hoang Vực Đan",          type:"pill",   rarity:"legendary", tocDoTuLuyen:0.33, atk:50, def:25, hp:160 },
+  co_hoang_dan:   { name:"Cổ Hoang Đan",           type:"pill",   rarity:"legendary", tocDoTuLuyen:0.38, atk:55, def:40, hp:130 },
+  thien_co_dan:   { name:"Thiên Cổ Đan",           type:"pill",   rarity:"legendary", tocDoTuLuyen:0.36, atk:48, def:50, hp:110 },
+  vuc_co_dan:     { name:"Vực Cổ Đan",             type:"pill",   rarity:"legendary", tocDoTuLuyen:0.40, atk:60, def:35, hp:200 },
+  hoang_dao_dan:  { name:"Hoang Đạo Đan",          type:"pill",   rarity:"legendary", tocDoTuLuyen:0.34, atk:52, def:55, hp:120 },
+  hon_thuong_dan: { name:"Hồn Thương Đan",         type:"pill",   rarity:"legendary", tocDoTuLuyen:0.42, atk:65, def:45, hp:170 },
+  vuc_dao_dan:    { name:"Vực Đạo Đan",            type:"pill",   rarity:"legendary", tocDoTuLuyen:0.39, atk:58, def:60, hp:150 },
+  co_dao_dan:     { name:"Cổ Đạo Đan",             type:"pill",   rarity:"legendary", tocDoTuLuyen:0.45, atk:70, def:50, hp:220 },
+  thien_hoang_dan:{ name:"Thiên Hoang Đan",        type:"pill",   rarity:"legendary", tocDoTuLuyen:0.50, atk:80, def:70, hp:300, thoNguyen:500 },
 
+  /* --- MATERIALS (20+) --- */
   linh_thao:      { name:"Linh Thảo",             type:"material", rarity:"common" },
   yeu_dan:        { name:"Yêu Đan",               type:"material", rarity:"uncommon" },
   thien_nien_linh_chi:{ name:"Thiên Niên Linh Chi", type:"material", rarity:"rare" },
   hon_mang_thach: { name:"Hỗn Mang Thạch",        type:"material", rarity:"legendary" },
+  bach_ngoc:      { name:"Bạch Ngọc",             type:"material", rarity:"common" },
+  huyen_thiet:    { name:"Huyền Thiết",           type:"material", rarity:"uncommon" },
+  chi_thao:       { name:"Chỉ Thảo",              type:"material", rarity:"common" },
+  long_cot:       { name:"Long Cốt",              type:"material", rarity:"rare" },
+  phuong_cot:     { name:"Phượng Cốt",            type:"material", rarity:"rare" },
+  co_long_cot:    { name:"Cổ Long Cốt",           type:"material", rarity:"epic" },
+  thien_thach:    { name:"Thiên Thạch",           type:"material", rarity:"rare" },
+  dia_tam:        { name:"Địa Tâm",              type:"material", rarity:"uncommon" },
+  thien_linh_chi: { name:"Thiên Linh Chi",         type:"material", rarity:"epic" },
+  hon_don_thach:  { name:"Hỗn Độn Thạch",         type:"material", rarity:"legendary" },
+  co_thach:       { name:"Cổ Thạch",              type:"material", rarity:"epic" },
+  vuc_thach:      { name:"Vực Thạch",             type:"material", rarity:"legendary" },
+  hoang_thach:    { name:"Hoang Thạch",           type:"material", rarity:"legendary" },
+  dao_nguyen_thach:{name:"Đạo Nguyên Thạch",      type:"material", rarity:"legendary" },
+  thien_dao_thach:{ name:"Thiên Đạo Thạch",        type:"material", rarity:"legendary" },
+  co_dao_thach:   { name:"Cổ Đạo Thạch",          type:"material", rarity:"legendary" },
+  vuc_dao_thach:  { name:"Vực Đạo Thạch",         type:"material", rarity:"legendary" },
+  thien_hoang_thach:{name:"Thiên Hoang Thạch",    type:"material", rarity:"legendary" },
 
+  /* --- CÔNG PHÁP (20+) --- */
   so_cap_tam_phap:     { name:"Sơ Cấp Tâm Pháp",     type:"congphap", rarity:"common",   ngoTinh:2, daoTam:2 },
   trung_cap_kiem_phap: { name:"Trung Cấp Kiếm Pháp", type:"congphap", rarity:"uncommon", daoTam:5, theChat:3 },
   thuong_co_dao_thu:   { name:"Thượng Cổ Đạo Thư",   type:"congphap", rarity:"rare",     ngoTinh:8, coDuyen:8, daoTam:8, theChat:8 },
-
-  do_kiep_dan: { name:"Độ Kiếp Đan",  type:"pill", rarity:"legendary", tocDoTuLuyen:0.2, atk:15, def:15, hp:60 },
-  hao_dan:     { name:"Hạo Đan",      type:"pill", rarity:"legendary", thoNguyen:200 }
+  co_kiem_phap:   { name:"Cổ Kiếm Pháp",           type:"congphap", rarity:"rare",     daoTam:10, theChat:5, ngoTinh:5 },
+  thien_kiem_phap:{ name:"Thiên Kiếm Pháp",        type:"congphap", rarity:"epic",     daoTam:15, theChat:8, ngoTinh:10, coDuyen:5 },
+  hon_don_dao_thu:{ name:"Hỗn Độn Đạo Thư",        type:"congphap", rarity:"epic",     ngoTinh:12, coDuyen:12, daoTam:12, theChat:12 },
+  hoang_co_dao_thu:{name:"Hoang Cổ Đạo Thư",       type:"congphap", rarity:"epic",     ngoTinh:15, coDuyen:10, daoTam:15, theChat:10 },
+  thien_dao_thu:  { name:"Thiên Đạo Thư",          type:"congphap", rarity:"legendary", ngoTinh:20, coDuyen:20, daoTam:20, theChat:20 },
+  vuc_than_dao_thu:{name:"Vực Thần Đạo Thư",       type:"congphap", rarity:"legendary", ngoTinh:18, coDuyen:18, daoTam:22, theChat:15 },
+  co_thuong_dao_thu:{name:"Cổ Thương Đạo Thư",    type:"congphap", rarity:"legendary", ngoTinh:22, coDuyen:18, daoTam:20, theChat:18 },
+  vuc_hoang_dao_thu:{name:"Vực Hoang Đạo Thư",     type:"congphap", rarity:"legendary", ngoTinh:20, coDuyen:22, daoTam:18, theChat:20 },
+  thai_suu_dao_thu:{name:"Thái Tuế Đạo Thư",       type:"congphap", rarity:"legendary", ngoTinh:25, coDuyen:20, daoTam:25, theChat:20 },
+  hon_luyen_dao_thu:{name:"Hồn Luyện Đạo Thư",    type:"congphap", rarity:"legendary", ngoTinh:22, coDuyen:25, daoTam:22, theChat:22 },
+  dao_tong_dao_thu:{name:"Đạo Tông Đạo Thư",       type:"congphap", rarity:"legendary", ngoTinh:28, coDuyen:25, daoTam:28, theChat:25 },
+  vuc_luyen_dao_thu:{name:"Vực Luyện Đạo Thư",    type:"congphap", rarity:"legendary", ngoTinh:25, coDuyen:28, daoTam:25, theChat:25 },
+  hoang_vuc_dao_thu:{name:"Hoang Vực Đạo Thư",    type:"congphap", rarity:"legendary", ngoTinh:30, coDuyen:25, daoTam:30, theChat:22 },
+  co_hoang_dao_thu:{name:"Cổ Hoang Đạo Thư",      type:"congphap", rarity:"legendary", ngoTinh:28, coDuyen:30, daoTam:28, theChat:28 },
+  thien_co_dao_thu:{name:"Thiên Cổ Đạo Thư",      type:"congphap", rarity:"legendary", ngoTinh:30, coDuyen:28, daoTam:30, theChat:30 },
+  vuc_co_dao_thu: {name:"Vực Cổ Đạo Thư",         type:"congphap", rarity:"legendary", ngoTinh:32, coDuyen:32, daoTam:32, theChat:32 },
+  hoang_dao_dao_thu:{name:"Hoang Đạo Đạo Thư",    type:"congphap", rarity:"legendary", ngoTinh:35, coDuyen:30, daoTam:35, theChat:30 },
+  hon_thuong_dao_thu:{name:"Hồn Thương Đạo Thư",  type:"congphap", rarity:"legendary", ngoTinh:35, coDuyen:35, daoTam:35, theChat:35 },
+  vuc_dao_dao_thu:{name:"Vực Đạo Đạo Thư",        type:"congphap", rarity:"legendary", ngoTinh:38, coDuyen:35, daoTam:38, theChat:35 },
+  co_dao_dao_thu:{name:"Cổ Đạo Đạo Thư",         type:"congphap", rarity:"legendary", ngoTinh:40, coDuyen:40, daoTam:40, theChat:40 },
+  thien_hoang_dao_thu:{name:"Thiên Hoang Đạo Thư",type:"congphap", rarity:"legendary", ngoTinh:45, coDuyen:45, daoTam:45, theChat:45 }
 };
 
 function addItem(s, itemId, n){
@@ -2242,7 +2478,7 @@ function computeTocDoTuLuyen(s){
   return BASE_TU_LUYEN_SPEED * (1 + itemPct) * kiepNanMult;
 }
 
-const MANUAL_BASE_MULT = 12;
+const MANUAL_BASE_MULT = 4;
 const MANUAL_REALM_SCALE_RATE = 0.05;
 function manualClickBaseValue(s){
   const ngoTinhBonus = 1 + s.stats.ngoTinh * 0.02;
@@ -2949,8 +3185,12 @@ function closeLeaderboard(){
 /* ---------- Túi Đồ & Trang Bị ---------- */
 function rarityClass(rarity){ return 'rarity-'+(rarity||'common'); }
 function rarityLabel(rarity){
-  const map = {common:'Phàm Phẩm', uncommon:'Tinh Phẩm', rare:'Hiếm Có', epic:'Trân Quý', legendary:'Tuyệt Thế'};
+  const map = {common:'Phàm Phẩm', uncommon:'Tinh Phẩm', rare:'Huyền Phẩm', epic:'Địa Phẩm', legendary:'Thiên Phẩm'};
   return map[rarity] || 'Phàm Phẩm';
+}
+function rarityText(rarity){
+  const map = {common:'#a8bcc6', uncommon:'#4fdba0', rare:'#60a5fa', epic:'#c084fc', legendary:'#e8c27a'};
+  return map[rarity] || '#a8bcc6';
 }
 function itemStatSummary(it){
   const parts = [];
@@ -2965,12 +3205,14 @@ function renderInventory(){
   const slotLabels = { weapon:'Vũ Khí', armor:'Giáp', phapBao:'Pháp Bảo' };
   ['weapon','armor','phapBao'].forEach(function(slot){
     const box = document.createElement('div');
-    box.className = 'inv-slot';
-    const label = document.createElement('div'); label.className='slot-label'; label.textContent = slotLabels[slot].toUpperCase();
     const itemId = state.equipped && state.equipped[slot];
+    const equippedItem = itemId && ITEM_DB[itemId];
+    box.className = 'inv-slot' + (equippedItem ? (' rarity-border-' + (equippedItem.rarity||'common')) : '');
+    const label = document.createElement('div'); label.className='slot-label'; label.textContent = slotLabels[slot].toUpperCase();
     const itemDiv = document.createElement('div');
     itemDiv.className = 'slot-item' + (itemId ? '' : ' empty');
-    itemDiv.textContent = itemId && ITEM_DB[itemId] ? ITEM_DB[itemId].name : 'Trống';
+    if(equippedItem) itemDiv.style.color = rarityText(equippedItem.rarity);
+    itemDiv.textContent = equippedItem ? equippedItem.name : 'Trống';
     const btn = document.createElement('button');
     btn.textContent = 'Tháo';
     btn.disabled = !itemId;
@@ -2989,10 +3231,10 @@ function renderInventory(){
   }
   ids.forEach(function(itemId){
     const it = ITEM_DB[itemId];
-    const row = document.createElement('div'); row.className = 'inv-item-row';
+    const row = document.createElement('div'); row.className = 'inv-item-row rarity-border-' + (it.rarity||'common');
     const dot = document.createElement('div'); dot.className = 'rarity-dot ' + rarityClass(it.rarity);
     const info = document.createElement('div'); info.className = 'inv-item-info';
-    const nm = document.createElement('div'); nm.className = 'inv-item-name'; nm.textContent = it.name + ' x' + inv[itemId];
+    const nm = document.createElement('div'); nm.className = 'inv-item-name rarity-text-' + (it.rarity||'common'); nm.textContent = it.name + ' x' + inv[itemId];
     const meta = document.createElement('div'); meta.className = 'inv-item-meta';
     meta.textContent = rarityLabel(it.rarity) + ' · ' + itemStatSummary(it);
     info.appendChild(nm); info.appendChild(meta);
