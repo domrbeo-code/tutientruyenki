@@ -698,7 +698,7 @@
     margin:14px 0 8px;
   }
   .shop-refresh-info{ text-transform:none; letter-spacing:0; color:var(--text-faint); font-size:10.5px; }
-  .shop-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:8px; }
+  .shop-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(min(140px,100%),1fr)); gap:8px; }
   .shop-item-card{
     background: rgba(255,255,255,0.03); border:1px solid rgba(122,224,205,0.12);
     border-radius:10px; padding:10px; text-align:center;
@@ -876,6 +876,16 @@
       <button class="action-btn leaderboard-btn" id="btnLeaderboard">
         Bảng Xếp Hạng &amp; Tỉ Thí
         <span class="sub">Xem thứ hạng toàn server và khiêu chiến đạo hữu cùng bậc cảnh giới</span>
+      </button>
+
+      <button class="action-btn bicanh-btn" id="btnBicanh">
+        Bí Cảnh &amp; Khiêu Chiến Phó Bản
+        <span class="sub">Khám phá bí cảnh cá nhân hoặc lập tổ đội săn vật phẩm hiếm</span>
+      </button>
+
+      <button class="action-btn alchemy-btn" id="btnAlchemy">
+        Luyện Đan &amp; Dược Đường
+        <span class="sub">Dùng thảo dược, nguyên liệu luyện thành đan dược — 100% thành công</span>
       </button>
 
       <div class="sync-status" id="syncStatus">Chưa đồng bộ</div>
@@ -1063,6 +1073,37 @@
   </div>
 </div>
 
+<!-- BÍ CẢNH MODAL -->
+<div class="modal-overlay hidden" id="bicanhModal">
+  <div class="modal-box wide">
+    <h2>Bí Cảnh &amp; Phó Bản</h2>
+    <div class="bicanh-tabs">
+      <button class="bicanh-tab-btn active" id="tabBicanhSoloBtn">Bí Cảnh Cá Nhân</button>
+      <button class="bicanh-tab-btn" id="tabBicanhTeamBtn">Bí Cảnh Tổ Đội</button>
+    </div>
+    <div id="bicanhSoloContent"><div class="bicanh-dungeon-list" id="bicanhSoloList"></div></div>
+    <div id="bicanhTeamContent" class="hidden">
+      <div class="bicanh-team-info" id="bicanhTeamInfo"></div>
+      <div class="bicanh-dungeon-list" id="bicanhTeamList"></div>
+    </div>
+    <div style="text-align:center; margin-top:16px;">
+      <button class="modal-btn modal-btn-cancel" id="btnCloseBicanh">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- ALCHEMY MODAL -->
+<div class="modal-overlay hidden" id="alchemyModal">
+  <div class="modal-box wide">
+    <h2>Luyện Đan Dược Đường</h2>
+    <p style="font-size:12px; color:var(--text-faint); margin:0 0 14px;">Tỉ lệ luyện chế <b style="color:var(--success);">luôn 100% thành công</b>. Số lượng đan dược thu được phụ thuộc số nguyên liệu bỏ vào.</p>
+    <div class="alchemy-recipe-list" id="alchemyRecipeList"></div>
+    <div style="text-align:center; margin-top:16px;">
+      <button class="modal-btn modal-btn-cancel" id="btnCloseAlchemy">Đóng</button>
+    </div>
+  </div>
+</div>
+
 <!-- TRADING / BLACK MARKET MODAL -->
 <div class="modal-overlay hidden" id="marketModal">
   <div class="modal-box wide">
@@ -1075,10 +1116,11 @@
     </div>
 
     <div class="market-tab-content" id="shopTabContent">
-      <div class="market-section-title">Vật Phẩm Cơ Bản (không giới hạn)</div>
-      <div class="shop-grid" id="shopBaseGrid"></div>
-      <div class="market-section-title">Hàng Luân Chuyển <span class="shop-refresh-info" id="shopRefreshInfo"></span></div>
-      <div class="shop-grid" id="shopRotatingGrid"></div>
+      <div class="shop-reset-countdown" id="shopResetCountdown"></div>
+      <div class="shop-category-tabs" id="shopCategoryTabs"></div>
+      <div class="market-section-title" id="shopSectionLabel">Cửa Hàng NPC</div>
+      <div class="shop-grid" id="shopAllGrid"></div>
+      <div class="shop-pagination" id="shopPagination"></div>
     </div>
 
     <div class="market-tab-content hidden" id="marketTabContent">
@@ -1213,6 +1255,7 @@ function freshState(name){
     equipped: { weapon: null, armor: null, phapBao: null },
     pillBonuses: { atk: 0, def: 0, hp: 0, tocDoTuLuyen: 0 },
     pvpCooldowns: {},
+    bicanhCooldowns: {},
     raidLog: [],
     sect: { disciples: {} }
   };
@@ -2778,9 +2821,21 @@ const el = {
   shopTabContent: document.getElementById('shopTabContent'),
   marketTabContent: document.getElementById('marketTabContent'),
   myListingsTabContent: document.getElementById('myListingsTabContent'),
-  shopBaseGrid: document.getElementById('shopBaseGrid'),
-  shopRotatingGrid: document.getElementById('shopRotatingGrid'),
-  shopRefreshInfo: document.getElementById('shopRefreshInfo'),
+  shopAllGrid: document.getElementById('shopAllGrid'),
+  shopCategoryTabs: document.getElementById('shopCategoryTabs'),
+  shopPagination: document.getElementById('shopPagination'),
+  shopResetCountdown: document.getElementById('shopResetCountdown'),
+  shopSectionLabel: document.getElementById('shopSectionLabel'),
+  bicanhModal: document.getElementById('bicanhModal'),
+  bicanhSoloList: document.getElementById('bicanhSoloList'),
+  bicanhTeamList: document.getElementById('bicanhTeamList'),
+  bicanhTeamInfo: document.getElementById('bicanhTeamInfo'),
+  bicanhSoloContent: document.getElementById('bicanhSoloContent'),
+  bicanhTeamContent: document.getElementById('bicanhTeamContent'),
+  tabBicanhSoloBtn: document.getElementById('tabBicanhSoloBtn'),
+  tabBicanhTeamBtn: document.getElementById('tabBicanhTeamBtn'),
+  alchemyModal: document.getElementById('alchemyModal'),
+  alchemyRecipeList: document.getElementById('alchemyRecipeList'),
   marketFilterType: document.getElementById('marketFilterType'),
   marketFilterRarity: document.getElementById('marketFilterRarity'),
   marketFilterMinPrice: document.getElementById('marketFilterMinPrice'),
@@ -2994,6 +3049,7 @@ function playerSnapshot(){
     equipped: state.equipped || {weapon:null,armor:null,phapBao:null},
     pillBonuses: state.pillBonuses || {atk:0,def:0,hp:0,tocDoTuLuyen:0},
     pvpCooldowns: state.pvpCooldowns || {},
+    bicanhCooldowns: state.bicanhCooldowns || {},
     raidLog: state.raidLog || [],
     sect: state.sect || { disciples: {} },
     hp: combat.hp, atk: combat.atk, def: combat.def, combatPower: combat.combatPower,
@@ -3027,6 +3083,7 @@ function restoreStateFromSnapshot(snap, name){
   s.equipped = snap.equipped || {weapon:null,armor:null,phapBao:null};
   s.pillBonuses = snap.pillBonuses || {atk:0,def:0,hp:0,tocDoTuLuyen:0};
   s.pvpCooldowns = snap.pvpCooldowns || {};
+  s.bicanhCooldowns = snap.bicanhCooldowns || {};
   s.raidLog = snap.raidLog || [];
   s.sect = snap.sect || { disciples: {} };
   return s;
@@ -3489,87 +3546,142 @@ function reincarnate(){
 /* ================= GIAO THƯƠNG & CHỢ ĐEN ================= */
 
 const SHOP_REFRESH_INTERVAL_MS = 24*60*60*1000;
-const SHOP_BASE_ITEMS = [
-  {itemId:'linh_thao', price:15},
-  {itemId:'yeu_dan', price:30},
-  {itemId:'tu_khi_dan', price:40},
-  {itemId:'cuong_the_dan', price:50},
-  {itemId:'pham_kiem', price:80},
-  {itemId:'bo_giap_vai', price:80},
-  {itemId:'tu_chan_ngoc_bai', price:100},
-  {itemId:'so_cap_tam_phap', price:120}
+
+/* Shop sells ALL 200+ items from ITEM_DB, categorized by type.
+   Stock is per-item and scales by rarity. Resets daily at 20:00 VN time. */
+const SHOP_RARITY_STOCK = {
+  common: 99,
+  uncommon: 50,
+  rare: 20,
+  epic: 8,
+  legendary: 3
+};
+const SHOP_RARITY_PRICE_MULT = {
+  common: 1,
+  uncommon: 3,
+  rare: 8,
+  epic: 20,
+  legendary: 60
+};
+const SHOP_BASE_PRICE = 15;
+const SHOP_ITEMS_PER_PAGE = 24;
+
+const SHOP_CATEGORIES = [
+  { key:'all',       label:'Tất Cả' },
+  { key:'weapon',    label:'Vũ Khí' },
+  { key:'armor',     label:'Giáp' },
+  { key:'phapBao',   label:'Pháp Bảo' },
+  { key:'pill',      label:'Đan Dược' },
+  { key:'congphap',  label:'Công Pháp' },
+  { key:'material',  label:'Nguyên Liệu' }
 ];
-const SHOP_ROTATING_POOL = [
-  {itemId:'linh_kiem', price:300, stock:6},
-  {itemId:'huyen_thiet_giap', price:320, stock:6},
-  {itemId:'van_dao_la_ban', price:400, stock:4},
-  {itemId:'pha_giap_dan', price:150, stock:8},
-  {itemId:'huyen_thiet_dan', price:150, stock:8},
-  {itemId:'thien_nien_linh_chi', price:250, stock:5},
-  {itemId:'trung_cap_kiem_phap', price:350, stock:4}
-];
-const SHOP_RARE_POOL = [
-  {itemId:'do_kiep_dan', price:2000, stock:1},
-  {itemId:'hao_dan', price:2500, stock:1}
-];
-const SHOP_RARE_CHANCE = 0.15;
-const SHOP_ROTATING_SLOT_COUNT = 4;
+
+let shopCurrentCategory = 'all';
+let shopCurrentPage = 1;
+
+function shopItemPrice(it){
+  let base = SHOP_BASE_PRICE;
+  if(it.atk) base += (it.atk||0) * 2;
+  if(it.def) base += (it.def||0) * 2;
+  if(it.hp) base += (it.hp||0) * 0.5;
+  if(it.tocDoTuLuyen) base += it.tocDoTuLuyen * 200;
+  if(it.thoNguyen) base += it.thoNguyen * 2;
+  if(it.ngoTinh) base += (it.ngoTinh||0) * 3;
+  if(it.coDuyen) base += (it.coDuyen||0) * 3;
+  if(it.daoTam) base += (it.daoTam||0) * 3;
+  if(it.theChat) base += (it.theChat||0) * 3;
+  if(it.type==='material') base = SHOP_BASE_PRICE;
+  const mult = SHOP_RARITY_PRICE_MULT[it.rarity] || 1;
+  return Math.max(5, Math.round(base * mult));
+}
+
+function shopItemStock(it){
+  return SHOP_RARITY_STOCK[it.rarity] || 10;
+}
+
+function getShopResetTimestamp(){
+  const now = new Date();
+  const vnOffset = 7 * 60;
+  const vnLocal = new Date(now.getTime() + (now.getTimezoneOffset() + vnOffset) * 60000);
+  const reset = new Date(vnLocal);
+  reset.setHours(20, 0, 0, 0);
+  if(vnLocal >= reset) reset.setDate(reset.getDate() + 1);
+  return reset.getTime();
+}
+
+function msUntilShopReset(){
+  const now = Date.now();
+  const vnNow = now + (new Date().getTimezoneOffset() + 420) * 60000;
+  const reset = getShopResetTimestamp();
+  return Math.max(0, reset - vnNow);
+}
+
+function shopResetCountdownText(){
+  const remain = msUntilShopReset();
+  const h = Math.floor(remain/3600000);
+  const m = Math.floor((remain%3600000)/60000);
+  const s = Math.floor((remain%60000)/1000);
+  return 'Làm mới sau ' + h + 'h ' + m + 'p ' + s + 's';
+}
 
 function generateShopInventory(){
-  const pool = SHOP_ROTATING_POOL.slice();
-  const picked = [];
-  for(let i=0; i<SHOP_ROTATING_SLOT_COUNT && pool.length>0; i++){
-    const idx = Math.floor(Math.random()*pool.length);
-    const base = pool[idx];
-    picked.push({ itemId: base.itemId, price: base.price, stock: base.stock, remaining: base.stock, isRare:false });
-    pool.splice(idx,1);
+  const items = {};
+  for(const id in ITEM_DB){
+    const it = ITEM_DB[id];
+    items[id] = { stock: shopItemStock(it), remaining: shopItemStock(it) };
   }
-  if(Math.random() < SHOP_RARE_CHANCE){
-    const rare = pickRandom(SHOP_RARE_POOL);
-    picked.push({ itemId: rare.itemId, price: rare.price, stock: rare.stock, remaining: rare.stock, isRare:true });
-  }
-  return { refreshedAt: Date.now(), rotating: picked };
+  return { refreshedAt: getShopResetTimestamp(), items: items };
 }
 
 function ensureShopFresh(all){
-  const stale = !all.shop || typeof all.shop.refreshedAt !== 'number' || (Date.now() - all.shop.refreshedAt >= SHOP_REFRESH_INTERVAL_MS);
-  if(stale){
+  const need = !all.shop || !all.shop.items || (Date.now() >= all.shop.refreshedAt);
+  if(need){
     all.shop = generateShopInventory();
   }
   return all.shop;
 }
 
-async function buyFromShop(itemId, rotatingIndex){
+function getShopFilteredItems(){
+  const ids = Object.keys(ITEM_DB);
+  const filtered = ids.filter(function(id){
+    const it = ITEM_DB[id];
+    if(shopCurrentCategory !== 'all' && it.type !== shopCurrentCategory) return false;
+    return true;
+  });
+  filtered.sort(function(aId, bId){
+    const a = ITEM_DB[aId], b = ITEM_DB[bId];
+    const rarityOrder = {common:0, uncommon:1, rare:2, epic:3, legendary:4};
+    const ra = rarityOrder[a.rarity]||0, rb = rarityOrder[b.rarity]||0;
+    if(ra !== rb) return ra - rb;
+    return shopItemPrice(a) - shopItemPrice(b);
+  });
+  return filtered;
+}
+
+async function buyFromShop(itemId){
   if(!state) return;
-  let price;
-  const isRotating = (rotatingIndex !== null && rotatingIndex !== undefined);
-  if(!isRotating){
-    const base = SHOP_BASE_ITEMS.find(function(b){ return b.itemId===itemId; });
-    if(!base) return;
-    price = base.price;
-  }
+  const it = ITEM_DB[itemId];
+  if(!it) return;
+  const price = shopItemPrice(it);
   setSyncStatus('syncing');
   try{
     const all = await jsonbinReadAll();
     const shop = ensureShopFresh(all);
-    if(isRotating){
-      const slot = shop.rotating[rotatingIndex];
-      if(!slot || slot.itemId !== itemId || slot.remaining <= 0){
-        addLogNode({type:'fail', title:'Đã Hết Hàng', text:'Món đồ này vừa được người khác mua hết hoặc cửa hàng vừa làm mới danh sách. Hãy thử lại.', deltas:[]});
-        setSyncStatus('ok');
-        renderShopTab();
-        return;
-      }
-      price = slot.price;
+    const slot = shop.items[itemId];
+    if(!slot || slot.remaining <= 0){
+      addLogNode({type:'fail', title:'Đã Hết Hàng', text:'Món đồ này đã được mua hết hôm nay. Hãy chờ cửa hàng làm mới vào 20:00.', deltas:[]});
+      setSyncStatus('ok');
+      renderShopTab();
+      return;
     }
     if(state.linhThach < price){
-      addLogNode({type:'neutral', title:'Không Đủ Linh Thạch', text:'Cần '+price+' Linh Thạch để mua '+(ITEM_DB[itemId]?ITEM_DB[itemId].name:itemId)+'.', deltas:[]});
+      addLogNode({type:'neutral', title:'Không Đủ Linh Thạch', text:'Cần '+price+' Linh Thạch để mua '+it.name+'.', deltas:[]});
       setSyncStatus('ok');
       return;
     }
     addLinhThach(-price);
     addItem(state, itemId, 1);
-    if(isRotating) shop.rotating[rotatingIndex].remaining--;
+    shop.items[itemId].remaining--;
     all.shop = shop;
     all.players = all.players || {};
     all.players[myPlayerId] = playerSnapshot();
@@ -3577,11 +3689,11 @@ async function buyFromShop(itemId, rotatingIndex){
       cachedBinData = all;
       await jsonbinWriteAll(all);
       setSyncStatus('ok');
-      addLogNode({type:'success', title:'Mua Sắm Thành Công', text: state.name+' đã mua '+(ITEM_DB[itemId]?ITEM_DB[itemId].name:itemId)+' từ Tiệm Tạp Hóa Tông Môn.', deltas:['Linh Thạch -'+price]});
+      addLogNode({type:'success', title:'Mua Sắm Thành Công', text: state.name+' đã mua '+it.name+' từ Cửa Hàng NPC.', deltas:['Linh Thạch -'+price, 'Còn lại: '+shop.items[itemId].remaining+'/'+slot.stock]});
     }catch(writeErr){
       addLinhThach(price);
       if(state.inventory[itemId]) { state.inventory[itemId]--; if(state.inventory[itemId]<=0) delete state.inventory[itemId]; }
-      if(isRotating) shop.rotating[rotatingIndex].remaining++;
+      shop.items[itemId].remaining++;
       setSyncStatus('error', writeErr && writeErr.message);
       addLogNode({type:'fail', title:'Giao Dịch Thất Bại', text:'Không thể kết nối tới Vân Đài Ký Sự, giao dịch đã được hoàn tác.', deltas:[]});
     }
@@ -3589,62 +3701,113 @@ async function buyFromShop(itemId, rotatingIndex){
     updateUI();
   }catch(err){
     setSyncStatus('error', err && err.message);
-    addLogNode({type:'fail', title:'Không Thể Kết Nối', text:'Không thể tải dữ liệu Tiệm Tạp Hóa lúc này.', deltas:[]});
+    addLogNode({type:'fail', title:'Không Thể Kết Nối', text:'Không thể tải dữ liệu cửa hàng lúc này.', deltas:[]});
   }
 }
 
-function shopRefreshCountdownText(shop){
-  if(!shop || typeof shop.refreshedAt !== 'number') return '';
-  const remain = Math.max(0, SHOP_REFRESH_INTERVAL_MS - (Date.now()-shop.refreshedAt));
-  const h = Math.floor(remain/3600000), m = Math.floor((remain%3600000)/60000);
-  return '(làm mới sau '+h+'h'+m+'p)';
+function renderShopCategories(){
+  el.shopCategoryTabs.innerHTML = '';
+  SHOP_CATEGORIES.forEach(function(cat){
+    const btn = document.createElement('button');
+    btn.className = 'shop-cat-btn' + (shopCurrentCategory===cat.key ? ' active' : '');
+    btn.textContent = cat.label;
+    btn.addEventListener('click', function(){
+      shopCurrentCategory = cat.key;
+      shopCurrentPage = 1;
+      renderShopCategories();
+      renderShopGrid();
+    });
+    el.shopCategoryTabs.appendChild(btn);
+  });
 }
 
-async function renderShopTab(){
-  el.shopBaseGrid.innerHTML = '';
-  SHOP_BASE_ITEMS.forEach(function(entry){
-    const it = ITEM_DB[entry.itemId];
-    if(!it) return;
-    const card = document.createElement('div');
-    card.className = 'shop-item-card';
-    const nm = document.createElement('div'); nm.className='shop-item-name'; nm.textContent = it.name;
-    const meta = document.createElement('div'); meta.className='shop-item-meta'; meta.textContent = itemStatSummary(it);
-    const btn = document.createElement('button'); btn.className='shop-buy-btn';
-    btn.textContent = 'Mua ('+entry.price+' LT)';
-    btn.disabled = !state || state.linhThach < entry.price;
-    btn.addEventListener('click', function(){ buyFromShop(entry.itemId, null); });
-    card.appendChild(nm); card.appendChild(meta); card.appendChild(btn);
-    el.shopBaseGrid.appendChild(card);
-  });
+function renderShopPagination(totalItems){
+  const totalPages = Math.max(1, Math.ceil(totalItems / SHOP_ITEMS_PER_PAGE));
+  if(shopCurrentPage > totalPages) shopCurrentPage = totalPages;
+  el.shopPagination.innerHTML = '';
+  if(totalPages <= 1) return;
 
-  el.shopRefreshInfo.textContent = 'Đang tải...';
-  el.shopRotatingGrid.innerHTML = '';
+  const prev = document.createElement('button');
+  prev.className = 'shop-page-btn';
+  prev.textContent = '‹ Trước';
+  prev.disabled = shopCurrentPage <= 1;
+  prev.addEventListener('click', function(){ shopCurrentPage--; renderShopGrid(); });
+  el.shopPagination.appendChild(prev);
+
+  const info = document.createElement('span');
+  info.className = 'shop-page-info';
+  info.textContent = shopCurrentPage + ' / ' + totalPages;
+  el.shopPagination.appendChild(info);
+
+  const next = document.createElement('button');
+  next.className = 'shop-page-btn';
+  next.textContent = 'Sau ›';
+  next.disabled = shopCurrentPage >= totalPages;
+  next.addEventListener('click', function(){ shopCurrentPage++; renderShopGrid(); });
+  el.shopPagination.appendChild(next);
+}
+
+async function renderShopGrid(){
+  if(!el.shopAllGrid) return;
+  el.shopAllGrid.innerHTML = '<div class="lb-empty">Đang tải...</div>';
+  el.shopResetCountdown.textContent = shopResetCountdownText();
+
+  const filteredIds = getShopFilteredItems();
+  const totalPages = Math.max(1, Math.ceil(filteredIds.length / SHOP_ITEMS_PER_PAGE));
+  if(shopCurrentPage > totalPages) shopCurrentPage = totalPages;
+  const startIdx = (shopCurrentPage - 1) * SHOP_ITEMS_PER_PAGE;
+  const pageIds = filteredIds.slice(startIdx, startIdx + SHOP_ITEMS_PER_PAGE);
+
+  let shop = null;
   try{
     const all = await fetchAllPlayers();
-    const shop = ensureShopFresh(all);
+    shop = ensureShopFresh(all);
     if(all.shop === shop && (!cachedBinData || cachedBinData.shop !== shop)){
       cachedBinData = all;
       try{ await jsonbinWriteAll(all); }catch(e){ }
     }
-    el.shopRefreshInfo.textContent = shopRefreshCountdownText(shop);
-    shop.rotating.forEach(function(slot, idx){
-      const it = ITEM_DB[slot.itemId];
-      if(!it) return;
-      const card = document.createElement('div');
-      card.className = 'shop-item-card' + (slot.isRare ? ' rare' : '');
-      const nm = document.createElement('div'); nm.className='shop-item-name'; nm.textContent = it.name + (slot.isRare?' ★':'');
-      const meta = document.createElement('div'); meta.className='shop-item-meta'; meta.textContent = itemStatSummary(it) + ' · Còn '+slot.remaining+'/'+slot.stock;
-      const btn = document.createElement('button'); btn.className='shop-buy-btn';
-      btn.textContent = slot.remaining>0 ? 'Mua ('+slot.price+' LT)' : 'Hết Hàng';
-      btn.disabled = slot.remaining<=0 || !state || state.linhThach < slot.price;
-      btn.addEventListener('click', function(){ buyFromShop(slot.itemId, idx); });
-      card.appendChild(nm); card.appendChild(meta); card.appendChild(btn);
-      el.shopRotatingGrid.appendChild(card);
-    });
   }catch(err){
-    el.shopRefreshInfo.textContent = '(không thể tải)';
-    el.shopRotatingGrid.innerHTML = '<div class="lb-empty">Không thể kết nối tới Tiệm Tạp Hóa lúc này.</div>';
+    el.shopAllGrid.innerHTML = '<div class="lb-empty">Không thể kết nối tới cửa hàng lúc này.</div>';
+    return;
   }
+
+  el.shopAllGrid.innerHTML = '';
+  pageIds.forEach(function(id){
+    const it = ITEM_DB[id];
+    if(!it) return;
+    const slot = shop.items[id];
+    const remaining = slot ? slot.remaining : 0;
+    const price = shopItemPrice(it);
+    const card = document.createElement('div');
+    card.className = 'shop-item-card' + (it.rarity==='legendary' ? ' rare' : '');
+    const nm = document.createElement('div'); nm.className='shop-item-name'; nm.textContent = it.name;
+    const meta = document.createElement('div'); meta.className='shop-item-meta';
+    meta.textContent = itemStatSummary(it) + ' · ' + rarityLabel(it.rarity) + ' · Còn ' + remaining + '/' + (slot?slot.stock:0);
+    const btn = document.createElement('button'); btn.className='shop-buy-btn';
+    btn.textContent = remaining > 0 ? 'Mua ('+price+' LT)' : 'Hết Hàng';
+    btn.disabled = remaining <= 0 || !state || state.linhThach < price;
+    btn.addEventListener('click', function(){ buyFromShop(id); });
+    card.appendChild(nm); card.appendChild(meta); card.appendChild(btn);
+    el.shopAllGrid.appendChild(card);
+  });
+
+  renderShopPagination(filteredIds.length);
+}
+
+async function renderShopTab(){
+  renderShopCategories();
+  await renderShopGrid();
+}
+
+// Update countdown every second while shop modal is open
+let shopCountdownTimer = null;
+function startShopCountdown(){
+  if(shopCountdownTimer) clearInterval(shopCountdownTimer);
+  shopCountdownTimer = setInterval(function(){
+    if(el.marketModal && !el.marketModal.classList.contains('hidden') && el.shopResetCountdown){
+      el.shopResetCountdown.textContent = shopResetCountdownText();
+    }
+  }, 1000);
 }
 
 /* ---------- Chợ Đen / Sàn Giao Dịch (P2P) ---------- */
@@ -3910,8 +4073,722 @@ function switchMarketTab(tab){
 function openMarket(){
   el.marketModal.classList.remove('hidden');
   switchMarketTab('shop');
+  startShopCountdown();
 }
 function closeMarket(){ el.marketModal.classList.add('hidden'); }
+
+/* ================= BÍ CẢNH & PHÓ BẢN ================= */
+
+const BICANH_DUNGEONS = [
+  {
+    id: 'bc_linhsơn', name: 'Linh Sơn Mỡ Kết',
+    desc: 'Một ngọn núi linh khí trù phú, yêu thú cấp thấp trú ngụ. Phù hợp cho đạo hữu mới nhập đạo.',
+    minRealm: 0, maxRealm: 3,
+    type: 'solo',
+    costLinhThach: 0,
+    drops: [
+      { itemId:'linh_thao', qtyMin:2, qtyMax:5, weight:30 },
+      { itemId:'bach_ngoc', qtyMin:1, qtyMax:3, weight:20 },
+      { itemId:'yeu_dan', qtyMin:1, qtyMax:2, weight:15 },
+      { itemId:'tu_khi_dan', qtyMin:1, qtyMax:3, weight:20 },
+      { itemId:'cuong_the_dan', qtyMin:1, qtyMax:2, weight:10 },
+      { itemId:'pham_kiem', qtyMin:1, qtyMax:1, weight:3 },
+      { itemId:'bo_giap_vai', qtyMin:1, qtyMax:1, weight:2 }
+    ]
+  },
+  {
+    id: 'bc_huyetkhe', name: 'Huyết Yêu Khe',
+    desc: 'Một khe núi u ám, yêu thú mang theo yêu đan quý giá. Nguy hiểm nhưng phần thưởng xứng đáng.',
+    minRealm: 2, maxRealm: 6,
+    type: 'solo',
+    costLinhThach: 20,
+    drops: [
+      { itemId:'yeu_dan', qtyMin:2, qtyMax:5, weight:25 },
+      { itemId:'huyen_thiet', qtyMin:1, qtyMax:3, weight:20 },
+      { itemId:'dia_tam', qtyMin:1, qtyMax:2, weight:15 },
+      { itemId:'sat_giao', qtyMin:1, qtyMax:1, weight:10 },
+      { itemId:'bach_moc_kiem', qtyMin:1, qtyMax:1, weight:8 },
+      { itemId:'thien_nien_linh_chi', qtyMin:1, qtyMax:2, weight:12 },
+      { itemId:'pha_giap_dan', qtyMin:1, qtyMax:3, weight:5 },
+      { itemId:'huyen_thiet_dan', qtyMin:1, qtyMax:3, weight:5 }
+    ]
+  },
+  {
+    id: 'bc_cogiac', name: 'Cổ Giác Mật Cảnh',
+    desc: 'Một bí cảnh ngầm ẩn chứa bảo vật thời thượng cổ. Yêu thú mạnh nhưng drop hiếm.',
+    minRealm: 4, maxRealm: 10,
+    type: 'solo',
+    costLinhThach: 50,
+    drops: [
+      { itemId:'thien_nien_linh_chi', qtyMin:2, qtyMax:4, weight:20 },
+      { itemId:'long_cot', qtyMin:1, qtyMax:2, weight:15 },
+      { itemId:'phuong_cot', qtyMin:1, qtyMax:2, weight:15 },
+      { itemId:'thach_linh', qtyMin:1, qtyMax:1, weight:10 },
+      { itemId:'linh_kiem', qtyMin:1, qtyMax:1, weight:8 },
+      { itemId:'huyen_thiet_giap', qtyMin:1, qtyMax:1, weight:8 },
+      { itemId:'van_dao_la_ban', qtyMin:1, qtyMax:1, weight:5 },
+      { itemId:'co_kiem_phap', qtyMin:1, qtyMax:1, weight:4 },
+      { itemId:'thien_thach', qtyMin:1, qtyMax:2, weight:10 },
+      { itemId:'dai_bo_linh_dan', qtyMin:1, qtyMax:2, weight:5 }
+    ]
+  },
+  {
+    id: 'bc_thienlong', name: 'Thiên Long Cổ Mộ',
+    desc: 'Cổ mộ của một Thiên Long vạn năm xưa, ẩn chứa long cốt và bảo vật cấp thần.',
+    minRealm: 7, maxRealm: 15,
+    type: 'solo',
+    costLinhThach: 100,
+    drops: [
+      { itemId:'long_cot', qtyMin:2, qtyMax:5, weight:20 },
+      { itemId:'co_long_cot', qtyMin:1, qtyMax:2, weight:15 },
+      { itemId:'thien_linh_chi', qtyMin:1, qtyMax:2, weight:12 },
+      { itemId:'co_thach', qtyMin:1, qtyMax:2, weight:12 },
+      { itemId:'thanh_phong_kiem', qtyMin:1, qtyMax:1, weight:8 },
+      { itemId:'long_lan_giap', qtyMin:1, qtyMax:1, weight:8 },
+      { itemId:'thien_co_dao', qtyMin:1, qtyMax:1, weight:6 },
+      { itemId:'hoang_long_dan', qtyMin:1, qtyMax:2, weight:10 },
+      { itemId:'thien_long_dan', qtyMin:1, qtyMax:2, weight:5 },
+      { itemId:'co_long_dan', qtyMin:1, qtyMax:1, weight:4 }
+    ]
+  },
+  {
+    id: 'bc_hoangco', name: 'Hoang Cổ Tuế Huyệt',
+    desc: 'Một huyệt đạo hoang cổ, cấm kỵ đầy rẫy nhưng chứa bảo vật cấp hoang cổ cực hiếm.',
+    minRealm: 11, maxRealm: 25,
+    type: 'solo',
+    costLinhThach: 200,
+    drops: [
+      { itemId:'co_long_cot', qtyMin:2, qtyMax:4, weight:18 },
+      { itemId:'co_thach', qtyMin:2, qtyMax:4, weight:15 },
+      { itemId:'thai_co_kiem', qtyMin:1, qtyMax:1, weight:6 },
+      { itemId:'hon_don_giap', qtyMin:1, qtyMax:1, weight:6 },
+      { itemId:'hon_don_co', qtyMin:1, qtyMax:1, weight:5 },
+      { itemId:'hoang_co_dao_thu', qtyMin:1, qtyMax:1, weight:5 },
+      { itemId:'hon_don_dan', qtyMin:1, qtyMax:2, weight:12 },
+      { itemId:'cuu_chuyen_kim_dan', qtyMin:1, qtyMax:1, weight:4 },
+      { itemId:'do_kiep_dan', qtyMin:1, qtyMax:1, weight:4 },
+      { itemId:'hon_don_thach', qtyMin:1, qtyMax:2, weight:10 },
+      { itemId:'vuc_thach', qtyMin:1, qtyMax:2, weight:8 },
+      { itemId:'hoang_thach', qtyMin:1, qtyMax:1, weight:7 }
+    ]
+  },
+  {
+    id: 'bc_vucthan', name: 'Vực Thần U Minh',
+    desc: 'Một không gian u minh vượt qua cả thần giới, nơi bảo vật cấp vực thần ẩn tàng.',
+    minRealm: 20, maxRealm: 35,
+    type: 'solo',
+    costLinhThach: 500,
+    drops: [
+      { itemId:'vuc_thach', qtyMin:2, qtyMax:5, weight:18 },
+      { itemId:'hoang_thach', qtyMin:2, qtyMax:4, weight:15 },
+      { itemId:'dao_nguyen_thach', qtyMin:1, qtyMax:2, weight:12 },
+      { itemId:'vuc_than_kiem', qtyMin:1, qtyMax:1, weight:5 },
+      { itemId:'vuc_than_giap', qtyMin:1, qtyMax:1, weight:5 },
+      { itemId:'vuc_than_bao', qtyMin:1, qtyMax:1, weight:5 },
+      { itemId:'vuc_than_dao_thu', qtyMin:1, qtyMax:1, weight:4 },
+      { itemId:'hon_mang_dan', qtyMin:1, qtyMax:2, weight:10 },
+      { itemId:'thien_dao_dan', qtyMin:1, qtyMax:2, weight:8 },
+      { itemId:'vuc_than_dan', qtyMin:1, qtyMax:2, weight:8 },
+      { itemId:'thien_dao_thach', qtyMin:1, qtyMax:2, weight:7 },
+      { itemId:'co_dao_thach', qtyMin:1, qtyMax:1, weight:3 }
+    ]
+  },
+  {
+    id: 'bc_honmang', name: 'Hỗn Mang Cấm Địa',
+    desc: 'Cấm địa cuối cùng của hồng mang, nơi chứa bảo vật cấp hỗn mang vô giá.',
+    minRealm: 30, maxRealm: 56,
+    type: 'solo',
+    costLinhThach: 1000,
+    drops: [
+      { itemId:'dao_nguyen_thach', qtyMin:2, qtyMax:5, weight:18 },
+      { itemId:'thien_dao_thach', qtyMin:2, qtyMax:4, weight:15 },
+      { itemId:'co_dao_thach', qtyMin:1, qtyMax:3, weight:12 },
+      { itemId:'vuc_dao_thach', qtyMin:1, qtyMax:2, weight:10 },
+      { itemId:'thien_hoang_thach', qtyMin:1, qtyMax:2, weight:8 },
+      { itemId:'thien_hoang_kiem', qtyMin:1, qtyMax:1, weight:4 },
+      { itemId:'thien_hoang_giap', qtyMin:1, qtyMax:1, weight:4 },
+      { itemId:'thien_hoang_bao', qtyMin:1, qtyMax:1, weight:4 },
+      { itemId:'thien_hoang_dan', qtyMin:1, qtyMax:2, weight:10 },
+      { itemId:'co_dao_dan', qtyMin:1, qtyMax:2, weight:6 },
+      { itemId:'hon_thuong_dan', qtyMin:1, qtyMax:1, weight:3 },
+      { itemId:'thien_hoang_dao_thu', qtyMin:1, qtyMax:1, weight:3 },
+      { itemId:'hon_mang_thach', qtyMin:1, qtyMax:2, weight:3 }
+    ]
+  },
+  /* --- TEAM DUNGEONS --- */
+  {
+    id: 'bc_team_yaovuong', name: 'Yêu Vương Bí Cảnh',
+    desc: 'Yêu Vương ngàn năm trấn giữ bí cảnh. Cần tổ đội 3 đạo hữu, yêu cầu cảnh giới Trúc Cơ trở lên.',
+    minRealm: 3, maxRealm: 10,
+    type: 'team',
+    teamSize: 3,
+    costLinhThach: 30,
+    drops: [
+      { itemId:'yeu_dan', qtyMin:3, qtyMax:8, weight:25 },
+      { itemId:'long_cot', qtyMin:1, qtyMax:3, weight:15 },
+      { itemId:'phuong_cot', qtyMin:1, qtyMax:3, weight:15 },
+      { itemId:'huyet_dao', qtyMin:1, qtyMax:1, weight:8 },
+      { itemId:'bang_kiem', qtyMin:1, qtyMax:1, weight:8 },
+      { itemId:'phap_luc_dan', qtyMin:2, qtyMax:4, weight:12 },
+      { itemId:'tich_cot_dan', qtyMin:2, qtyMax:4, weight:10 },
+      { itemId:'thien_nien_linh_chi', qtyMin:2, qtyMax:4, weight:7 }
+    ]
+  },
+  {
+    id: 'bc_team_thiengioi', name: 'Thần Giới Di Tích',
+    desc: 'Di tích của thần giới xưa, yêu thú cấp thần. Cần tổ đội 5 đạo hữu, yêu cầu Nguyên Anh trở lên.',
+    minRealm: 5, maxRealm: 20,
+    type: 'team',
+    teamSize: 5,
+    costLinhThach: 80,
+    drops: [
+      { itemId:'co_long_cot', qtyMin:2, qtyMax:5, weight:20 },
+      { itemId:'thien_linh_chi', qtyMin:2, qtyMax:4, weight:15 },
+      { itemId:'co_thach', qtyMin:2, qtyMax:4, weight:15 },
+      { itemId:'phuong_hoang_kiem', qtyMin:1, qtyMax:1, weight:6 },
+      { itemId:'phuong_hoang_giap', qtyMin:1, qtyMax:1, weight:6 },
+      { itemId:'thien_co_dao', qtyMin:1, qtyMax:1, weight:5 },
+      { itemId:'hon_don_dan', qtyMin:2, qtyMax:4, weight:12 },
+      { itemId:'cuu_chuyen_kim_dan', qtyMin:1, qtyMax:2, weight:8 },
+      { itemId:'hon_don_thach', qtyMin:1, qtyMax:3, weight:10 },
+      { itemId:'thien_kiem_phap', qtyMin:1, qtyMax:1, weight:3 }
+    ]
+  },
+  {
+    id: 'bc_team_honmang', name: 'Hỗn Mang Chiến Trường',
+    desc: 'Chiến trường cuối cùng của hồng mang, bảo vật cấp hỗn mang vô giá. Cần tổ đội 5 đạo hữu, Hóa Thần trở lên.',
+    minRealm: 7, maxRealm: 56,
+    type: 'team',
+    teamSize: 5,
+    costLinhThach: 200,
+    drops: [
+      { itemId:'hon_don_thach', qtyMin:2, qtyMax:5, weight:18 },
+      { itemId:'vuc_thach', qtyMin:2, qtyMax:4, weight:15 },
+      { itemId:'hoang_thach', qtyMin:1, qtyMax:3, weight:12 },
+      { itemId:'dao_nguyen_thach', qtyMin:1, qtyMax:3, weight:10 },
+      { itemId:'thai_co_kiem', qtyMin:1, qtyMax:1, weight:4 },
+      { itemId:'hoang_co_giap', qtyMin:1, qtyMax:1, weight:4 },
+      { itemId:'hon_don_linh_chau', qtyMin:1, qtyMax:1, weight:3 },
+      { itemId:'hon_mang_dan', qtyMin:2, qtyMax:4, weight:12 },
+      { itemId:'thien_dao_dan', qtyMin:1, qtyMax:3, weight:8 },
+      { itemId:'hon_mang_bao', qtyMin:1, qtyMax:1, weight:3 },
+      { itemId:'thien_dao_thu', qtyMin:1, qtyMax:1, weight:3 },
+      { itemId:'hon_mang_thach', qtyMin:1, qtyMax:2, weight:5 }
+    ]
+  }
+];
+
+const BICANH_COOLDOWN_MS = 2 * 60 * 60 * 1000;
+const BICANH_TEAM_COOLDOWN_MS = 4 * 60 * 60 * 1000;
+
+function bicanhOnCooldown(dungeonId){
+  if(!state || !state.bicanhCooldowns) return false;
+  const cd = state.bicanhCooldowns[dungeonId];
+  if(!cd) return false;
+  const elapsed = Date.now() - cd;
+  const dungeon = BICANH_DUNGEONS.find(function(d){ return d.id === dungeonId; });
+  const cdMs = dungeon && dungeon.type === 'team' ? BICANH_TEAM_COOLDOWN_MS : BICANH_COOLDOWN_MS;
+  return elapsed < cdMs;
+}
+
+function bicanhCooldownRemaining(dungeonId){
+  if(!state || !state.bicanhCooldowns) return 0;
+  const cd = state.bicanhCooldowns[dungeonId];
+  if(!cd) return 0;
+  const dungeon = BICANH_DUNGEONS.find(function(d){ return d.id === dungeonId; });
+  const cdMs = dungeon && dungeon.type === 'team' ? BICANH_TEAM_COOLDOWN_MS : BICANH_COOLDOWN_MS;
+  return Math.max(0, cdMs - (Date.now() - cd));
+}
+
+function formatCooldown(ms){
+  const m = Math.floor(ms/60000);
+  const s = Math.floor((ms%60000)/1000);
+  return m + 'p ' + s + 's';
+}
+
+function bicanhRollDrops(dungeon){
+  const results = [];
+  dungeon.drops.forEach(function(drop){
+    const roll = Math.random() * 100;
+    if(roll < drop.weight){
+      const qty = drop.qtyMin + Math.floor(Math.random() * (drop.qtyMax - drop.qtyMin + 1));
+      results.push({ itemId: drop.itemId, qty: qty });
+    }
+  });
+  return results;
+}
+
+function runBicanhDungeon(dungeon){
+  if(!state) return;
+  if(state.isDead) return;
+  if(bicanhOnCooldown(dungeon.id)){
+    addLogNode({type:'neutral', title:'Bí Cảnh Chưa Mở Cửa', text: dungeon.name+' chưa mở cửa lại. Còn ' + formatCooldown(bicanhCooldownRemaining(dungeon.id)) + ' trước khi có thể vào lại.', deltas:[]});
+    return;
+  }
+  if(dungeon.minRealm > state.realmIdx){
+    addLogNode({type:'neutral', title:'Cảnh Giới Chưa Đủ', text:'Cần đạt tối thiểu ' + MAJOR_REALMS[dungeon.minRealm] + ' để vào ' + dungeon.name + '.', deltas:[]});
+    return;
+  }
+  if(dungeon.costLinhThach > state.linhThach){
+    addLogNode({type:'neutral', title:'Không Đủ Linh Thạch', text:'Cần ' + dungeon.costLinhThach + ' Linh Thạch để mở ' + dungeon.name + '.', deltas:[]});
+    return;
+  }
+
+  addLinhThach(-dungeon.costLinhThach);
+  state.bicanhCooldowns = state.bicanhCooldowns || {};
+  state.bicanhCooldowns[dungeon.id] = Date.now();
+
+  const drops = bicanhRollDrops(dungeon);
+  const deltas = [];
+  if(dungeon.costLinhThach > 0) deltas.push('Linh Thạch -' + dungeon.costLinhThach);
+
+  if(drops.length === 0){
+    addLogNode({type:'fail', title:dungeon.name + ' — Tay Trắng',
+      text:'Ngươi đã dấn thân vào ' + dungeon.name + ' nhưng không tìm được bảo vật gì đáng giá. Lần sau may mắn hơn.',
+      deltas: deltas});
+  } else {
+    drops.forEach(function(d){
+      addItem(state, d.itemId, d.qty);
+      const it = ITEM_DB[d.itemId];
+      deltas.push((it ? it.name : d.itemId) + ' +' + d.qty);
+    });
+    addLogNode({type:'success', title:dungeon.name + ' — Khai Quật Bảo Tàng',
+      text:'Ngươi đã khám phá ' + dungeon.name + ' và thu được bảo vật quý giá!',
+      deltas: deltas});
+  }
+
+  updateUI();
+  syncSave({force:true});
+  renderBicanhList();
+}
+
+function runTeamBicanhDungeon(dungeon){
+  if(!state) return;
+  if(state.isDead) return;
+  if(bicanhOnCooldown(dungeon.id)){
+    addLogNode({type:'neutral', title:'Bí Cảnh Chưa Mở Cửa', text: dungeon.name+' chưa mở cửa lại. Còn ' + formatCooldown(bicanhCooldownRemaining(dungeon.id)) + ' trước khi có thể vào lại.', deltas:[]});
+    return;
+  }
+  if(dungeon.minRealm > state.realmIdx){
+    addLogNode({type:'neutral', title:'Cảnh Giới Chưa Đủ', text:'Cần đạt tối thiểu ' + MAJOR_REALMS[dungeon.minRealm] + ' để tham gia ' + dungeon.name + '.', deltas:[]});
+    return;
+  }
+  if(dungeon.costLinhThach > state.linhThach){
+    addLogNode({type:'neutral', title:'Không Đủ Linh Thạch', text:'Cần ' + dungeon.costLinhThach + ' Linh Thạch để mở ' + dungeon.name + '.', deltas:[]});
+    return;
+  }
+
+  const discipleCount = state.sect && state.sect.disciples ? Object.keys(state.sect.disciples).length : 0;
+  if(discipleCount < 1){
+    addLogNode({type:'neutral', title:'Thiếu Đệ Tử Đồng Hành',
+      text:'Bí cảnh tổ đội cần ít nhất 1 đệ tử Tông Môn đồng hành. Hãy chiêu mộ đệ tử trước.',
+      deltas:[]});
+    return;
+  }
+
+  addLinhThach(-dungeon.costLinhThach);
+  state.bicanhCooldowns = state.bicanhCooldowns || {};
+  state.bicanhCooldowns[dungeon.id] = Date.now();
+
+  const drops = bicanhRollDrops(dungeon);
+  const teamBonus = 1 + discipleCount * 0.1;
+  const finalDrops = drops.map(function(d){ return { itemId: d.itemId, qty: Math.ceil(d.qty * teamBonus) }; });
+
+  const deltas = [];
+  if(dungeon.costLinhThach > 0) deltas.push('Linh Thạch -' + dungeon.costLinhThach);
+  deltas.push('Đệ tử đồng hành: ' + discipleCount + ' (thưởng +' + Math.round((teamBonus-1)*100) + '%)');
+
+  if(finalDrops.length === 0){
+    addLogNode({type:'fail', title:dungeon.name + ' — Tay Trắng',
+      text:'Tổ đội đã dấn thân vào ' + dungeon.name + ' nhưng không tìm được bảo vật gì đáng giá. Lần sau may mắn hơn.',
+      deltas: deltas});
+  } else {
+    finalDrops.forEach(function(d){
+      addItem(state, d.itemId, d.qty);
+      const it = ITEM_DB[d.itemId];
+      deltas.push((it ? it.name : d.itemId) + ' +' + d.qty);
+    });
+    addLogNode({type:'success', title:dungeon.name + ' — Khai Quật Bảo Tàng',
+      text:'Tổ đội đã khám phá ' + dungeon.name + ' và thu được bảo vật quý giá!',
+      deltas: deltas});
+  }
+
+  updateUI();
+  syncSave({force:true});
+  renderBicanhTeamList();
+}
+
+function renderBicanhList(){
+  if(!el.bicanhSoloList) return;
+  el.bicanhSoloList.innerHTML = '';
+  const soloDungeons = BICANH_DUNGEONS.filter(function(d){ return d.type === 'solo'; });
+  soloDungeons.forEach(function(dungeon){
+    const card = document.createElement('div');
+    card.className = 'bicanh-dungeon-card';
+    const locked = dungeon.minRealm > state.realmIdx;
+    if(locked) card.classList.add('locked');
+
+    const nm = document.createElement('div'); nm.className = 'bicanh-dungeon-name'; nm.textContent = dungeon.name;
+    const desc = document.createElement('div'); desc.className = 'bicanh-dungeon-desc'; desc.textContent = dungeon.desc;
+    const meta = document.createElement('div'); meta.className = 'bicanh-dungeon-meta';
+    meta.textContent = 'Yêu cầu: ' + MAJOR_REALMS[dungeon.minRealm] + ' trở lên' + (dungeon.costLinhThach > 0 ? ' · Phí: ' + dungeon.costLinhThach + ' Linh Thạch' : '');
+    const btn = document.createElement('button'); btn.className = 'bicanh-dungeon-btn';
+    if(locked){
+      btn.textContent = 'Chưa Đủ Cảnh Giới';
+      btn.disabled = true;
+    } else if(bicanhOnCooldown(dungeon.id)){
+      btn.textContent = 'Đang Hồi Chiêu (' + formatCooldown(bicanhCooldownRemaining(dungeon.id)) + ')';
+      btn.disabled = true;
+    } else {
+      btn.textContent = 'Khám Phá';
+      btn.addEventListener('click', function(){ runBicanhDungeon(dungeon); });
+    }
+
+    card.appendChild(nm); card.appendChild(desc); card.appendChild(meta); card.appendChild(btn);
+    el.bicanhSoloList.appendChild(card);
+  });
+}
+
+function renderBicanhTeamList(){
+  if(!el.bicanhTeamList) return;
+  el.bicanhTeamList.innerHTML = '';
+
+  const discipleCount = state && state.sect && state.sect.disciples ? Object.keys(state.sect.disciples).length : 0;
+  el.bicanhTeamInfo.textContent = 'Đệ tử Tông Môn: ' + discipleCount + '. Mỗi đệ tử đồng hành tăng 10% số lượng phần thưởng. Cần ít nhất 1 đệ tử để tham gia bí cảnh tổ đội.';
+
+  const teamDungeons = BICANH_DUNGEONS.filter(function(d){ return d.type === 'team'; });
+  teamDungeons.forEach(function(dungeon){
+    const card = document.createElement('div');
+    card.className = 'bicanh-dungeon-card';
+    const locked = dungeon.minRealm > state.realmIdx;
+    if(locked) card.classList.add('locked');
+
+    const nm = document.createElement('div'); nm.className = 'bicanh-dungeon-name'; nm.textContent = dungeon.name;
+    const desc = document.createElement('div'); desc.className = 'bicanh-dungeon-desc'; desc.textContent = dungeon.desc;
+    const meta = document.createElement('div'); meta.className = 'bicanh-dungeon-meta';
+    meta.textContent = 'Yêu cầu: ' + MAJOR_REALMS[dungeon.minRealm] + ' trở lên · Tổ đội: ' + dungeon.teamSize + ' người · Phí: ' + dungeon.costLinhThach + ' Linh Thạch';
+    const btn = document.createElement('button'); btn.className = 'bicanh-dungeon-btn team-btn';
+    if(locked){
+      btn.textContent = 'Chưa Đủ Cảnh Giới';
+      btn.disabled = true;
+    } else if(discipleCount < 1){
+      btn.textContent = 'Cần Đệ Tử Đồng Hành';
+      btn.disabled = true;
+    } else if(bicanhOnCooldown(dungeon.id)){
+      btn.textContent = 'Đang Hồi Chiêu (' + formatCooldown(bicanhCooldownRemaining(dungeon.id)) + ')';
+      btn.disabled = true;
+    } else {
+      btn.textContent = 'Lập Tổ Đội Khám Phá';
+      btn.addEventListener('click', function(){ runTeamBicanhDungeon(dungeon); });
+    }
+
+    card.appendChild(nm); card.appendChild(desc); card.appendChild(meta); card.appendChild(btn);
+    el.bicanhTeamList.appendChild(card);
+  });
+}
+
+function switchBicanhTab(tab){
+  el.tabBicanhSoloBtn.classList.toggle('active', tab==='solo');
+  el.tabBicanhTeamBtn.classList.toggle('active', tab==='team');
+  el.bicanhSoloContent.classList.toggle('hidden', tab!=='solo');
+  el.bicanhTeamContent.classList.toggle('hidden', tab!=='team');
+  if(tab==='solo') renderBicanhList();
+  else renderBicanhTeamList();
+}
+
+function openBicanh(){
+  if(!state) return;
+  el.bicanhModal.classList.remove('hidden');
+  switchBicanhTab('solo');
+}
+function closeBicanh(){ el.bicanhModal.classList.add('hidden'); }
+
+/* ================= LUYỆN ĐAN / DƯỢC ĐƯỜNG ================= */
+
+const ALCHEMY_RECIPES = [
+  {
+    id: 'rcp_tukhi', resultId: 'tu_khi_dan', resultName: 'Tụ Khí Đan',
+    desc: 'Đan dược cơ bản, tăng tốc độ tu luyện nhẹ.',
+    materials: [{ itemId: 'linh_thao', qty: 3 }]
+  },
+  {
+    id: 'rcp_bokhi', resultId: 'bo_khi_dan', resultName: 'Bổ Khí Đan',
+    desc: 'Bổ sung chân khí, tăng tốc độ tu luyện và hồi máu.',
+    materials: [{ itemId: 'linh_thao', qty: 2 }, { itemId: 'bach_ngoc', qty: 1 }]
+  },
+  {
+    id: 'rcp_cuongthe', resultId: 'cuong_the_dan', resultName: 'Cường Thể Đan',
+    desc: 'T cường thể chất, tăng HP và ATK.',
+    materials: [{ itemId: 'linh_thao', qty: 2 }, { itemId: 'chi_thao', qty: 2 }]
+  },
+  {
+    id: 'rcp_hoachuyet', resultId: 'hoac_huyet_dan', resultName: 'Hóa Huyết Đan',
+    desc: 'Hồi máu, bổsung khí huyết.',
+    materials: [{ itemId: 'chi_thao', qty: 3 }]
+  },
+  {
+    id: 'rcp_anthan', resultId: 'an_than_dan', resultName: 'An Thần Đan',
+    desc: 'An thần tĩnh tâm, tăng tốc độ tu luyện.',
+    materials: [{ itemId: 'linh_thao', qty: 3 }, { itemId: 'chi_thao', qty: 1 }]
+  },
+  {
+    id: 'rcp_phagiap', resultId: 'pha_giap_dan', resultName: 'Phá Giáp Đan',
+    desc: 'Tăng ATK, phá giáp địch.',
+    materials: [{ itemId: 'yeu_dan', qty: 2 }, { itemId: 'huyen_thiet', qty: 1 }]
+  },
+  {
+    id: 'rcp_huyenthiet', resultId: 'huyen_thiet_dan', resultName: 'Huyền Thiết Đan',
+    desc: 'Tăng DEF, cứng cáp hơn.',
+    materials: [{ itemId: 'huyen_thiet', qty: 2 }, { itemId: 'dia_tam', qty: 1 }]
+  },
+  {
+    id: 'rcp_tietcot', resultId: 'tiet_cot_dan', resultName: 'Tiết Cốt Đan',
+    desc: 'Tăng HP và ATK.',
+    materials: [{ itemId: 'yeu_dan', qty: 2 }, { itemId: 'linh_thao', qty: 2 }]
+  },
+  {
+    id: 'rcp_bachhoa', resultId: 'bach_hoa_dan', resultName: 'Bạch Hỏa Đan',
+    desc: 'Tăng ATK và tốc độ tu luyện.',
+    materials: [{ itemId: 'yeu_dan', qty: 3 }, { itemId: 'bach_ngoc', qty: 2 }]
+  },
+  {
+    id: 'rcp_thanhtam', resultId: 'thanh_tam_dan', resultName: 'Thanh Tâm Đan',
+    desc: 'Thanh tâm寡欲, tăng tốc độ tu luyện và DEF.',
+    materials: [{ itemId: 'thien_nien_linh_chi', qty: 1 }, { itemId: 'linh_thao', qty: 3 }]
+  },
+  {
+    id: 'rcp_daibolinh', resultId: 'dai_bo_linh_dan', resultName: 'Đại Bổ Linh Đan',
+    desc: 'Đan dược hiếm, đại bổ linh khí.',
+    materials: [{ itemId: 'thien_nien_linh_chi', qty: 2 }, { itemId: 'yeu_dan', qty: 3 }]
+  },
+  {
+    id: 'rcp_ngoclinh', resultId: 'ngoc_linh_dan', resultName: 'Ngọc Linh Đan',
+    desc: 'Ngọc linh đan, tăng tốc độ tu luyện và ATK.',
+    materials: [{ itemId: 'thien_nien_linh_chi', qty: 2 }, { itemId: 'long_cot', qty: 1 }]
+  },
+  {
+    id: 'rcp_hoalong', resultId: 'hoac_long_dan', resultName: 'Hỏa Long Đan',
+    desc: 'Hỏa long đan, tăng ATK và HP.',
+    materials: [{ itemId: 'long_cot', qty: 2 }, { itemId: 'dia_tam', qty: 2 }]
+  },
+  {
+    id: 'rcp_bachlong', resultId: 'bach_long_dan', resultName: 'Bạch Long Đan',
+    desc: 'Bạch long đan, tăng DEF và HP.',
+    materials: [{ itemId: 'long_cot', qty: 2 }, { itemId: 'bach_ngoc', qty: 3 }]
+  },
+  {
+    id: 'rcp_phapluc', resultId: 'phap_luc_dan', resultName: 'Pháp Lực Đan',
+    desc: 'Tăng tốc độ tu luyện, ATK, DEF.',
+    materials: [{ itemId: 'thien_nien_linh_chi', qty: 2 }, { itemId: 'phuong_cot', qty: 1 }]
+  },
+  {
+    id: 'rcp_tichcot', resultId: 'tich_cot_dan', resultName: 'Tích Cốt Đan',
+    desc: 'Tích cốt đan, tăng HP và DEF.',
+    materials: [{ itemId: 'phuong_cot', qty: 2 }, { itemId: 'huyen_thiet', qty: 2 }]
+  },
+  {
+    id: 'rcp_linhnguyen', resultId: 'linh_nguyen_dan', resultName: 'Linh Nguyên Đan',
+    desc: 'Linh nguyên đan, tăng tốc độ tu luyện và HP.',
+    materials: [{ itemId: 'thien_linh_chi', qty: 1 }, { itemId: 'thien_nien_linh_chi', qty: 2 }]
+  },
+  {
+    id: 'rcp_hoanglong', resultId: 'hoang_long_dan', resultName: 'Hoang Long Đan',
+    desc: 'Hoang long đan, tăng ATK, HP, tốc độ tu luyện.',
+    materials: [{ itemId: 'co_long_cot', qty: 1 }, { itemId: 'long_cot', qty: 2 }]
+  },
+  {
+    id: 'rcp_thienlong', resultId: 'thien_long_dan', resultName: 'Thiên Long Đan',
+    desc: 'Thiên long đan, tăng DEF, HP, tốc độ tu luyện.',
+    materials: [{ itemId: 'co_long_cot', qty: 1 }, { itemId: 'phuong_cot', qty: 2 }]
+  },
+  {
+    id: 'rcp_colong', resultId: 'co_long_dan', resultName: 'Cổ Long Đan',
+    desc: 'Cổ long đan, tăng ATK, DEF, HP, tốc độ tu luyện.',
+    materials: [{ itemId: 'co_long_cot', qty: 2 }, { itemId: 'co_thach', qty: 1 }]
+  },
+  {
+    id: 'rcp_phuonghoang', resultId: 'phuong_hoang_dan', resultName: 'Phượng Hoàng Đan',
+    desc: 'Phượng hoàng đan, tăng tốc độ tu luyện, HP, ATK.',
+    materials: [{ itemId: 'thien_linh_chi', qty: 2 }, { itemId: 'co_long_cot', qty: 1 }]
+  },
+  {
+    id: 'rcp_hondon', resultId: 'hon_don_dan', resultName: 'Hỗn Độn Đan',
+    desc: 'Hỗn độn đan, tăng tốc độ tu luyện, ATK, DEF, HP.',
+    materials: [{ itemId: 'co_thach', qty: 2 }, { itemId: 'hon_don_thach', qty: 1 }]
+  },
+  {
+    id: 'rcp_cuuchuyen', resultId: 'cuu_chuyen_kim_dan', resultName: 'Cửu Chuyển Kim Đan',
+    desc: 'Cửu chuyển kim đan, đan dược cực phẩm.',
+    materials: [{ itemId: 'hon_don_thach', qty: 1 }, { itemId: 'co_thach', qty: 2 }, { itemId: 'thien_linh_chi', qty: 1 }]
+  },
+  {
+    id: 'rcp_dokiep', resultId: 'do_kiep_dan', resultName: 'Độ Kiếp Đan',
+    desc: 'Độ kiếp đan, giúp vượt qua thiên kiếp.',
+    materials: [{ itemId: 'hon_don_thach', qty: 1 }, { itemId: 'vuc_thach', qty: 1 }]
+  },
+  {
+    id: 'rcp_hao', resultId: 'hao_dan', resultName: 'Hạo Đan',
+    desc: 'Hạo đan, tăng thọ nguyên 200 năm.',
+    materials: [{ itemId: 'vuc_thach', qty: 2 }, { itemId: 'hoang_thach', qty: 1 }]
+  },
+  {
+    id: 'rcp_honmang', resultId: 'hon_mang_dan', resultName: 'Hỗn Mang Đan',
+    desc: 'Hỗn mang đan, đan dược thần cấp.',
+    materials: [{ itemId: 'hoang_thach', qty: 2 }, { itemId: 'dao_nguyen_thach', qty: 1 }]
+  },
+  {
+    id: 'rcp_thiendao', resultId: 'thien_dao_dan', resultName: 'Thiên Đạo Đan',
+    desc: 'Thiên đạo đan, tăng ATK, DEF, HP, tốc độ tu luyện.',
+    materials: [{ itemId: 'dao_nguyen_thach', qty: 2 }, { itemId: 'thien_dao_thach', qty: 1 }]
+  },
+  {
+    id: 'rcp_vucthan', resultId: 'vuc_than_dan', resultName: 'Vực Thần Đan',
+    desc: 'Vực thần đan, đan dược cấp vực thần.',
+    materials: [{ itemId: 'thien_dao_thach', qty: 2 }, { itemId: 'co_dao_thach', qty: 1 }]
+  },
+  {
+    id: 'rcp_hoangco', resultId: 'hoang_co_dan', resultName: 'Hoang Cổ Đan',
+    desc: 'Hoang cổ đan, đan dược cấp hoang cổ.',
+    materials: [{ itemId: 'co_dao_thach', qty: 2 }, { itemId: 'vuc_dao_thach', qty: 1 }]
+  },
+  {
+    id: 'rcp_cothuong', resultId: 'co_thuong_dan', resultName: 'Cổ Thương Đan',
+    desc: 'Cổ thương đan, đan dược cực phẩm.',
+    materials: [{ itemId: 'vuc_dao_thach', qty: 2 }, { itemId: 'thien_hoang_thach', qty: 1 }]
+  },
+  {
+    id: 'rcp_vuchhoang', resultId: 'vuc_hoang_dan', resultName: 'Vực Hoang Đan',
+    desc: 'Vực hoang đan, đan dược cấp vực hoang.',
+    materials: [{ itemId: 'thien_hoang_thach', qty: 2 }, { itemId: 'hon_mang_thach', qty: 1 }]
+  },
+  {
+    id: 'rcp_thaisuu', resultId: 'thai_suu_dan', resultName: 'Thái Tuế Đan',
+    desc: 'Thái tuế đan, đan dược cấp thái tuế.',
+    materials: [{ itemId: 'hon_mang_thach', qty: 2 }, { itemId: 'thien_hoang_thach', qty: 2 }]
+  },
+  {
+    id: 'rcp_honluyen', resultId: 'hon_luyen_dan', resultName: 'Hồn Luyện Đan',
+    desc: 'Hồn luyện đan, đan dược cấp hồn luyện.',
+    materials: [{ itemId: 'hon_mang_thach', qty: 3 }, { itemId: 'dao_nguyen_thach', qty: 2 }]
+  },
+  {
+    id: 'rcp_daotong', resultId: 'dao_tong_dan', resultName: 'Đạo Tông Đan',
+    desc: 'Đạo tông đan, đan dược cấp đạo tông.',
+    materials: [{ itemId: 'hon_mang_thach', qty: 3 }, { itemId: 'thien_dao_thach', qty: 2 }]
+  },
+  {
+    id: 'rcp_thienhoang', resultId: 'thien_hoang_dan', resultName: 'Thiên Hoang Đan',
+    desc: 'Thiên hoàng đan, đan dược tối cao, tăng toàn diện + thọ nguyên.',
+    materials: [{ itemId: 'hon_mang_thach', qty: 5 }, { itemId: 'thien_hoang_thach', qty: 3 }]
+  }
+];
+
+function alchemyCanCraft(recipe, multiplier){
+  if(!state || !state.inventory) return false;
+  return recipe.materials.every(function(m){
+    const have = (state.inventory[m.itemId] || 0);
+    return have >= m.qty * multiplier;
+  });
+}
+
+function alchemyMaxCrafts(recipe){
+  if(!state || !state.inventory) return 0;
+  let max = Infinity;
+  recipe.materials.forEach(function(m){
+    const have = (state.inventory[m.itemId] || 0);
+    const possible = Math.floor(have / m.qty);
+    if(possible < max) max = possible;
+  });
+  return max === Infinity ? 0 : max;
+}
+
+function alchemyCraft(recipe, multiplier){
+  if(!state) return;
+  multiplier = Math.max(1, Math.floor(multiplier || 1));
+  if(!alchemyCanCraft(recipe, multiplier)){
+    addLogNode({type:'neutral', title:'Nguyên Liệu Không Đủ',
+      text:'Không đủ nguyên liệu để luyện ' + multiplier + 'x ' + recipe.resultName + '.',
+      deltas:[]});
+    return;
+  }
+
+  const deltas = [];
+  recipe.materials.forEach(function(m){
+    state.inventory[m.itemId] = (state.inventory[m.itemId] || 0) - m.qty * multiplier;
+    if(state.inventory[m.itemId] <= 0) delete state.inventory[m.itemId];
+    const it = ITEM_DB[m.itemId];
+    deltas.push((it ? it.name : m.itemId) + ' -' + (m.qty * multiplier));
+  });
+
+  addItem(state, recipe.resultId, multiplier);
+  const resultIt = ITEM_DB[recipe.resultId];
+  deltas.push((resultIt ? resultIt.name : recipe.resultId) + ' +' + multiplier);
+
+  addLogNode({type:'success', title:'Luyện Đan Thành Công',
+    text:'Luyện thành ' + multiplier + 'x ' + recipe.resultName + '! Luyện đan luôn thành công 100%.',
+    deltas: deltas});
+
+  updateUI();
+  syncSave({force:true});
+  renderAlchemyList();
+}
+
+function renderAlchemyList(){
+  if(!el.alchemyRecipeList) return;
+  el.alchemyRecipeList.innerHTML = '';
+  ALCHEMY_RECIPES.forEach(function(recipe){
+    const card = document.createElement('div');
+    card.className = 'alchemy-recipe-card';
+
+    const nm = document.createElement('div'); nm.className = 'alchemy-recipe-name'; nm.textContent = recipe.resultName;
+    const desc = document.createElement('div'); desc.className = 'alchemy-recipe-desc'; desc.textContent = recipe.desc;
+
+    const mats = document.createElement('div'); mats.className = 'alchemy-recipe-mats';
+    let matsHtml = 'Nguyên liệu: ';
+    recipe.materials.forEach(function(m, i){
+      const have = (state && state.inventory && state.inventory[m.itemId]) || 0;
+      const need = m.qty;
+      const cls = have >= need ? 'alchemy-mat-have' : 'alchemy-mat-miss';
+      const it = ITEM_DB[m.itemId];
+      matsHtml += (i > 0 ? ', ' : '') + '<span class="' + cls + '">' + (it ? it.name : m.itemId) + ' (' + have + '/' + need + ')</span>';
+    });
+    mats.innerHTML = matsHtml;
+
+    const maxCrafts = alchemyMaxCrafts(recipe);
+    const qtyRow = document.createElement('div'); qtyRow.className = 'alchemy-qty-row';
+    const qtyLabel = document.createElement('span');
+    qtyLabel.style.fontSize = '12px';
+    qtyLabel.style.color = 'var(--text-dim)';
+    qtyLabel.textContent = 'Số lần:';
+    const qtyInput = document.createElement('input');
+    qtyInput.type = 'number'; qtyInput.className = 'alchemy-qty-input';
+    qtyInput.min = '1'; qtyInput.value = '1';
+    const maxLabel = document.createElement('span');
+    maxLabel.style.fontSize = '11px';
+    maxLabel.style.color = 'var(--text-faint)';
+    maxLabel.textContent = '(tối đa ' + maxCrafts + ')';
+
+    const craftBtn = document.createElement('button'); craftBtn.className = 'alchemy-craft-btn';
+    craftBtn.textContent = 'Luyện Đan';
+    craftBtn.disabled = maxCrafts < 1;
+    craftBtn.addEventListener('click', function(){
+      const qty = Math.max(1, Math.floor(Number(qtyInput.value) || 1));
+      alchemyCraft(recipe, qty);
+    });
+
+    qtyRow.appendChild(qtyLabel); qtyRow.appendChild(qtyInput); qtyRow.appendChild(maxLabel); qtyRow.appendChild(craftBtn);
+
+    card.appendChild(nm); card.appendChild(desc); card.appendChild(mats); card.appendChild(qtyRow);
+    el.alchemyRecipeList.appendChild(card);
+  });
+}
+
+function openAlchemy(){
+  if(!state) return;
+  el.alchemyModal.classList.remove('hidden');
+  renderAlchemyList();
+}
+function closeAlchemy(){ el.alchemyModal.classList.add('hidden'); }
 
 /* ================= INIT & EVENTS ================= */
 buildRoadmap();
@@ -4010,6 +4887,8 @@ function resetToStartScreen(){
   el.combatModal.classList.add('hidden');
   el.accountModal.classList.add('hidden');
   el.giftPillModal.classList.add('hidden');
+  el.bicanhModal.classList.add('hidden');
+  el.alchemyModal.classList.add('hidden');
   logContainer.innerHTML = '';
   nameInput.value = '';
   resumeIdInput.value = '';
@@ -4121,6 +5000,13 @@ document.getElementById('btnCancelDelete').addEventListener('click', function(){
   el.accountDeleteStep1.classList.remove('hidden');
 });
 document.getElementById('btnConfirmDelete').addEventListener('click', confirmDeleteAccount);
+
+document.getElementById('btnBicanh').addEventListener('click', openBicanh);
+document.getElementById('btnCloseBicanh').addEventListener('click', closeBicanh);
+el.tabBicanhSoloBtn.addEventListener('click', function(){ switchBicanhTab('solo'); });
+el.tabBicanhTeamBtn.addEventListener('click', function(){ switchBicanhTab('team'); });
+document.getElementById('btnAlchemy').addEventListener('click', openAlchemy);
+document.getElementById('btnCloseAlchemy').addEventListener('click', closeAlchemy);
 
 document.getElementById('btnMarket').addEventListener('click', openMarket);
 document.getElementById('btnCloseMarket').addEventListener('click', closeMarket);
