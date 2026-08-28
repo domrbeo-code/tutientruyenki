@@ -428,6 +428,7 @@
   }
   .modal-box{
     max-width:480px; width:100%;
+    max-height:88vh; overflow-y:auto; overflow-x:hidden;
     background: var(--panel-bg-strong);
     border:1px solid var(--panel-border-strong);
     border-radius:20px;
@@ -435,6 +436,10 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
     text-align:center;
   }
+  .modal-box::-webkit-scrollbar{ width:6px; }
+  .modal-box::-webkit-scrollbar-track{ background:rgba(255,255,255,0.03); border-radius:3px; }
+  .modal-box::-webkit-scrollbar-thumb{ background:rgba(122,224,205,0.3); border-radius:3px; }
+  .modal-box::-webkit-scrollbar-thumb:hover{ background:rgba(122,224,205,0.5); }
   .modal-box h2{
     font-family:var(--font-display); font-size:24px; margin:0 0 10px;
     color: var(--gold);
@@ -517,7 +522,11 @@
   .player-id-row b{ color:var(--teal-soft); font-weight:600; user-select:all; }
 
   /* ---------- Leaderboard modal ---------- */
-  .modal-box.wide{ max-width:640px; text-align:left; }
+  .modal-box.wide{ max-width:640px; text-align:left; max-height:88vh; overflow-y:auto; overflow-x:hidden; }
+  .modal-box.wide::-webkit-scrollbar{ width:6px; }
+  .modal-box.wide::-webkit-scrollbar-track{ background:rgba(255,255,255,0.03); border-radius:3px; }
+  .modal-box.wide::-webkit-scrollbar-thumb{ background:rgba(122,224,205,0.3); border-radius:3px; }
+  .modal-box.wide::-webkit-scrollbar-thumb:hover{ background:rgba(122,224,205,0.5); }
   .lb-toolbar{
     display:flex; justify-content:space-between; align-items:center; gap:10px;
     margin-bottom:14px; flex-wrap:wrap;
@@ -781,6 +790,198 @@
     .market-tab-btn{ min-width:90px; font-size:11.5px; }
     .new-listing-form select, .new-listing-form input{ flex:1 1 100%; }
   }
+
+  /* ---------- Bí Cảnh & Alchemy premium buttons ---------- */
+  .action-btn.bicanh-btn{
+    background: linear-gradient(135deg, rgba(20,80,60,0.35), rgba(10,50,80,0.35));
+    border:1px solid rgba(45,212,191,0.35);
+    border-left:3px solid #2dd4bf;
+    box-shadow: 0 0 12px rgba(45,212,191,0.08), inset 0 1px 0 rgba(45,212,191,0.1);
+    position:relative; overflow:hidden;
+    transition: all .25s cubic-bezier(.4,0,.2,1);
+  }
+  .action-btn.bicanh-btn::before{
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, rgba(45,212,191,0.12), rgba(96,165,250,0.08));
+    opacity:0; transition: opacity .3s ease;
+  }
+  .action-btn.bicanh-btn:hover{
+    transform: translateY(-2px);
+    border-color: rgba(45,212,191,0.6);
+    box-shadow: 0 0 22px rgba(45,212,191,0.25), 0 4px 16px rgba(45,212,191,0.12), inset 0 1px 0 rgba(45,212,191,0.15);
+  }
+  .action-btn.bicanh-btn:hover::before{ opacity:1; }
+  .action-btn.bicanh-btn:active{ transform: translateY(0px) scale(0.985); box-shadow: 0 0 8px rgba(45,212,191,0.15); }
+
+  .action-btn.alchemy-btn{
+    background: linear-gradient(135deg, rgba(60,20,80,0.35), rgba(40,30,90,0.3));
+    border:1px solid rgba(168,85,247,0.35);
+    border-left:3px solid #a855f7;
+    box-shadow: 0 0 12px rgba(168,85,247,0.08), inset 0 1px 0 rgba(168,85,247,0.1);
+    position:relative; overflow:hidden;
+    transition: all .25s cubic-bezier(.4,0,.2,1);
+  }
+  .action-btn.alchemy-btn::before{
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, rgba(168,85,247,0.12), rgba(232,194,122,0.06));
+    opacity:0; transition: opacity .3s ease;
+  }
+  .action-btn.alchemy-btn:hover{
+    transform: translateY(-2px);
+    border-color: rgba(168,85,247,0.6);
+    box-shadow: 0 0 22px rgba(168,85,247,0.25), 0 4px 16px rgba(168,85,247,0.12), inset 0 1px 0 rgba(168,85,247,0.15);
+  }
+  .action-btn.alchemy-btn:hover::before{ opacity:1; }
+  .action-btn.alchemy-btn:active{ transform: translateY(0px) scale(0.985); box-shadow: 0 0 8px rgba(168,85,247,0.15); }
+
+  /* ---------- Bí Cảnh modal ---------- */
+  .bicanh-tabs{ display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
+  .bicanh-tab-btn{
+    flex:1; min-width:120px; font-size:12.5px; font-weight:600; padding:10px 8px; border-radius:10px;
+    background: rgba(255,255,255,0.03); border:1px solid rgba(45,212,191,0.14);
+    color: var(--text-dim); cursor:pointer; text-align:center;
+    transition: all .2s ease;
+  }
+  .bicanh-tab-btn:hover{ background: rgba(45,212,191,0.08); }
+  .bicanh-tab-btn.active{
+    background: rgba(45,212,191,0.12); border-color: rgba(45,212,191,0.4); color:#2dd4bf;
+    box-shadow: 0 0 10px rgba(45,212,191,0.12);
+  }
+  .bicanh-dungeon-list{
+    display:flex; flex-direction:column; gap:12px;
+    max-height:48vh; overflow-y:auto; padding-right:4px;
+  }
+  .bicanh-dungeon-list::-webkit-scrollbar{ width:5px; }
+  .bicanh-dungeon-list::-webkit-scrollbar-track{ background:rgba(255,255,255,0.02); border-radius:3px; }
+  .bicanh-dungeon-list::-webkit-scrollbar-thumb{ background:rgba(45,212,191,0.25); border-radius:3px; }
+  .bicanh-dungeon-list::-webkit-scrollbar-thumb:hover{ background:rgba(45,212,191,0.4); }
+  .bicanh-dungeon-card{
+    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(45,212,191,0.02));
+    border:1px solid rgba(45,212,191,0.14); border-radius:14px; padding:14px 16px;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .bicanh-dungeon-card:hover{ border-color: rgba(45,212,191,0.28); }
+  .bicanh-dungeon-card.locked{ opacity:0.5; }
+  .bicanh-dungeon-name{
+    font-size:14px; font-weight:700; color:var(--text-main); margin-bottom:4px;
+    font-family:var(--font-display);
+  }
+  .bicanh-dungeon-desc{ font-size:11.5px; color:var(--text-dim); line-height:1.6; margin-bottom:8px; }
+  .bicanh-dungeon-meta{ font-size:11px; color:var(--text-faint); margin-bottom:10px; }
+  .bicanh-dungeon-btn{
+    width:100%; font-size:12.5px; font-weight:600; padding:9px; border-radius:10px; cursor:pointer;
+    background: linear-gradient(135deg, rgba(45,212,191,0.15), rgba(96,165,250,0.1));
+    border:1px solid rgba(45,212,191,0.4); color:#2dd4bf;
+    transition: all .2s ease;
+  }
+  .bicanh-dungeon-btn:not(:disabled):hover{
+    background: linear-gradient(135deg, rgba(45,212,191,0.25), rgba(96,165,250,0.18));
+    box-shadow: 0 0 14px rgba(45,212,191,0.2);
+    transform: translateY(-1px);
+  }
+  .bicanh-dungeon-btn:not(:disabled):active{ transform: translateY(0) scale(0.98); }
+  .bicanh-dungeon-btn:disabled{
+    opacity:0.4; cursor:not-allowed;
+    background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.08); color:var(--text-faint);
+  }
+  .bicanh-dungeon-btn.team-btn{
+    background: linear-gradient(135deg, rgba(168,85,247,0.12), rgba(232,194,122,0.08));
+    border-color: rgba(168,85,247,0.4); color:#c084fc;
+  }
+  .bicanh-dungeon-btn.team-btn:not(:disabled):hover{
+    background: linear-gradient(135deg, rgba(168,85,247,0.22), rgba(232,194,122,0.14));
+    box-shadow: 0 0 14px rgba(168,85,247,0.2);
+  }
+  .bicanh-team-info{
+    font-size:12px; color:var(--text-dim); line-height:1.6;
+    background: rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.2);
+    border-radius:10px; padding:10px 14px; margin-bottom:14px;
+  }
+
+  /* ---------- Alchemy modal ---------- */
+  .alchemy-recipe-list{
+    display:flex; flex-direction:column; gap:12px;
+    max-height:48vh; overflow-y:auto; padding-right:4px;
+  }
+  .alchemy-recipe-list::-webkit-scrollbar{ width:5px; }
+  .alchemy-recipe-list::-webkit-scrollbar-track{ background:rgba(255,255,255,0.02); border-radius:3px; }
+  .alchemy-recipe-list::-webkit-scrollbar-thumb{ background:rgba(168,85,247,0.25); border-radius:3px; }
+  .alchemy-recipe-list::-webkit-scrollbar-thumb:hover{ background:rgba(168,85,247,0.4); }
+  .alchemy-recipe-card{
+    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(168,85,247,0.02));
+    border:1px solid rgba(168,85,247,0.14); border-radius:14px; padding:14px 16px;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .alchemy-recipe-card:hover{ border-color: rgba(168,85,247,0.28); box-shadow: 0 0 10px rgba(168,85,247,0.06); }
+  .alchemy-recipe-name{
+    font-size:14px; font-weight:700; color:var(--text-main); margin-bottom:4px;
+    font-family:var(--font-display);
+  }
+  .alchemy-recipe-desc{ font-size:11.5px; color:var(--text-dim); line-height:1.6; margin-bottom:8px; }
+  .alchemy-recipe-mats{ font-size:11.5px; color:var(--text-dim); margin-bottom:10px; line-height:1.7; }
+  .alchemy-mat-have{ color:#4fdba0; font-weight:600; }
+  .alchemy-mat-miss{ color:var(--danger); font-weight:600; }
+  .alchemy-qty-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .alchemy-qty-input{
+    width:60px; padding:6px 8px; border-radius:8px; text-align:center;
+    background: rgba(255,255,255,0.05); border:1px solid rgba(168,85,247,0.25);
+    color:var(--text-main); font-size:13px;
+  }
+  .alchemy-qty-input:focus{ outline:none; border-color: rgba(168,85,247,0.5); }
+  .alchemy-craft-btn{
+    margin-left:auto; font-size:12.5px; font-weight:600; padding:8px 20px; border-radius:10px; cursor:pointer;
+    background: linear-gradient(135deg, rgba(168,85,247,0.18), rgba(232,194,122,0.1));
+    border:1px solid rgba(168,85,247,0.4); color:#c084fc;
+    transition: all .2s ease;
+  }
+  .alchemy-craft-btn:not(:disabled):hover{
+    background: linear-gradient(135deg, rgba(168,85,247,0.28), rgba(232,194,122,0.16));
+    box-shadow: 0 0 14px rgba(168,85,247,0.2);
+    transform: translateY(-1px);
+  }
+  .alchemy-craft-btn:not(:disabled):active{ transform: translateY(0) scale(0.98); }
+  .alchemy-craft-btn:disabled{
+    opacity:0.35; cursor:not-allowed;
+    background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.08); color:var(--text-faint);
+  }
+
+  /* ---------- Shop category & pagination ---------- */
+  .shop-reset-countdown{
+    font-size:11px; color:var(--text-faint); margin-bottom:10px; text-align:center;
+    letter-spacing:0.3px;
+  }
+  .shop-category-tabs{
+    display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap;
+  }
+  .shop-cat-btn{
+    font-size:11.5px; font-weight:600; padding:7px 14px; border-radius:8px; cursor:pointer;
+    background: rgba(255,255,255,0.03); border:1px solid rgba(122,224,205,0.14);
+    color:var(--text-dim); transition: all .2s ease;
+  }
+  .shop-cat-btn:hover{ background: rgba(45,212,191,0.08); color:var(--teal-soft); }
+  .shop-cat-btn.active{
+    background: rgba(45,212,191,0.12); border-color: rgba(45,212,191,0.4); color:#2dd4bf;
+  }
+  .shop-pagination{
+    display:flex; align-items:center; justify-content:center; gap:12px; margin-top:14px;
+  }
+  .shop-page-btn{
+    font-size:12px; padding:7px 14px; border-radius:8px; cursor:pointer;
+    background: rgba(45,212,191,0.08); border:1px solid rgba(45,212,191,0.3);
+    color:var(--teal-soft); transition: all .15s ease;
+  }
+  .shop-page-btn:hover:not(:disabled){ background: rgba(45,212,191,0.16); }
+  .shop-page-btn:disabled{ opacity:0.3; cursor:not-allowed; }
+  .shop-page-info{ font-size:12px; color:var(--text-dim); font-weight:600; }
+
+  /* Shop grid scroll fix */
+  .shop-grid{
+    max-height:42vh; overflow-y:auto; padding-right:4px;
+  }
+  .shop-grid::-webkit-scrollbar{ width:5px; }
+  .shop-grid::-webkit-scrollbar-track{ background:rgba(255,255,255,0.02); border-radius:3px; }
+  .shop-grid::-webkit-scrollbar-thumb{ background:rgba(122,224,205,0.25); border-radius:3px; }
+  .shop-grid::-webkit-scrollbar-thumb:hover{ background:rgba(122,224,205,0.4); }
 
   .hidden{ display:none !important; }
 
