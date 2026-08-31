@@ -19,6 +19,10 @@
     --blue:#3b82f6;
     --blue-soft:#7fb2ff;
     --gold:#e8c27a;
+    --neon-cyan:#2dd4bf;
+    --neon-blue:#60a5fa;
+    --neon-purple:#c084fc;
+    --neon-pink:#f472b6;
     --text-main:#e7f6f2;
     --text-dim:#8fa8b3;
     --text-faint:#5c7681;
@@ -95,12 +99,19 @@
     font-weight:700;
     font-size:clamp(28px, 4.2vw, 44px);
     margin:0 0 6px;
-    letter-spacing:0.5px;
+    letter-spacing:1px;
     background: linear-gradient(120deg, var(--teal-soft), var(--blue-soft) 55%, var(--gold));
     -webkit-background-clip:text;
     background-clip:text;
     color:transparent;
-    text-shadow: 0 0 40px rgba(45,212,191,0.15);
+    filter: drop-shadow(0 0 8px rgba(45,212,191,0.5)) drop-shadow(0 0 20px rgba(96,165,250,0.3)) drop-shadow(0 0 40px rgba(45,212,191,0.15));
+    animation: neonFlicker 5s ease-in-out infinite;
+  }
+  @keyframes neonFlicker{
+    0%,100%{ filter: drop-shadow(0 0 8px rgba(45,212,191,0.5)) drop-shadow(0 0 20px rgba(96,165,250,0.3)) drop-shadow(0 0 40px rgba(45,212,191,0.15)); }
+    48%{ filter: drop-shadow(0 0 6px rgba(45,212,191,0.4)) drop-shadow(0 0 16px rgba(96,165,250,0.22)); }
+    50%{ filter: drop-shadow(0 0 10px rgba(45,212,191,0.6)) drop-shadow(0 0 26px rgba(96,165,250,0.38)) drop-shadow(0 0 50px rgba(45,212,191,0.2)); }
+    52%{ filter: drop-shadow(0 0 6px rgba(45,212,191,0.4)) drop-shadow(0 0 16px rgba(96,165,250,0.22)); }
   }
   .game-header .subtitle{
     color:var(--text-dim);
@@ -108,6 +119,7 @@
     letter-spacing:2px;
     text-transform:uppercase;
     margin-bottom:16px;
+    text-shadow: 0 0 10px rgba(96,165,250,0.25), 0 0 20px rgba(96,165,250,0.1);
   }
 
   .journey-bar-wrap{
@@ -158,11 +170,18 @@
     background: var(--panel-bg);
     border:1px solid var(--panel-border);
     border-radius: var(--radius);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 0 24px rgba(45,212,191,0.03);
     padding:20px;
+    position:relative;
   }
+  .panel::after{
+    content:''; position:absolute; inset:0; border-radius:var(--radius);
+    background: linear-gradient(135deg, rgba(45,212,191,0.04), transparent 40%, transparent 60%, rgba(192,132,252,0.03));
+    pointer-events:none; z-index:0;
+  }
+  .panel > *{ position:relative; z-index:1; }
 
   .panel-title{
     font-family: var(--font-display);
@@ -174,6 +193,7 @@
     display:flex;
     align-items:center;
     gap:10px;
+    text-shadow: 0 0 8px rgba(45,212,191,0.4), 0 0 16px rgba(45,212,191,0.15);
   }
   .panel-title::after{
     content:'';
@@ -223,6 +243,7 @@
     font-size:19px;
     font-weight:600;
     margin-bottom:2px;
+    text-shadow: 0 0 8px rgba(96,165,250,0.4), 0 0 18px rgba(96,165,250,0.15);
   }
   .char-kiep{ font-size:11px; color:var(--text-faint); margin-bottom:10px; }
   .char-realm{
@@ -231,7 +252,7 @@
     margin-bottom:16px;
     line-height:1.5;
   }
-  .char-realm .major{ font-weight:700; color: var(--gold); display:block; font-family:var(--font-display); font-size:16px; margin-bottom:2px;}
+  .char-realm .major{ font-weight:700; color: var(--gold); display:block; font-family:var(--font-display); font-size:16px; margin-bottom:2px; text-shadow: 0 0 8px rgba(232,194,122,0.45), 0 0 18px rgba(232,194,122,0.18); }
 
   .bar-block{ margin-bottom:14px; text-align:left; }
   .bar-label{
@@ -281,7 +302,7 @@
     padding:8px 6px;
     text-align:center;
   }
-  .attr-cell .v{ font-size:16px; font-weight:700; color:var(--text-main); font-family:var(--font-display); }
+  .attr-cell .v{ font-size:16px; font-weight:700; color:var(--text-main); font-family:var(--font-display); text-shadow: 0 0 6px rgba(45,212,191,0.3), 0 0 12px rgba(45,212,191,0.1); }
   .attr-cell .k{ font-size:10px; color:var(--text-faint); letter-spacing:0.5px; margin-top:2px; }
 
   .combat-stats-grid{
@@ -293,7 +314,7 @@
     border:1px solid rgba(242,131,122,0.18);
     border-radius:10px; padding:8px 4px; text-align:center;
   }
-  .combat-cell .v{ font-size:16px; font-weight:700; color:#ffb3ac; font-family:var(--font-display); }
+  .combat-cell .v{ font-size:16px; font-weight:700; color:#ffb3ac; font-family:var(--font-display); text-shadow: 0 0 6px rgba(242,131,122,0.4), 0 0 12px rgba(242,131,122,0.12); }
   .combat-cell .k{ font-size:10px; color:var(--text-faint); letter-spacing:0.5px; margin-top:2px; }
 
   /* ---------- Main panel ---------- */
@@ -443,6 +464,7 @@
   .modal-box h2{
     font-family:var(--font-display); font-size:24px; margin:0 0 10px;
     color: var(--gold);
+    text-shadow: 0 0 10px rgba(232,194,122,0.45), 0 0 22px rgba(232,194,122,0.2), 0 0 40px rgba(232,194,122,0.08);
   }
   .modal-box p{ font-size:14px; color:var(--text-dim); line-height:1.7; margin:0 0 18px; }
   .modal-box input{
@@ -561,7 +583,7 @@
   .lb-fight-btn.gated{ background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); color: var(--text-faint); }
 
   /* ---------- Inventory / Equipment modal ---------- */
-  .inv-slots{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:18px; }
+  .inv-slots{ display:grid; grid-template-columns:repeat(auto-fit, minmax(min(130px,100%),1fr)); gap:10px; margin-bottom:18px; }
   .inv-slot{
     background: rgba(255,255,255,0.03); border:1px solid rgba(232,194,122,0.2);
     border-radius:12px; padding:12px 10px; text-align:center;
@@ -645,6 +667,32 @@
   }
   .combat-result-banner.win{ color:var(--success); background: rgba(79,219,160,0.08); }
   .combat-result-banner.lose{ color:var(--danger); background: rgba(242,131,122,0.08); }
+
+  /* ---------- Combat techniques ---------- */
+  .combat-techniques{ display:flex; gap:8px; margin-bottom:14px; }
+  .combat-tech-btn{
+    flex:1; padding:12px 8px; border-radius:10px; cursor:pointer; text-align:center;
+    background: rgba(255,255,255,0.03); border:1px solid rgba(122,224,205,0.2);
+    transition: all .2s ease; position:relative; overflow:hidden;
+  }
+  .combat-tech-btn:hover{ transform: translateY(-2px); box-shadow: 0 4px 12px rgba(45,212,191,0.15); }
+  .combat-tech-btn:active{ transform: translateY(0) scale(0.98); }
+  .combat-tech-btn:disabled{ opacity:0.4; cursor:not-allowed; transform:none; }
+  .combat-tech-btn .tech-name{ font-size:12.5px; font-weight:700; margin-bottom:3px; }
+  .combat-tech-btn .tech-type{ font-size:10px; letter-spacing:0.5px; text-transform:uppercase; }
+  .combat-tech-btn.type-cong{ border-color: rgba(242,131,122,0.4); }
+  .combat-tech-btn.type-cong .tech-name{ color:#f2837a; }
+  .combat-tech-btn.type-cong .tech-type{ color: rgba(242,131,122,0.7); }
+  .combat-tech-btn.type-thu{ border-color: rgba(96,165,250,0.4); }
+  .combat-tech-btn.type-thu .tech-name{ color:#60a5fa; }
+  .combat-tech-btn.type-thu .tech-type{ color: rgba(96,165,250,0.7); }
+  .combat-tech-btn.type-than{ border-color: rgba(79,219,160,0.4); }
+  .combat-tech-btn.type-than .tech-name{ color:#4fdba0; }
+  .combat-tech-btn.type-than .tech-type{ color: rgba(79,219,160,0.7); }
+  .combat-tech-btn.selected{ box-shadow: 0 0 16px rgba(232,194,122,0.3); border-color: var(--gold); }
+  .combat-no-tech{ text-align:center; font-size:12px; color:var(--text-faint); padding:10px; margin-bottom:14px; }
+  .combat-tech-hint{ font-size:11px; color:var(--text-faint); text-align:center; margin-bottom:10px; line-height:1.5; }
+  .combat-tech-hint b{ color:var(--gold); }
 
   /* ---------- Sect (Tông Môn) modal ---------- */
   .sect-summary{
@@ -983,6 +1031,27 @@
   .shop-grid::-webkit-scrollbar-thumb{ background:rgba(122,224,205,0.25); border-radius:3px; }
   .shop-grid::-webkit-scrollbar-thumb:hover{ background:rgba(122,224,205,0.4); }
 
+  /* ---------- Particle Canvas ---------- */
+  #particleCanvas{
+    position:fixed; inset:0; z-index:0;
+    pointer-events:none;
+  }
+
+  /* ---------- Aurora glow layer ---------- */
+  body::after{
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 600px 400px at 20% 30%, rgba(45,212,191,0.06), transparent 60%),
+      radial-gradient(ellipse 500px 300px at 80% 70%, rgba(192,132,252,0.05), transparent 60%);
+    pointer-events:none; z-index:0;
+    animation: auroraShift 18s ease-in-out infinite alternate;
+  }
+  @keyframes auroraShift{
+    0%{ transform: translate(0,0) scale(1); opacity:0.7; }
+    100%{ transform: translate(30px,-20px) scale(1.08); opacity:1; }
+  }
+
   .hidden{ display:none !important; }
 
   @media (prefers-reduced-motion: reduce){
@@ -997,6 +1066,8 @@
 </style>
 </head>
 <body>
+
+<canvas id="particleCanvas"></canvas>
 
 <div class="app-shell">
 
@@ -1205,6 +1276,9 @@
       </div>
     </div>
     <div class="combat-result-banner hidden" id="combatResultBanner"></div>
+    <div class="combat-tech-hint hidden" id="combatTechHint"></div>
+    <div class="combat-techniques hidden" id="combatTechniques"></div>
+    <div class="combat-no-tech hidden" id="combatNoTech"></div>
     <div class="combat-log" id="combatLog"></div>
     <div style="text-align:center;">
       <button class="modal-btn modal-btn-cancel hidden" id="btnCloseCombat">Đóng</button>
@@ -1454,6 +1528,7 @@ function freshState(name){
     pvpLosses: 0,
     inventory: {},
     equipped: { weapon: null, armor: null, phapBao: null },
+    equippedCongPhap: null,
     pillBonuses: { atk: 0, def: 0, hp: 0, tocDoTuLuyen: 0 },
     pvpCooldowns: {},
     bicanhCooldowns: {},
@@ -2136,6 +2211,61 @@ const ITEM_DB = {
   thien_hoang_dao_thu:{name:"Thiên Hoang Đạo Thư",type:"congphap", rarity:"legendary", ngoTinh:45, coDuyen:45, daoTam:45, theChat:45 }
 };
 
+/* ================= CÔNG PHÁP CHIÊU THỨC (Combat Techniques) ================= */
+const TECH_TYPES = ['cong','thu','than'];
+const TECH_TYPE_LABELS = { cong:'Công', thu:'Thủ', than:'Thân' };
+const TECH_TYPE_DESC = { cong:'Khắc Thân', thu:'Khắc Công', than:'Khắc Thủ' };
+
+function techWinner(a, b){
+  if(a === b) return 0;
+  if(a==='cong' && b==='than') return 1;
+  if(a==='than' && b==='thu') return 1;
+  if(a==='thu' && b==='cong') return 1;
+  return -1;
+}
+
+const CONG_PHAP_SETS = {
+  sword: {
+    label: 'Kiếm Pháp',
+    techniques: [
+      { name:'Kiếm Khí Trảm Thiên', type:'cong', dmgMult:1.3, desc:'Hóa kiếm khí thành lưỡi dao trời, chém xuống dữ dội' },
+      { name:'Kiếm Môn Phòng Ngự', type:'thu', dmgMult:0.6, desc:'Dựng kiếm thế thành bình phong, phòng ngự vững chắc' },
+      { name:'Lưu Tinh Trảm Bộ', type:'than', dmgMult:0.9, desc:'Thân pháp như sao băng, di chuyển chớp nhoáng' }
+    ]
+  },
+  dao: {
+    label: 'Đạo Pháp',
+    techniques: [
+      { name:'Thiên Lôi Chưởng', type:'cong', dmgMult:1.3, desc:'Vạn đạo hóa thiên lôi, oanh tạc đối thủ' },
+      { name:'Hỗn Độn Kết Giới', type:'thu', dmgMult:0.6, desc:'Dựng kết giới hỗn độn, hóa giải sát thương' },
+      { name:'Hư Không Dịch Chuyển', type:'than', dmgMult:0.9, desc:'Dịch chuyển trong hư không, né tránh công kích' }
+    ]
+  },
+  mind: {
+    label: 'Tâm Pháp',
+    techniques: [
+      { name:'Thần Niệm Trảm', type:'cong', dmgMult:1.3, desc:'Dùng thần niệm hóa lưỡi dao, chém thẳng linh hồn' },
+      { name:'Tâm Tường Kiên Cố', type:'thu', dmgMult:0.6, desc:'Tâm cảnh như thành đồng, vững không thể phá' },
+      { name:'Niệm Lực Tức Luyện', type:'than', dmgMult:0.9, desc:'Niệm lực tức thì, di chuyển trong nháy mắt' }
+    ]
+  }
+};
+
+function getCongPhapSet(itemId){
+  const it = ITEM_DB[itemId];
+  if(!it || it.type !== 'congphap') return null;
+  const name = (it.name||'').toLowerCase();
+  if(name.indexOf('kiếm') >= 0) return CONG_PHAP_SETS.sword;
+  if(name.indexOf('tâm') >= 0) return CONG_PHAP_SETS.mind;
+  return CONG_PHAP_SETS.dao;
+}
+
+function getEquippedTechniques(s){
+  const cpId = s.equippedCongPhap;
+  if(!cpId) return null;
+  return getCongPhapSet(cpId);
+}
+
 function addItem(s, itemId, n){
   n = n || 1;
   s.inventory = s.inventory || {};
@@ -2160,6 +2290,14 @@ function computeCombatStats(s){
   let atk = 10 + fi*1.1 + (stats.daoTam||10)*1.5 + (stats.ngoTinh||10)*0.8;
   let def = 5 + fi*0.7 + (stats.theChat||10)*1.8;
 
+  var cpId = s.equippedCongPhap;
+  var cpItem = cpId && ITEM_DB[cpId];
+  if(cpItem){
+    if(cpItem.ngoTinh) atk += cpItem.ngoTinh * 0.8;
+    if(cpItem.daoTam) atk += cpItem.daoTam * 1.5;
+    if(cpItem.theChat){ def += cpItem.theChat * 1.8; hp += cpItem.theChat * 8; }
+    if(cpItem.coDuyen) atk += cpItem.coDuyen * 0.5;
+  }
   ['weapon','armor','phapBao'].forEach(function(slot){
     const id = s.equipped && s.equipped[slot];
     const it = id && ITEM_DB[id];
@@ -2190,6 +2328,26 @@ function equipItem(itemId){
 function unequipItem(slot){
   if(!state || !state.equipped) return;
   state.equipped[slot] = null;
+  updateUI();
+  syncSave({force:true});
+}
+function equipCongPhap(itemId){
+  const it = ITEM_DB[itemId];
+  if(!state || !it || it.type !== 'congphap' || !state.inventory || !state.inventory[itemId]) return;
+  if(state.equippedCongPhap){ addItem(state, state.equippedCongPhap, 1); }
+  state.inventory[itemId]--;
+  if(state.inventory[itemId] <= 0) delete state.inventory[itemId];
+  state.equippedCongPhap = itemId;
+  var set = getCongPhapSet(itemId);
+  var techNames = set ? set.techniques.map(function(t){ return t.name; }).join(', ') : '';
+  addLogNode({type:'neutral', title:'Tu Luyện Công Pháp', text: state.name+' bắt đầu tu luyện '+it.name+', lĩnh ngộ ba chiêu thức: '+techNames+'.', deltas:[]});
+  updateUI();
+  syncSave({force:true});
+}
+function unequipCongPhap(){
+  if(!state || !state.equippedCongPhap) return;
+  addItem(state, state.equippedCongPhap, 1);
+  state.equippedCongPhap = null;
   updateUI();
   syncSave({force:true});
 }
@@ -2999,6 +3157,9 @@ const el = {
   combatResultBanner: document.getElementById('combatResultBanner'),
   combatLog: document.getElementById('combatLog'),
   btnCloseCombat: document.getElementById('btnCloseCombat'),
+  combatTechniques: document.getElementById('combatTechniques'),
+  combatTechHint: document.getElementById('combatTechHint'),
+  combatNoTech: document.getElementById('combatNoTech'),
   btnSect: document.getElementById('btnSect'),
   sectBtnSub: document.getElementById('sectBtnSub'),
   sectModal: document.getElementById('sectModal'),
@@ -3248,6 +3409,7 @@ function playerSnapshot(){
     pvpLosses: state.pvpLosses || 0,
     inventory: state.inventory || {},
     equipped: state.equipped || {weapon:null,armor:null,phapBao:null},
+    equippedCongPhap: state.equippedCongPhap || null,
     pillBonuses: state.pillBonuses || {atk:0,def:0,hp:0,tocDoTuLuyen:0},
     pvpCooldowns: state.pvpCooldowns || {},
     bicanhCooldowns: state.bicanhCooldowns || {},
@@ -3282,6 +3444,7 @@ function restoreStateFromSnapshot(snap, name){
   s.pvpLosses = snap.pvpLosses||0;
   s.inventory = snap.inventory || {};
   s.equipped = snap.equipped || {weapon:null,armor:null,phapBao:null};
+  s.equippedCongPhap = snap.equippedCongPhap || null;
   s.pillBonuses = snap.pillBonuses || {atk:0,def:0,hp:0,tocDoTuLuyen:0};
   s.pvpCooldowns = snap.pvpCooldowns || {};
   s.bicanhCooldowns = snap.bicanhCooldowns || {};
@@ -3456,15 +3619,25 @@ function itemStatSummary(it){
   if(it.def) parts.push('DEF '+(it.def>0?'+':'')+it.def);
   if(it.hp) parts.push('HP '+(it.hp>0?'+':'')+it.hp);
   if(it.tocDoTuLuyen) parts.push('Tốc Độ +'+Math.round(it.tocDoTuLuyen*100)+'%');
+  if(it.ngoTinh) parts.push('Ngộ Tính +'+it.ngoTinh);
+  if(it.coDuyen) parts.push('Cơ Duyên +'+it.coDuyen);
+  if(it.daoTam) parts.push('Đạo Tâm +'+it.daoTam);
+  if(it.theChat) parts.push('Thể Chất +'+it.theChat);
   return parts.length ? parts.join(', ') : 'Nguyên liệu sưu tầm';
 }
 function renderInventory(){
   el.invSlots.innerHTML = '';
-  const slotLabels = { weapon:'Vũ Khí', armor:'Giáp', phapBao:'Pháp Bảo' };
-  ['weapon','armor','phapBao'].forEach(function(slot){
+  const slotLabels = { weapon:'Vũ Khí', armor:'Giáp', phapBao:'Pháp Bảo', congphap:'Công Pháp' };
+  ['weapon','armor','phapBao','congphap'].forEach(function(slot){
     const box = document.createElement('div');
-    const itemId = state.equipped && state.equipped[slot];
-    const equippedItem = itemId && ITEM_DB[itemId];
+    let itemId, equippedItem;
+    if(slot === 'congphap'){
+      itemId = state.equippedCongPhap;
+      equippedItem = itemId && ITEM_DB[itemId];
+    } else {
+      itemId = state.equipped && state.equipped[slot];
+      equippedItem = itemId && ITEM_DB[itemId];
+    }
     box.className = 'inv-slot' + (equippedItem ? (' rarity-border-' + (equippedItem.rarity||'common')) : '');
     const label = document.createElement('div'); label.className='slot-label'; label.textContent = slotLabels[slot].toUpperCase();
     const itemDiv = document.createElement('div');
@@ -3474,7 +3647,11 @@ function renderInventory(){
     const btn = document.createElement('button');
     btn.textContent = 'Tháo';
     btn.disabled = !itemId;
-    btn.addEventListener('click', function(){ unequipItem(slot); renderInventory(); });
+    btn.addEventListener('click', function(){
+      if(slot === 'congphap') unequipCongPhap();
+      else unequipItem(slot);
+      renderInventory();
+    });
     box.appendChild(label); box.appendChild(itemDiv); box.appendChild(btn);
     el.invSlots.appendChild(box);
   });
@@ -3504,6 +3681,13 @@ function renderInventory(){
       btn.textContent = isEquipped ? 'Đã Trang Bị' : 'Trang Bị';
       btn.disabled = isEquipped;
       btn.addEventListener('click', function(){ equipItem(itemId); renderInventory(); });
+      row.appendChild(btn);
+    } else if(it.type === 'congphap'){
+      const btn = document.createElement('button');
+      const isEquipped = state.equippedCongPhap === itemId;
+      btn.textContent = isEquipped ? 'Đã Tu Luyện' : 'Tu Luyện';
+      btn.disabled = isEquipped;
+      btn.addEventListener('click', function(){ equipCongPhap(itemId); renderInventory(); });
       row.appendChild(btn);
     } else if(it.type === 'pill'){
       const btn = document.createElement('button');
@@ -3539,6 +3723,50 @@ function addCombatLogLine(text, cls){
   el.combatLog.scrollTop = el.combatLog.scrollHeight;
 }
 
+function computeTechDamage(attacker, defender, tech){
+  var baseDmg = Math.max(1, attacker.atk - defender.def*0.5);
+  var dmg = Math.round(baseDmg * (tech.dmgMult||1) + (Math.random()*0.2-0.1)*attacker.atk);
+  return Math.max(1, dmg);
+}
+
+function pickOpponentTech(techSet){
+  if(!techSet) return TECH_TYPES[Math.floor(Math.random()*3)];
+  var techs = techSet.techniques;
+  return techs[Math.floor(Math.random()*techs.length)];
+}
+
+function renderCombatTechniques(myTechSet, onSelect, enabled){
+  el.combatTechniques.innerHTML = '';
+  el.combatTechniques.classList.remove('hidden');
+  el.combatTechHint.classList.remove('hidden');
+  el.combatNoTech.classList.add('hidden');
+  el.combatTechHint.innerHTML = 'Công khắc Thân · Thủ khắc Công · Thân khắc Thủ — chọn chiêu thức để đối đầu!';
+
+  if(!myTechSet){
+    el.combatTechniques.classList.add('hidden');
+    el.combatTechHint.classList.add('hidden');
+    el.combatNoTech.classList.remove('hidden');
+    el.combatNoTech.textContent = 'Chưa tu luyện công pháp nào — trận đấu diễn ra tự động.';
+    return;
+  }
+
+  myTechSet.techniques.forEach(function(tech){
+    var btn = document.createElement('button');
+    btn.className = 'combat-tech-btn type-' + tech.type;
+    btn.disabled = !enabled;
+    var nm = document.createElement('div'); nm.className='tech-name'; nm.textContent = tech.name;
+    var tp = document.createElement('div'); tp.className='tech-type'; tp.textContent = TECH_TYPE_LABELS[tech.type] + ' · ' + TECH_TYPE_DESC[tech.type];
+    btn.appendChild(nm); btn.appendChild(tp);
+    btn.addEventListener('click', function(){ onSelect(tech); });
+    el.combatTechniques.appendChild(btn);
+  });
+}
+
+function disableCombatTechniques(){
+  var btns = el.combatTechniques.querySelectorAll('.combat-tech-btn');
+  btns.forEach(function(b){ b.disabled = true; });
+}
+
 async function runCombatUI(myFighter, oppFighter){
   el.combatModal.classList.remove('hidden');
   el.combatLog.innerHTML = '';
@@ -3553,6 +3781,9 @@ async function runCombatUI(myFighter, oppFighter){
   let meHp = myFighter.hp, oppHp = oppFighter.hp;
   const meMax = myFighter.hp, oppMax = oppFighter.hp;
 
+  var myTechSet = myFighter.techSet || null;
+  var oppTechSet = oppFighter.techSet || null;
+
   function renderHp(){
     el.combatMeHpFill.style.width = clamp((meHp/meMax)*100, 0, 100) + '%';
     el.combatOppHpFill.style.width = clamp((oppHp/oppMax)*100, 0, 100) + '%';
@@ -3561,40 +3792,86 @@ async function runCombatUI(myFighter, oppFighter){
   }
   renderHp();
   addCombatLogLine('Trận tỉ thí bắt đầu!');
-  await sleep(500);
+  await sleep(400);
 
   let round = 1;
   const MAX_ROUNDS = 15;
-  while(meHp > 0 && oppHp > 0 && round <= MAX_ROUNDS){
-    const myDmg = Math.max(1, Math.round(myFighter.atk - oppFighter.def*0.5 + (Math.random()*0.3-0.15)*myFighter.atk));
-    oppHp -= myDmg;
-    addCombatLogLine('Vòng '+round+': '+myFighter.name+' tung chiêu, gây '+myDmg+' sát thương!', 'me');
-    renderHp();
-    await sleep(650);
-    if(oppHp <= 0) break;
 
-    const oppDmg = Math.max(1, Math.round(oppFighter.atk - myFighter.def*0.5 + (Math.random()*0.3-0.15)*oppFighter.atk));
-    meHp -= oppDmg;
-    addCombatLogLine('Vòng '+round+': '+oppFighter.name+' phản công, gây '+oppDmg+' sát thương!', 'enemy');
-    renderHp();
-    await sleep(650);
+  return new Promise(function(resolve){
+    function nextRound(){
+      if(meHp <= 0 || oppHp <= 0 || round > MAX_ROUNDS){
+        finishCombat();
+        return;
+      }
 
-    round++;
-  }
+      addCombatLogLine('— Vòng ' + round + ' —');
 
-  let win;
-  if(meHp <= 0 && oppHp <= 0){ win = myFighter.atk >= oppFighter.atk; }
-  else if(meHp <= 0){ win = false; }
-  else if(oppHp <= 0){ win = true; }
-  else { win = (meHp/meMax) >= (oppHp/oppMax); }
+      if(myTechSet){
+        renderCombatTechniques(myTechSet, function(myTech){
+          disableCombatTechniques();
+          processRound(myTech);
+        }, true);
+      } else {
+        var myAutoTech = { type: pickRandom(TECH_TYPES), dmgMult: 1.0, name: 'Tùy Chiêu' };
+        processRound(myAutoTech);
+      }
+    }
 
-  addCombatLogLine(win ? (myFighter.name+' đã đánh bại '+oppFighter.name+'!') : (myFighter.name+' đã bại trận trước '+oppFighter.name+'.'));
-  el.combatResultBanner.classList.remove('hidden');
-  el.combatResultBanner.classList.add(win ? 'win' : 'lose');
-  el.combatResultBanner.textContent = win ? 'THẮNG LỢI' : 'THẤT BẠI';
-  el.btnCloseCombat.classList.remove('hidden');
+    async function processRound(myTech){
+      var oppTech = pickOpponentTech(oppTechSet);
+      var result = techWinner(myTech.type, oppTech.type);
 
-  return { win: win };
+      var myDmg = computeTechDamage(myFighter, oppFighter, myTech);
+      var oppDmg = computeTechDamage(oppFighter, myFighter, oppTech);
+
+      if(result === 1){
+        myDmg = Math.round(myDmg * 1.5);
+        oppDmg = Math.round(oppDmg * 0.5);
+        addCombatLogLine(myFighter.name+' dùng '+myTech.name+' ('+TECH_TYPE_LABELS[myTech.type]+') khắc chế '+TECH_TYPE_LABELS[oppTech.type]+' của '+oppFighter.name+'!', 'me');
+      } else if(result === -1){
+        myDmg = Math.round(myDmg * 0.5);
+        oppDmg = Math.round(oppDmg * 1.5);
+        addCombatLogLine(oppFighter.name+' dùng '+(oppTech.name||TECH_TYPE_LABELS[oppTech.type])+' ('+TECH_TYPE_LABELS[oppTech.type]+') khắc chế '+TECH_TYPE_LABELS[myTech.type]+'!', 'enemy');
+      } else {
+        addCombatLogLine('Hai bên cùng dùng '+TECH_TYPE_LABELS[myTech.type]+', thế lực ngang nhau!', 'neutral');
+      }
+
+      oppHp = Math.max(0, oppHp - myDmg);
+      addCombatLogLine(myFighter.name+' gây '+myDmg+' sát thương lên '+oppFighter.name+'.', 'me');
+      renderHp();
+      await sleep(700);
+      if(oppHp <= 0){ finishCombat(); return; }
+
+      meHp = Math.max(0, meHp - oppDmg);
+      addCombatLogLine(oppFighter.name+' gây '+oppDmg+' sát thương lên '+myFighter.name+'.', 'enemy');
+      renderHp();
+      await sleep(700);
+
+      round++;
+      nextRound();
+    }
+
+    function finishCombat(){
+      el.combatTechniques.classList.add('hidden');
+      el.combatTechHint.classList.add('hidden');
+      el.combatNoTech.classList.add('hidden');
+
+      var win;
+      if(meHp <= 0 && oppHp <= 0){ win = myFighter.atk >= oppFighter.atk; }
+      else if(meHp <= 0){ win = false; }
+      else if(oppHp <= 0){ win = true; }
+      else { win = (meHp/meMax) >= (oppHp/oppMax); }
+
+      addCombatLogLine(win ? (myFighter.name+' đã đánh bại '+oppFighter.name+'!') : (myFighter.name+' đã bại trận trước '+oppFighter.name+'.'));
+      el.combatResultBanner.classList.remove('hidden');
+      el.combatResultBanner.classList.add(win ? 'win' : 'lose');
+      el.combatResultBanner.textContent = win ? 'THẮNG LỢI' : 'THẤT BẠI';
+      el.btnCloseCombat.classList.remove('hidden');
+      resolve({ win: win });
+    }
+
+    nextRound();
+  });
 }
 
 async function tiThi(opponentId, opponentNameHint){
@@ -3629,9 +3906,11 @@ async function tiThi(opponentId, opponentNameHint){
 
   const myCombat = computeCombatStats(state);
   const oppCombat = computeCombatStats(opp);
-  const myFighter = { name: state.name, realmLabel: MAJOR_REALMS[state.realmIdx]+' - '+SUB_REALMS[state.subIdx]+' T'+state.tang, hp: myCombat.hp, atk: myCombat.atk, def: myCombat.def };
+  var myTechSet = getEquippedTechniques(state);
+  var oppTechSet = getEquippedTechniques(opp);
+  const myFighter = { name: state.name, realmLabel: MAJOR_REALMS[state.realmIdx]+' - '+SUB_REALMS[state.subIdx]+' T'+state.tang, hp: myCombat.hp, atk: myCombat.atk, def: myCombat.def, techSet: myTechSet };
   const oppRIdx = clamp(opp.realmIdx||0, 0, MAJOR_REALMS.length-1), oppSIdx = clamp(opp.subIdx||0, 0, SUB_REALMS.length-1);
-  const oppFighter = { name: opp.name||'Vô Danh', realmLabel: MAJOR_REALMS[oppRIdx]+' - '+SUB_REALMS[oppSIdx]+' T'+(opp.tang||1), hp: oppCombat.hp, atk: oppCombat.atk, def: oppCombat.def };
+  const oppFighter = { name: opp.name||'Vô Danh', realmLabel: MAJOR_REALMS[oppRIdx]+' - '+SUB_REALMS[oppSIdx]+' T'+(opp.tang||1), hp: oppCombat.hp, atk: oppCombat.atk, def: oppCombat.def, techSet: oppTechSet };
 
   const result = await runCombatUI(myFighter, oppFighter);
 
@@ -5015,7 +5294,12 @@ document.getElementById('btnCloseLeaderboard').addEventListener('click', closeLe
 document.getElementById('btnLbRefresh').addEventListener('click', loadLeaderboard);
 document.getElementById('btnInventory').addEventListener('click', openInventory);
 document.getElementById('btnCloseInventory').addEventListener('click', closeInventory);
-document.getElementById('btnCloseCombat').addEventListener('click', function(){ el.combatModal.classList.add('hidden'); });
+document.getElementById('btnCloseCombat').addEventListener('click', function(){
+  el.combatModal.classList.add('hidden');
+  el.combatTechniques.classList.add('hidden');
+  el.combatTechHint.classList.add('hidden');
+  el.combatNoTech.classList.add('hidden');
+});
 document.getElementById('btnSect').addEventListener('click', openSect);
 document.getElementById('btnCloseSect').addEventListener('click', closeSect);
 document.getElementById('btnRecruit').addEventListener('click', startRecruit);
@@ -5086,6 +5370,9 @@ function resetToStartScreen(){
   el.inventoryModal.classList.add('hidden');
   el.sectModal.classList.add('hidden');
   el.combatModal.classList.add('hidden');
+  el.combatTechniques.classList.add('hidden');
+  el.combatTechHint.classList.add('hidden');
+  el.combatNoTech.classList.add('hidden');
   el.accountModal.classList.add('hidden');
   el.giftPillModal.classList.add('hidden');
   el.bicanhModal.classList.add('hidden');
