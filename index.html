@@ -851,6 +851,27 @@
   .action-btn.alchemy-btn:hover::before{ opacity:1; }
   .action-btn.alchemy-btn:active{ transform: translateY(0px) scale(0.985); box-shadow: 0 0 8px rgba(168,85,247,0.15); }
 
+  .action-btn.titles-btn{
+    background: linear-gradient(135deg, rgba(232,194,122,0.18), rgba(180,140,60,0.12));
+    border:1px solid rgba(232,194,122,0.35);
+    border-left:3px solid var(--gold);
+    box-shadow: 0 0 12px rgba(232,194,122,0.08), inset 0 1px 0 rgba(232,194,122,0.1);
+    position:relative; overflow:hidden;
+    transition: all .25s cubic-bezier(.4,0,.2,1);
+  }
+  .action-btn.titles-btn::before{
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, rgba(232,194,122,0.12), rgba(255,255,255,0.04));
+    opacity:0; transition: opacity .3s ease;
+  }
+  .action-btn.titles-btn:hover{
+    transform: translateY(-2px);
+    border-color: rgba(232,194,122,0.6);
+    box-shadow: 0 0 22px rgba(232,194,122,0.25), 0 4px 16px rgba(232,194,122,0.12), inset 0 1px 0 rgba(232,194,122,0.15);
+  }
+  .action-btn.titles-btn:hover::before{ opacity:1; }
+  .action-btn.titles-btn:active{ transform: translateY(0px) scale(0.985); box-shadow: 0 0 8px rgba(232,194,122,0.15); }
+
   /* ---------- Bí Cảnh modal ---------- */
   .bicanh-tabs{ display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
   .bicanh-tab-btn{
@@ -1317,6 +1338,204 @@
   .trib-result.fail{ color: var(--danger); }
   .trib-vs-label{ font-size:20px; color:var(--gold); font-weight:700; }
 
+  /* ===== TITLES SYSTEM ===== */
+  .char-title-badge{
+    display:inline-block; font-size:10.5px; font-weight:600;
+    padding:2px 10px; border-radius:20px; margin-left:8px;
+    letter-spacing:0.3px; vertical-align:middle;
+    animation: titleGlow 2.5s ease-in-out infinite;
+  }
+  @keyframes titleGlow{
+    0%,100%{ box-shadow: 0 0 4px currentColor; }
+    50%{ box-shadow: 0 0 10px currentColor; }
+  }
+  .title-common{ background:rgba(143,168,179,0.15); color:#8fa8b3; border:1px solid rgba(143,168,179,0.3); }
+  .title-uncommon{ background:rgba(79,219,160,0.15); color:#4fdba0; border:1px solid rgba(79,219,160,0.3); }
+  .title-rare{ background:rgba(96,165,250,0.15); color:#60a5fa; border:1px solid rgba(96,165,250,0.3); }
+  .title-epic{ background:rgba(192,132,252,0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.3); }
+  .title-legendary{ background:rgba(232,194,122,0.18); color:var(--gold); border:1px solid rgba(232,194,122,0.4); }
+
+  .titles-modal-box{ max-width:520px; }
+  .titles-list{ display:flex; flex-direction:column; gap:8px; max-height:48vh; overflow-y:auto; margin-bottom:14px; }
+  .titles-list::-webkit-scrollbar{ width:5px; }
+  .titles-list::-webkit-scrollbar-track{ background:rgba(255,255,255,0.02); border-radius:3px; }
+  .titles-list::-webkit-scrollbar-thumb{ background:rgba(232,194,122,0.25); border-radius:3px; }
+  .titles-list::-webkit-scrollbar-thumb:hover{ background:rgba(232,194,122,0.4); }
+  .title-row{
+    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(232,194,122,0.02));
+    border:1px solid rgba(232,194,122,0.14); border-radius:12px; padding:12px 14px;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .title-row:hover{ border-color: rgba(232,194,122,0.28); }
+  .title-row.locked{ opacity:0.5; }
+  .title-row.equipped{ border-color: rgba(232,194,122,0.5); box-shadow: 0 0 12px rgba(232,194,122,0.12); }
+  .title-row-name{ font-size:14px; font-weight:700; color:var(--text-main); font-family:var(--font-display); margin-bottom:4px; }
+  .title-row-name.title-common{ color:#c8c8c8; }
+  .title-row-name.title-uncommon{ color:#4fdba0; }
+  .title-row-name.title-rare{ color:#60a5fa; }
+  .title-row-name.title-epic{ color:#c084fc; }
+  .title-row-name.title-legendary{ color:var(--gold); text-shadow: 0 0 8px rgba(232,194,122,0.4); }
+  .title-row-desc{ font-size:11.5px; color:var(--text-dim); line-height:1.6; margin-bottom:6px; }
+  .title-row-buff{ font-size:11.5px; color:var(--teal-soft); margin-bottom:10px; font-weight:600; }
+  .title-row-btn{
+    font-size:12px; font-weight:600; padding:7px 18px; border-radius:8px; cursor:pointer;
+    background: linear-gradient(135deg, rgba(232,194,122,0.15), rgba(232,194,122,0.08));
+    border:1px solid rgba(232,194,122,0.35); color:var(--gold);
+    transition: all .2s ease;
+  }
+  .title-row-btn:not(:disabled):hover{
+    background: linear-gradient(135deg, rgba(232,194,122,0.25), rgba(232,194,122,0.15));
+    box-shadow: 0 0 12px rgba(232,194,122,0.2);
+    transform: translateY(-1px);
+  }
+  .title-row-btn:not(:disabled):active{ transform: translateY(0) scale(0.98); }
+  .title-row-btn.equipped-btn{
+    background: rgba(232,194,122,0.12); border-color: rgba(232,194,122,0.3); color:var(--gold); cursor:default;
+  }
+  .title-row-btn.locked-btn{
+    opacity:0.35; cursor:not-allowed;
+    background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.08); color:var(--text-faint);
+  }
+  .title-row{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    background: rgba(255,255,255,0.03); border:1px solid rgba(122,224,205,0.12);
+    border-radius:10px; padding:10px 12px; transition: all .2s ease;
+  }
+  .title-row:hover{ border-color: rgba(122,224,205,0.25); }
+  .title-row.locked{ opacity:0.45; }
+  .title-row.equipped{ border-color: var(--gold); box-shadow: 0 0 10px rgba(232,194,122,0.15); }
+  .title-row-name{ font-size:13px; font-weight:700; }
+  .title-row-desc{ font-size:11px; color:var(--text-faint); flex:1; min-width:120px; }
+  .title-row-buff{ font-size:10.5px; color:var(--teal-soft); }
+  .title-row-btn{
+    font-size:11px; padding:5px 12px; border-radius:8px; cursor:pointer;
+    background: rgba(45,212,191,0.1); border:1px solid rgba(45,212,191,0.35); color:var(--teal-soft);
+    transition: all .15s ease;
+  }
+  .title-row-btn:hover{ background: rgba(45,212,191,0.2); transform: scale(1.05); }
+  .title-row-btn:active{ transform: scale(0.95); }
+  .title-row-btn.equipped-btn{ background: rgba(232,194,122,0.12); border-color: rgba(232,194,122,0.4); color:var(--gold); cursor:default; }
+  .title-row-btn.locked-btn{ background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.08); color:var(--text-faint); cursor:not-allowed; }
+
+  /* ===== INTERACTIVE ANIMATIONS ===== */
+  @keyframes ripple{
+    0%{ transform: scale(0); opacity:0.5; }
+    100%{ transform: scale(3); opacity:0; }
+  }
+  .btn-ripple{
+    position:absolute; border-radius:50%; background: rgba(122,224,205,0.4);
+    pointer-events:none; z-index:0; animation: ripple 0.6s ease-out;
+  }
+  .action-btn, .modal-btn, .shop-buy-btn, .trib-btn, .combat-tech-btn,
+  .choice-btn, .disc-action-btn, .title-row-btn, .bicanh-tab-btn,
+  .market-tab-btn, .bicanh-dungeon-btn, .sect-recruit-btn, .listing-row button{
+    position:relative; overflow:hidden;
+    transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+  }
+  .action-btn:active, .modal-btn:active, .shop-buy-btn:active,
+  .trib-btn:active, .choice-btn:active, .disc-action-btn:active,
+  .title-row-btn:active, .bicanh-tab-btn:active, .market-tab-btn:active,
+  .bicanh-dungeon-btn:active, .sect-recruit-btn:active, .listing-row button:active{
+    transform: scale(0.96);
+  }
+  .action-btn:hover, .modal-btn:hover, .shop-buy-btn:hover,
+  .trib-btn:hover, .choice-btn:hover, .title-row-btn:hover,
+  .bicanh-tab-btn:hover, .market-tab-btn:hover{
+    filter: brightness(1.12);
+  }
+  .inv-item-row, .shop-item-card, .listing-row, .disciple-card, .bicanh-dungeon-card{
+    transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .inv-item-row:hover, .shop-item-card:hover, .listing-row:hover,
+  .disciple-card:hover, .bicanh-dungeon-card:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(45,212,191,0.08);
+  }
+  @keyframes fadein{ from{ opacity:0; transform: translateY(8px); } to{ opacity:1; transform: translateY(0); } }
+  .modal-overlay:not(.hidden) .modal-box,
+  .modal-overlay:not(.hidden) .trib-box{
+    animation: modalSlideIn .3s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes modalSlideIn{
+    from{ opacity:0; transform: translateY(20px) scale(0.97); }
+    to{ opacity:1; transform: translateY(0) scale(1); }
+  }
+  .market-tab-content, .bicanh-tab-content{
+    animation: tabFade .25s ease;
+  }
+  @keyframes tabFade{ from{ opacity:0; } to{ opacity:1; } }
+
+  /* ===== RARITY EMOJI HELPERS ===== */
+  .item-emoji{ font-size:13px; margin-right:3px; vertical-align:middle; }
+  .rarity-text-common{ color: #a8bcc6; }
+  .rarity-text-uncommon{ color: #4fdba0; }
+  .rarity-text-rare{ color: #60a5fa; }
+  .rarity-text-epic{ color: #c084fc; }
+  .rarity-text-legendary{ color: #ef4444; text-shadow: 0 0 8px rgba(239,68,68,0.4); }
+
+  /* ===== COMBAT VFX ===== */
+  .combat-fighter-avatar{
+    font-size:36px; text-align:center; margin-bottom:4px; line-height:1;
+    animation: avatarFloat 2s ease-in-out infinite;
+  }
+  @keyframes avatarFloat{
+    0%,100%{ transform: translateY(0); }
+    50%{ transform: translateY(-4px); }
+  }
+  .fighter-title-badge{
+    display:inline-block; font-size:9px; font-weight:600;
+    padding:1px 7px; border-radius:20px; margin-top:3px;
+  }
+  .combat-vfx-layer{
+    position:absolute; inset:0; pointer-events:none; overflow:hidden;
+    border-radius:12px; z-index:0;
+  }
+  .combat-slash{
+    position:absolute; top:50%; width:60px; height:3px;
+    background: linear-gradient(90deg, transparent, var(--teal), #fff, var(--teal), transparent);
+    border-radius:2px; opacity:0;
+    box-shadow: 0 0 12px var(--teal);
+  }
+  .combat-slash.to-right{ animation: slashRight 0.4s ease-out; }
+  .combat-slash.to-left{ animation: slashLeft 0.4s ease-out; }
+  @keyframes slashRight{
+    0%{ left:10%; opacity:0; transform: translateY(-50%) scaleX(0.3); }
+    30%{ opacity:1; }
+    100%{ left:80%; opacity:0; transform: translateY(-50%) scaleX(1.5); }
+  }
+  @keyframes slashLeft{
+    0%{ right:10%; opacity:0; transform: translateY(-50%) scaleX(0.3); }
+    30%{ opacity:1; }
+    100%{ right:80%; opacity:0; transform: translateY(-50%) scaleX(1.5); }
+  }
+  .combat-damage-num{
+    position:absolute; font-size:22px; font-weight:700; font-family:var(--font-display);
+    color:#f2837a; text-shadow: 0 0 8px rgba(242,131,122,0.6);
+    animation: dmgFloat 0.8s ease-out forwards;
+    pointer-events:none; z-index:1;
+  }
+  @keyframes dmgFloat{
+    0%{ opacity:1; transform: translateY(0) scale(0.8); }
+    50%{ opacity:1; transform: translateY(-30px) scale(1.2); }
+    100%{ opacity:0; transform: translateY(-50px) scale(1); }
+  }
+  .combat-shield{
+    position:absolute; top:50%; left:50%; transform: translate(-50%,-50%);
+    width:80px; height:80px; border-radius:50%;
+    border: 3px solid var(--teal); opacity:0;
+    box-shadow: 0 0 20px var(--teal), inset 0 0 20px var(--teal);
+  }
+  .combat-shield.active{ animation: shieldFlash 0.5s ease-out; }
+  @keyframes shieldFlash{
+    0%{ opacity:0; transform: translate(-50%,-50%) scale(0.5); }
+    30%{ opacity:0.8; transform: translate(-50%,-50%) scale(1); }
+    100%{ opacity:0; transform: translate(-50%,-50%) scale(1.3); }
+  }
+  .fighter-card{ position:relative; }
+  .fighter-card > *:not(.combat-vfx-layer){ position:relative; z-index:1; }
+  .modal-box, .trib-box{ position:relative; z-index:1; }
+  .modal-box > *, .trib-box > *{ position:relative; z-index:1; }
+
 </style>
 </head>
 <body>
@@ -1424,6 +1643,11 @@
         <span class="sub">Dùng thảo dược, nguyên liệu luyện thành đan dược — 100% thành công</span>
       </button>
 
+      <button class="action-btn titles-btn" id="btnTitles">
+        Danh Hiệu &amp; Thành Tựu
+        <span class="sub">Xem và trang bị các danh hiệu đã đạt được trên con đường tu đạo</span>
+      </button>
+
       <div class="sync-status" id="syncStatus">Chưa đồng bộ</div>
       <div class="player-id-row" id="playerIdRow">Mã Đạo Hữu: <b id="playerIdVal">—</b></div>
 
@@ -1526,15 +1750,21 @@
     <h2>Tỉ Thí</h2>
     <div class="combat-fighters">
       <div class="fighter-card me">
+        <div class="combat-vfx-layer" id="combatMeVfx"></div>
+        <div class="combat-fighter-avatar">🧘</div>
         <div class="fighter-name" id="combatMeName">—</div>
         <div class="fighter-realm" id="combatMeRealm">—</div>
+        <div class="fighter-title-badge" id="combatMeTitle" style="display:none"></div>
         <div class="fighter-hp-track"><div class="fighter-hp-fill" id="combatMeHpFill" style="width:100%"></div></div>
         <div class="fighter-hp-nums" id="combatMeHpNums">0/0</div>
       </div>
       <div class="combat-vs">VS</div>
       <div class="fighter-card enemy">
+        <div class="combat-vfx-layer" id="combatOppVfx"></div>
+        <div class="combat-fighter-avatar">🧘</div>
         <div class="fighter-name" id="combatOppName">—</div>
         <div class="fighter-realm" id="combatOppRealm">—</div>
+        <div class="fighter-title-badge" id="combatOppTitle" style="display:none"></div>
         <div class="fighter-hp-track"><div class="fighter-hp-fill" id="combatOppHpFill" style="width:100%"></div></div>
         <div class="fighter-hp-nums" id="combatOppHpNums">0/0</div>
       </div>
@@ -1708,6 +1938,19 @@
 </div>
 
 
+
+<!-- TITLES MODAL -->
+<div class="modal-overlay hidden" id="titlesModal">
+  <div class="modal-box titles-modal-box">
+    <h2>Danh Hiệu</h2>
+    <p style="font-size:12px; color:var(--text-faint); margin-bottom:14px;">Kích hoạt danh hiệu để hiển thị cạnh tên và nhận buff nội tại.</p>
+    <div class="titles-list" id="titlesList"></div>
+    <div style="text-align:center;">
+      <button class="modal-btn modal-btn-cancel" id="btnCloseTitles">Đóng</button>
+    </div>
+  </div>
+</div>
+
 <!-- TRIBULATION MODAL -->
 <div class="trib-overlay hidden" id="tribModal">
   <div class="trib-box">
@@ -1822,7 +2065,9 @@ function freshState(name){
     bicanhCooldowns: {},
     raidLog: [],
     sect: { disciples: {} },
-    pity: 0
+    pity: 0,
+    unlockedTitles: [],
+    activeTitle: null
   };
 }
 
@@ -2254,6 +2499,106 @@ function eligibleExploreEvents(){
 /* ================= EQUIPMENT, PILLS & COMBAT STATS ================= */
 /* Rarity tiers: common(Phàm) -> uncommon(Tinh) -> rare(Huyền) -> epic(Địa) -> legendary(Thiên) */
 /* 200+ items across weapons, armor, phapBao, pills, materials, congphap */
+
+/* ================= TITLES SYSTEM ================= */
+const TITLES_DB = {
+  'tu_tinh_sơ': { name:'Tu Tinh Sơ Học', rarity:'common', desc:'Đạt cảnh giới Ngưng Khí',
+    condition: function(s){ return s.realmIdx >= 1; }, buff: { atk:2, def:1, hp:10 } },
+  'kien_tap': { name:'Kiên Tập Bất Khuất', rarity:'common', desc:'Tu luyện 100 ngày',
+    condition: function(s){ return s.ngayTu >= 100; }, buff: { atk:1, def:2, hp:15 } },
+  'truc_co': { name:'Trúc Cơ Đạo Nhân', rarity:'uncommon', desc:'Đạt cảnh giới Trúc Cơ',
+    condition: function(s){ return s.realmIdx >= 3; }, buff: { atk:5, def:3, hp:30 } },
+  'ket_dan': { name:'Kết Đan Tôn Giả', rarity:'uncommon', desc:'Đạt cảnh giới Kết Đan',
+    condition: function(s){ return s.realmIdx >= 4; }, buff: { atk:8, def:5, hp:50 } },
+  'phong_ha': { name:'Phong Hạc Vô Song', rarity:'uncommon', desc:'Thắng 5 trận tỉ thí',
+    condition: function(s){ return (s.pvpWins||0) >= 5; }, buff: { atk:6, def:3, hp:25 } },
+  'nguyen_anh': { name:'Nguyên Anh Chân Nhân', rarity:'rare', desc:'Đạt cảnh giới Nguyên Anh',
+    condition: function(s){ return s.realmIdx >= 5; }, buff: { atk:15, def:10, hp:80 } },
+  'phu_hao': { name:'Phú Hào Linh Thạch', rarity:'rare', desc:'Tích lũy 500 linh thạch',
+    condition: function(s){ return (s.linhThach||0) >= 500; }, buff: { atk:5, def:5, hp:40 } },
+  'hoa_than': { name:'Hóa Thần Lão Tổ', rarity:'rare', desc:'Đạt cảnh giới Hóa Thần',
+    condition: function(s){ return s.realmIdx >= 6; }, buff: { atk:25, def:15, hp:120 } },
+  'vo_dich': { name:'Vô Địch Thiên Hạ', rarity:'rare', desc:'Thắng 20 trận tỉ thí',
+    condition: function(s){ return (s.pvpWins||0) >= 20; }, buff: { atk:20, def:10, hp:60 } },
+  'dai_thua': { name:'Đại Thừa Chân Tiên', rarity:'epic', desc:'Đạt cảnh giới Đại Thừa',
+    condition: function(s){ return s.realmIdx >= 9; }, buff: { atk:50, def:30, hp:250 } },
+  'do_kiep': { name:'Độ Kiếp Đạo Quân', rarity:'epic', desc:'Đạt cảnh giới Độ Kiếp',
+    condition: function(s){ return s.realmIdx >= 10; }, buff: { atk:80, def:50, hp:400 } },
+  'tien_nhan': { name:'Tiên Nhân Trùng Sinh', rarity:'epic', desc:'Trùng sinh 3 kiếp',
+    condition: function(s){ return (s.kiepSo||1) >= 3; }, buff: { atk:40, def:25, hp:200 } },
+  'tien_vuong': { name:'Tiên Vương Lâm Trần', rarity:'legendary', desc:'Đạt cảnh giới Tiên Vương',
+    condition: function(s){ return s.realmIdx >= 21; }, buff: { atk:200, def:120, hp:1000 } },
+  'than_hoang': { name:'Thần Hoàng Chí Tôn', rarity:'legendary', desc:'Đạt cảnh giới Thần Hoàng',
+    condition: function(s){ return s.realmIdx >= 29; }, buff: { atk:500, def:300, hp:2500 } },
+  'vo_thuong': { name:'Vô Thượng Vĩnh Hằng', rarity:'legendary', desc:'Đạt cảnh giới Vô Thượng Vĩnh Hằng Đạo Tổ',
+    condition: function(s){ return s.realmIdx >= 40; }, buff: { atk:2000, def:1000, hp:10000 } }
+};
+
+function getTitleBuff(s){
+  if(!s || !s.activeTitle || !TITLES_DB[s.activeTitle]) return { atk:0, def:0, hp:0 };
+  return TITLES_DB[s.activeTitle].buff || { atk:0, def:0, hp:0 };
+}
+
+function checkTitleUnlocks(s){
+  if(!s) return;
+  s.unlockedTitles = s.unlockedTitles || [];
+  Object.keys(TITLES_DB).forEach(function(id){
+    if(s.unlockedTitles.indexOf(id) === -1 && TITLES_DB[id].condition(s)){
+      s.unlockedTitles.push(id);
+      addLogNode({type:'legend', title:'Mở Khóa Danh Hiệu', text: state.name+' đã đạt được điều kiện mở khóa danh hiệu «'+TITLES_DB[id].name+'».', deltas:['Danh Hiệu Mới: '+TITLES_DB[id].name]});
+    }
+  });
+}
+
+function renderTitles(){
+  el.titlesList.innerHTML = '';
+  if(!state) return;
+  state.unlockedTitles = state.unlockedTitles || [];
+  const allIds = Object.keys(TITLES_DB);
+  allIds.forEach(function(id){
+    const t = TITLES_DB[id];
+    const unlocked = state.unlockedTitles.indexOf(id) !== -1;
+    const equipped = state.activeTitle === id;
+    const row = document.createElement('div');
+    row.className = 'title-row' + (unlocked ? '' : ' locked') + (equipped ? ' equipped' : '');
+    const rarityCls = 'title-' + (t.rarity||'common');
+    const nameEl = document.createElement('div');
+    nameEl.className = 'title-row-name ' + rarityCls;
+    nameEl.textContent = t.name;
+    const descEl = document.createElement('div');
+    descEl.className = 'title-row-desc';
+    descEl.textContent = unlocked ? t.desc : '🔒 ' + t.desc;
+    const buffEl = document.createElement('div');
+    buffEl.className = 'title-row-buff';
+    const b = t.buff;
+    buffEl.textContent = 'ATK +'+b.atk+' · DEF +'+b.def+' · HP +'+b.hp;
+    const btn = document.createElement('button');
+    btn.className = 'title-row-btn' + (equipped ? ' equipped-btn' : '') + (!unlocked ? ' locked-btn' : '');
+    btn.textContent = equipped ? 'Đang Kích Hoạt' : (unlocked ? 'Kích Hoạt' : 'Chưa Mở Khóa');
+    btn.disabled = !unlocked || equipped;
+    if(unlocked && !equipped){
+      btn.addEventListener('click', function(){
+        state.activeTitle = id;
+        renderTitles();
+        updateUI();
+        syncSave({force:true});
+      });
+    }
+    row.appendChild(nameEl);
+    row.appendChild(descEl);
+    row.appendChild(buffEl);
+    row.appendChild(btn);
+    el.titlesList.appendChild(row);
+  });
+}
+
+function openTitles(){
+  checkTitleUnlocks(state);
+  renderTitles();
+  el.titlesModal.classList.remove('hidden');
+}
+function closeTitles(){ el.titlesModal.classList.add('hidden'); }
+
 const ITEM_DB = {
   /* --- WEAPONS (50+) --- */
   pham_kiem:      { name:"Phàm Kiếm",            type:"weapon", rarity:"common",    atk:8 },
@@ -2597,6 +2942,8 @@ function computeCombatStats(s){
     def += s.pillBonuses.def||0;
     hp += s.pillBonuses.hp||0;
   }
+  var tb = getTitleBuff(s);
+  atk += tb.atk||0; def += tb.def||0; hp += tb.hp||0;
   hp = Math.max(1, Math.round(hp));
   atk = Math.max(1, Math.round(atk));
   def = Math.max(0, Math.round(def));
@@ -3599,7 +3946,7 @@ function closeTribulation(){
     addItem(state, rewardId, 1);
     var text = pickRandom(TRIAL_INTROS)() + pickRandom(BREAKTHROUGH_SUCCESS)(ts.fromName, ts.toName);
     if(ts.usedDan) text += " Một viên Hộ Đạo Đan đã hóa thành tro bụi, âm thầm trợ lực trong khoảnh khắc sinh tử.";
-    addLogNode({type:'success', title:'ĐỘT PHÁ THÀNH CÔNG!', text, deltas:["Thọ Nguyên +"+thoBonus, "Tứ Đại Thuộc Tính đều +1", "Phần thưởng trấn phái: "+ITEM_DB[rewardId].name]});
+    addLogNode({type:'success', title:'ĐỘT PHÁ THÀNH CÔNG!', text, deltas:["Thọ Nguyên +"+thoBonus, "Tứ Đại Thuộc Tính đều +1", "Phần thưởng trấn phái: "+itemDisplayName(ITEM_DB[rewardId])]});
     if(state.realmIdx === SECT_UNLOCK_REALM_IDX){
       addItem(state, 'so_cap_tam_phap', 1);
       addLogNode({type:'legend', title:'Tông Môn Khai Tông', text: state.name+' đạo hạnh đã đạt tới '+MAJOR_REALMS[state.realmIdx]+', đủ tư cách khai lập môn phái, chiêu mộ đệ tử trong thiên hạ để mở rộng thanh thế.', deltas:['Mở khóa: Tông Môn & Chiêu Mộ Đệ Tử', 'Nhận: Sơ Cấp Tâm Pháp x1']});
@@ -3749,6 +4096,12 @@ const el = {
   giftPillModal: document.getElementById('giftPillModal'),
   giftPillDesc: document.getElementById('giftPillDesc'),
   giftPillList: document.getElementById('giftPillList'),
+  titlesModal: document.getElementById('titlesModal'),
+  titlesList: document.getElementById('titlesList'),
+  combatMeVfx: document.getElementById('combatMeVfx'),
+  combatOppVfx: document.getElementById('combatOppVfx'),
+  combatMeTitle: document.getElementById('combatMeTitle'),
+  combatOppTitle: document.getElementById('combatOppTitle'),
   tribModal: document.getElementById('tribModal'),
   tribPhaseIndicator: document.getElementById('tribPhaseIndicator'),
   tribTitle: document.getElementById('tribTitle'),
@@ -3797,6 +4150,20 @@ function updateUI(){
   if(!state) return;
 
   el.charName.textContent = state.name;
+  var titleBadge = document.getElementById('charTitleBadge');
+  if(!titleBadge){
+    titleBadge = document.createElement('span');
+    titleBadge.id = 'charTitleBadge';
+    el.charName.appendChild(titleBadge);
+  }
+  if(state.activeTitle && TITLES_DB[state.activeTitle]){
+    var t = TITLES_DB[state.activeTitle];
+    titleBadge.className = 'char-title-badge title-' + (t.rarity||'common');
+    titleBadge.textContent = t.name;
+    titleBadge.style.display = 'inline-block';
+  } else {
+    titleBadge.style.display = 'none';
+  }
   el.charKiep.textContent = 'Kiếp thứ '+state.kiepSo+' · Ngày tu luyện thứ '+state.ngayTu;
   el.realmMajor.textContent = MAJOR_REALMS[state.realmIdx];
   el.realmSub.textContent = SUB_REALMS[state.subIdx]+' · Tầng '+state.tang+'/'+TANG_PER_SUB;
@@ -3869,6 +4236,7 @@ function updateUI(){
     el.statusLine.innerHTML = 'Đang tu luyện tại <b>'+MAJOR_REALMS[state.realmIdx]+' - '+SUB_REALMS[state.subIdx]+' Tầng '+state.tang+'</b>. Tiếp tục tích lũy tu vi hoặc rời động phủ để tìm kỳ ngộ.';
   }
 
+  checkTitleUnlocks(state);
   if(state.thoNguyen <= 0 && !state.isDead){
     state.isDead = true;
   }
@@ -3918,11 +4286,19 @@ function setSyncStatus(kind, extra){
   }
 }
 
+function fetchWithTimeout(url, options, timeoutMs){
+  timeoutMs = timeoutMs || 8000;
+  return Promise.race([
+    fetch(url, options),
+    new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, timeoutMs); })
+  ]);
+}
+
 async function jsonbinReadAll(){
-  const res = await fetch(JSONBIN_BASE + '/latest', {
+  const res = await fetchWithTimeout(JSONBIN_BASE + '/latest', {
     method: 'GET',
     headers: { 'X-Master-Key': JSONBIN_API_KEY, 'X-Bin-Meta': 'false' }
-  });
+  }, 8000);
   if(!res.ok) throw new Error('HTTP '+res.status);
   const data = await res.json();
   const record = (data && typeof data==='object' && 'record' in data && 'metadata' in data) ? data.record : data;
@@ -3934,12 +4310,12 @@ async function jsonbinReadAll(){
 }
 
 async function jsonbinWriteAll(fullData, keepalive){
-  const res = await fetch(JSONBIN_BASE, {
+  const res = await fetchWithTimeout(JSONBIN_BASE, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
     body: JSON.stringify(fullData),
     keepalive: !!keepalive
-  });
+  }, 8000);
   if(!res.ok) throw new Error('HTTP '+res.status);
   return true;
 }
@@ -3970,6 +4346,8 @@ function playerSnapshot(){
     raidLog: state.raidLog || [],
     sect: state.sect || { disciples: {} },
     pity: state.pity || 0,
+    unlockedTitles: state.unlockedTitles || [],
+    activeTitle: state.activeTitle || null,
     hp: combat.hp, atk: combat.atk, def: combat.def, combatPower: combat.combatPower,
     power: combat.combatPower,
     updatedAt: new Date().toISOString()
@@ -4006,6 +4384,8 @@ function restoreStateFromSnapshot(snap, name){
   s.raidLog = snap.raidLog || [];
   s.sect = snap.sect || { disciples: {} };
   s.pity = snap.pity || 0;
+  s.unlockedTitles = snap.unlockedTitles || [];
+  s.activeTitle = snap.activeTitle || null;
   return s;
 }
 
@@ -4160,6 +4540,25 @@ function closeLeaderboard(){
 }
 
 /* ---------- Túi Đồ & Trang Bị ---------- */
+
+function itemEmoji(it){
+  if(!it) return '';
+  var t = it.type;
+  if(t === 'weapon') return '🗡️ ';
+  if(t === 'armor') return '🛡️ ';
+  if(t === 'phapBao') return '🔮 ';
+  if(t === 'pill') return '💊 ';
+  if(t === 'congphap') return '📖 ';
+  if(t === 'material') return '🌿 ';
+  return '';
+}
+function itemDisplayName(it){
+  if(!it) return '';
+  return itemEmoji(it) + it.name;
+}
+function rarityColorClass(rarity){
+  return 'rarity-text-' + (rarity||'common');
+}
 function rarityClass(rarity){ return 'rarity-'+(rarity||'common'); }
 function rarityLabel(rarity){
   const map = {common:'Phàm Phẩm', uncommon:'Tinh Phẩm', rare:'Huyền Phẩm', epic:'Địa Phẩm', legendary:'Thiên Phẩm'};
@@ -4199,7 +4598,7 @@ function renderInventory(){
     const itemDiv = document.createElement('div');
     itemDiv.className = 'slot-item' + (itemId ? '' : ' empty');
     if(equippedItem) itemDiv.style.color = rarityText(equippedItem.rarity);
-    itemDiv.textContent = equippedItem ? equippedItem.name : 'Trống';
+    itemDiv.textContent = equippedItem ? itemDisplayName(equippedItem) : 'Trống';
     const btn = document.createElement('button');
     btn.textContent = 'Tháo';
     btn.disabled = !itemId;
@@ -4323,6 +4722,32 @@ function disableCombatTechniques(){
   btns.forEach(function(b){ b.disabled = true; });
 }
 
+
+function showCombatSlash(side, dmg){
+  var layer = side === 'me' ? el.combatMeVfx : el.combatOppVfx;
+  if(!layer) return;
+  var slash = document.createElement('div');
+  slash.className = 'combat-slash ' + (side === 'me' ? 'to-right' : 'to-left');
+  layer.appendChild(slash);
+  setTimeout(function(){ slash.remove(); }, 400);
+  if(dmg){
+    var num = document.createElement('div');
+    num.className = 'combat-damage-num';
+    num.textContent = '-' + dmg;
+    num.style.left = (35 + Math.random()*30) + '%';
+    num.style.top = '30%';
+    layer.appendChild(num);
+    setTimeout(function(){ num.remove(); }, 800);
+  }
+}
+function showCombatShield(side){
+  var layer = side === 'me' ? el.combatMeVfx : el.combatOppVfx;
+  if(!layer) return;
+  var shield = document.createElement('div');
+  shield.className = 'combat-shield active';
+  layer.appendChild(shield);
+  setTimeout(function(){ shield.remove(); }, 500);
+}
 async function runCombatUI(myFighter, oppFighter){
   el.combatModal.classList.remove('hidden');
   el.combatLog.innerHTML = '';
@@ -4333,6 +4758,18 @@ async function runCombatUI(myFighter, oppFighter){
   el.combatMeRealm.textContent = myFighter.realmLabel;
   el.combatOppName.textContent = oppFighter.name;
   el.combatOppRealm.textContent = oppFighter.realmLabel;
+  if(myFighter.titleName){
+    el.combatMeTitle.textContent = myFighter.titleName;
+    el.combatMeTitle.className = 'fighter-title-badge title-' + (myFighter.titleRarity||'common');
+    el.combatMeTitle.style.display = 'inline-block';
+  } else { el.combatMeTitle.style.display = 'none'; }
+  if(oppFighter.titleName){
+    el.combatOppTitle.textContent = oppFighter.titleName;
+    el.combatOppTitle.className = 'fighter-title-badge title-' + (oppFighter.titleRarity||'common');
+    el.combatOppTitle.style.display = 'inline-block';
+  } else { el.combatOppTitle.style.display = 'none'; }
+  el.combatMeVfx.innerHTML = '';
+  el.combatOppVfx.innerHTML = '';
 
   let meHp = myFighter.hp, oppHp = oppFighter.hp;
   const meMax = myFighter.hp, oppMax = oppFighter.hp;
@@ -4393,12 +4830,15 @@ async function runCombatUI(myFighter, oppFighter){
       }
 
       oppHp = Math.max(0, oppHp - myDmg);
+      showCombatSlash('me', myDmg);
       addCombatLogLine(myFighter.name+' gây '+myDmg+' sát thương lên '+oppFighter.name+'.', 'me');
       renderHp();
       await sleep(700);
       if(oppHp <= 0){ finishCombat(); return; }
 
       meHp = Math.max(0, meHp - oppDmg);
+      if(result === -1) showCombatShield('me');
+      showCombatSlash('opp', oppDmg);
       addCombatLogLine(oppFighter.name+' gây '+oppDmg+' sát thương lên '+myFighter.name+'.', 'enemy');
       renderHp();
       await sleep(700);
@@ -4464,7 +4904,8 @@ async function tiThi(opponentId, opponentNameHint){
   const oppCombat = computeCombatStats(opp);
   var myTechSet = getEquippedTechniques(state);
   var oppTechSet = getEquippedTechniques(opp);
-  const myFighter = { name: state.name, realmLabel: MAJOR_REALMS[state.realmIdx]+' - '+SUB_REALMS[state.subIdx]+' T'+state.tang, hp: myCombat.hp, atk: myCombat.atk, def: myCombat.def, techSet: myTechSet };
+  var myTitleInfo = state.activeTitle && TITLES_DB[state.activeTitle] ? { name: TITLES_DB[state.activeTitle].name, rarity: TITLES_DB[state.activeTitle].rarity } : null;
+  const myFighter = { name: state.name, realmLabel: MAJOR_REALMS[state.realmIdx]+' - '+SUB_REALMS[state.subIdx]+' T'+state.tang, titleName: myTitleInfo ? myTitleInfo.name : null, titleRarity: myTitleInfo ? myTitleInfo.rarity : null, hp: myCombat.hp, atk: myCombat.atk, def: myCombat.def, techSet: myTechSet };
   const oppRIdx = clamp(opp.realmIdx||0, 0, MAJOR_REALMS.length-1), oppSIdx = clamp(opp.subIdx||0, 0, SUB_REALMS.length-1);
   const oppFighter = { name: opp.name||'Vô Danh', realmLabel: MAJOR_REALMS[oppRIdx]+' - '+SUB_REALMS[oppSIdx]+' T'+(opp.tang||1), hp: oppCombat.hp, atk: oppCombat.atk, def: oppCombat.def, techSet: oppTechSet };
 
@@ -4815,8 +5256,8 @@ async function renderShopGrid(){
     const remaining = slot ? slot.remaining : 0;
     const price = shopItemPrice(it);
     const card = document.createElement('div');
-    card.className = 'shop-item-card' + (it.rarity==='legendary' ? ' rare' : '');
-    const nm = document.createElement('div'); nm.className='shop-item-name'; nm.textContent = it.name;
+    card.className = 'shop-item-card' + (it.rarity==='legendary' || it.rarity==='epic' ? ' rare' : '');
+    const nm = document.createElement('div'); nm.className='shop-item-name ' + rarityColorClass(it.rarity); nm.innerHTML = itemDisplayName(it);
     const meta = document.createElement('div'); meta.className='shop-item-meta';
     meta.textContent = itemStatSummary(it) + ' · ' + rarityLabel(it.rarity) + ' · Còn ' + remaining + '/' + (slot?slot.stock:0);
     const btn = document.createElement('button'); btn.className='shop-buy-btn';
@@ -4866,7 +5307,7 @@ function populateNewListingSelect(){
   ids.forEach(function(id){
     const opt = document.createElement('option');
     opt.value = id;
-    opt.textContent = ITEM_DB[id].name + ' (x'+inv[id]+')';
+    opt.textContent = itemDisplayName(ITEM_DB[id]) + ' (x'+inv[id]+')';
     el.newListingItemSelect.appendChild(opt);
   });
 }
@@ -5042,7 +5483,7 @@ function renderMarketListRows(listings, container, mode){
     const row = document.createElement('div');
     row.className = 'listing-row';
     const info = document.createElement('div'); info.className = 'listing-info';
-    const nm = document.createElement('div'); nm.className = 'listing-name'; nm.textContent = it.name + ' x' + listing.qty;
+    const nm = document.createElement('div'); nm.className = 'listing-name ' + rarityColorClass(it.rarity); nm.innerHTML = itemDisplayName(it) + ' x' + listing.qty;
     const meta = document.createElement('div'); meta.className = 'listing-meta';
     meta.textContent = mode==='mine' ? rarityLabel(it.rarity) : rarityLabel(it.rarity)+' · Người bán: '+listing.sellerName;
     info.appendChild(nm); info.appendChild(meta);
@@ -5829,13 +6270,38 @@ function closeAlchemy(){ el.alchemyModal.classList.add('hidden'); }
 /* ================= INIT & EVENTS ================= */
 buildRoadmap();
 
-document.getElementById('btnTuLuyen').addEventListener('click', tuLuyen);
-document.getElementById('btnDotPha').addEventListener('click', dotPha);
-document.getElementById('btnKhamPha').addEventListener('click', khamPha);
-document.getElementById('btnReincarnate').addEventListener('click', reincarnate);
-document.getElementById('btnCancelReincarnate').addEventListener('click', closeReincarnateModal);
 
-document.getElementById('btnManualReincarnate').addEventListener('click', function(){
+/* Global ripple effect */
+document.addEventListener('click', function(e){
+  var target = e.target;
+  if(!target || !target.classList) return;
+  var isBtn = target.matches('button, .action-btn, .shop-buy-btn, .trib-btn, .combat-tech-btn, .choice-btn, .disc-action-btn, .title-row-btn, .bicanh-tab-btn, .market-tab-btn, .bicanh-dungeon-btn, .sect-recruit-btn, .listing-row button');
+  if(!isBtn) return;
+  if(target.disabled) return;
+  var rect = target.getBoundingClientRect();
+  var ripple = document.createElement('span');
+  ripple.className = 'btn-ripple';
+  var size = Math.max(rect.width, rect.height);
+  ripple.style.width = ripple.style.height = size + 'px';
+  ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
+  ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
+  target.appendChild(ripple);
+  setTimeout(function(){ ripple.remove(); }, 600);
+}, true);
+
+function safeBind(id, event, handler){
+  var el = document.getElementById(id);
+  if(el){ el.addEventListener(event, handler); }
+  else { console.warn('[safeBind] Element not found: #' + id + ' (event: ' + event + ')'); }
+}
+
+safeBind('btnTuLuyen', 'click', tuLuyen);
+safeBind('btnDotPha', 'click', dotPha);
+safeBind('btnKhamPha', 'click', khamPha);
+safeBind('btnReincarnate', 'click', reincarnate);
+safeBind('btnCancelReincarnate', 'click', closeReincarnateModal);
+
+safeBind('btnManualReincarnate', 'click', function(){
   if(!state || state.isDead) return;
   if(state.realmIdx < 1){
     addLogNode({type:'neutral', title:'Đạo Hạnh Còn Non Nớt', text:'Chưa từng trải qua một lần đột phá đại cảnh giới nào, luân hồi lúc này chỉ là uổng phí một kiếp người. Hãy đột phá ít nhất một lần trước đã.', deltas:[]});
@@ -5845,25 +6311,27 @@ document.getElementById('btnManualReincarnate').addEventListener('click', functi
   openReincarnateModal(false);
 });
 
-document.getElementById('btnLeaderboard').addEventListener('click', openLeaderboard);
-document.getElementById('btnCloseLeaderboard').addEventListener('click', closeLeaderboard);
-document.getElementById('btnLbRefresh').addEventListener('click', loadLeaderboard);
-document.getElementById('btnInventory').addEventListener('click', openInventory);
-document.getElementById('btnCloseInventory').addEventListener('click', closeInventory);
-document.getElementById('btnCloseCombat').addEventListener('click', function(){
+safeBind('btnLeaderboard', 'click', openLeaderboard);
+safeBind('btnCloseLeaderboard', 'click', closeLeaderboard);
+safeBind('btnLbRefresh', 'click', loadLeaderboard);
+safeBind('btnInventory', 'click', openInventory);
+safeBind('btnTitles', 'click', openTitles);
+safeBind('btnCloseTitles', 'click', closeTitles);
+safeBind('btnCloseInventory', 'click', closeInventory);
+safeBind('btnCloseCombat', 'click', function(){
   el.combatModal.classList.add('hidden');
   el.combatTechniques.classList.add('hidden');
   el.combatTechHint.classList.add('hidden');
   el.combatNoTech.classList.add('hidden');
 });
-document.getElementById('btnSect').addEventListener('click', openSect);
-document.getElementById('btnCloseSect').addEventListener('click', closeSect);
-document.getElementById('btnRecruit').addEventListener('click', startRecruit);
-document.getElementById('btnConfirmDiscipleName').addEventListener('click', confirmRecruitName);
-document.getElementById('discipleNameInput').addEventListener('keydown', function(e){
+safeBind('btnSect', 'click', openSect);
+safeBind('btnCloseSect', 'click', closeSect);
+safeBind('btnRecruit', 'click', startRecruit);
+safeBind('btnConfirmDiscipleName', 'click', confirmRecruitName);
+safeBind('discipleNameInput', 'keydown', function(e){
   if(e.key === 'Enter') confirmRecruitName();
 });
-document.getElementById('btnCloseGiftPill').addEventListener('click', closeGiftPillModal);
+safeBind('btnCloseGiftPill', 'click', closeGiftPillModal);
 
 window.addEventListener('pagehide', function(){
   if(state && !state.isDead && myPlayerId){
@@ -5977,6 +6445,7 @@ btnStart.addEventListener('click', async function(){
         state = restoreStateFromSnapshot(existing, existing.name || typedName);
         kiepNanBuff = (typeof existing.kiepNanBuff==='number') ? existing.kiepNanBuff : kiepNanBuff;
         startModal.classList.add('hidden');
+        startModal.style.display = 'none';
         updateUI();
         startIdleLoop();
         addLogNode({
@@ -6001,7 +6470,7 @@ btnStart.addEventListener('click', async function(){
         updateUI();
         return;
       }
-      addLogNodePreStart('Không Tìm Thấy Mã Đạo Hữu', 'Không tìm thấy dữ liệu khớp với mã "'+resumeId+'" trên Vân Đài Ký Sự.');
+      addLogNodePreStart('Không Tìm Thấy Mã Đạo Hữu', 'Không tìm thấy dữ liệu khớp với mã "'+resumeId+'" trên Vân Đài Ký Sự. Đạo đồ sẽ bắt đầu nhân vật mới — mã cũ không khớp.');
     }
 
     if(!all){
@@ -6010,13 +6479,28 @@ btnStart.addEventListener('click', async function(){
       return;
     }
 
+    var finalName = typedName;
     const dup = findPlayerByName(all, typedName);
     if(dup){
-      showStartNameError('Đạo hiệu "'+typedName+'" đã tồn tại trên Vân Đài Ký Sự. Nếu đây là nhân vật của chính ngươi, hãy nhập đúng Mã Đạo Hữu vào ô bên trên để khôi phục. Nếu không, hãy chọn một đạo hiệu khác.');
-      return;
+      finalName = typedName + ' ' + Math.floor(Math.random()*900+100);
+      addLogNodePreStart('Đạo Hiệu Trùng', 'Đạo hiệu "'+typedName+'" đã tồn tại trên Vân Đài Ký Sự. Đạo hiệu của ngươi được tự đổi thành "'+finalName+'" để tiếp tục.');
     }
 
-    beginLocalGame(typedName);
+    beginLocalGame(finalName);
+  }catch(err){
+    console.error('[Bắt Đầu Tu Luyện] Không thể xử lý dữ liệu đăng nhập:', err);
+    addLogNodePreStart('Không Thể Khôi Phục Đạo Đồ', 'Dữ liệu đăng nhập gặp lỗi hoặc máy chủ tạm thời không phản hồi. Đạo đồ mới sẽ được mở để ngươi không bị mắc kẹt ở màn hình này.');
+    try{
+      state = null;
+      myPlayerId = null;
+      startModal.classList.add('hidden');
+      startModal.style.display = 'none';
+      beginLocalGame(typedName);
+    }catch(recoveryErr){
+      console.error('[Bắt Đầu Tu Luyện] Lỗi khôi phục giao diện:', recoveryErr);
+      startModal.classList.add('hidden');
+      startModal.style.display = 'none';
+    }
   }finally{
     btnStart.disabled = false;
     btnStart.textContent = originalLabel;
@@ -6033,40 +6517,40 @@ function addLogNodePreStart(title, text){
   logContainer.insertBefore(card, logContainer.firstChild);
 }
 
-document.getElementById('btnAccount').addEventListener('click', openAccountModal);
-document.getElementById('btnCloseAccount').addEventListener('click', closeAccountModal);
-document.getElementById('btnShowDeleteConfirm').addEventListener('click', function(){
+safeBind('btnAccount', 'click', openAccountModal);
+safeBind('btnCloseAccount', 'click', closeAccountModal);
+safeBind('btnShowDeleteConfirm', 'click', function(){
   el.accountDeleteStep1.classList.add('hidden');
   el.accountDeleteStep2.classList.remove('hidden');
 });
-document.getElementById('btnCancelDelete').addEventListener('click', function(){
+safeBind('btnCancelDelete', 'click', function(){
   el.accountDeleteStep2.classList.add('hidden');
   el.accountDeleteStep1.classList.remove('hidden');
 });
-document.getElementById('btnConfirmDelete').addEventListener('click', confirmDeleteAccount);
+safeBind('btnConfirmDelete', 'click', confirmDeleteAccount);
 
-document.getElementById('btnBicanh').addEventListener('click', openBicanh);
-document.getElementById('btnCloseBicanh').addEventListener('click', closeBicanh);
-el.tabBicanhSoloBtn.addEventListener('click', function(){ switchBicanhTab('solo'); });
-el.tabBicanhTeamBtn.addEventListener('click', function(){ switchBicanhTab('team'); });
-document.getElementById('btnAlchemy').addEventListener('click', openAlchemy);
-document.getElementById('btnCloseAlchemy').addEventListener('click', closeAlchemy);
+safeBind('btnBicanh', 'click', openBicanh);
+safeBind('btnCloseBicanh', 'click', closeBicanh);
+if(el.tabBicanhSoloBtn) el.tabBicanhSoloBtn.addEventListener('click', function(){ switchBicanhTab('solo'); });
+if(el.tabBicanhTeamBtn) el.tabBicanhTeamBtn.addEventListener('click', function(){ switchBicanhTab('team'); });
+safeBind('btnAlchemy', 'click', openAlchemy);
+safeBind('btnCloseAlchemy', 'click', closeAlchemy);
 
-document.getElementById('btnMarket').addEventListener('click', openMarket);
-document.getElementById('btnCloseMarket').addEventListener('click', closeMarket);
-el.tabShopBtn.addEventListener('click', function(){ switchMarketTab('shop'); });
-el.tabMarketBtn.addEventListener('click', function(){ switchMarketTab('market'); });
-el.tabMyListingsBtn.addEventListener('click', function(){ switchMarketTab('mylistings'); });
+safeBind('btnMarket', 'click', openMarket);
+safeBind('btnCloseMarket', 'click', closeMarket);
+if(el.tabShopBtn) el.tabShopBtn.addEventListener('click', function(){ switchMarketTab('shop'); });
+if(el.tabMarketBtn) el.tabMarketBtn.addEventListener('click', function(){ switchMarketTab('market'); });
+if(el.tabMyListingsBtn) el.tabMyListingsBtn.addEventListener('click', function(){ switchMarketTab('mylistings'); });
 ['marketFilterType','marketFilterRarity','marketFilterMinPrice','marketFilterMaxPrice'].forEach(function(id){
-  document.getElementById(id).addEventListener('change', renderMarketTab);
+  safeBind(id, 'change', renderMarketTab);
 });
-document.getElementById('btnMarketRefresh').addEventListener('click', loadMarketTab);
-document.getElementById('btnCreateListing').addEventListener('click', createListing);
+safeBind('btnMarketRefresh', 'click', loadMarketTab);
+safeBind('btnCreateListing', 'click', createListing);
 
-nameInput.addEventListener('keydown', function(e){
+if(nameInput) nameInput.addEventListener('keydown', function(e){
   if(e.key === 'Enter') btnStart.click();
 });
-resumeIdInput.addEventListener('keydown', function(e){
+if(resumeIdInput) resumeIdInput.addEventListener('keydown', function(e){
   if(e.key === 'Enter') btnStart.click();
 });
 
